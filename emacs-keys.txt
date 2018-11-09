@@ -1,0 +1,72 @@
+C-x z		repeat last command
+C-x h		select whole buffer
+C-x ESC ESC	re-execute last minibuffer cmd
+C-l		center point at screen (next up/down) (C-u set line position)
+C-M-l		reposition window heuristically
+M-r		move point to center/top/bottom line
+C-u C-<SPC>	jump to last mark position
+M-x list-command-history
+M-x icomplete-mode  minibuffer advanced
+C-h e		messages
+C-h l		list of last key commands
+C-x C-x		exchange mark and point
+C-M-w		kill and append to prev kill
+C-o		open new line
+C-x C-o		delete blank lines
+C-u 0 C-k	kill line backwards
+C-r		in query-replace etc activate recursive editing
+C-M-c		cancel recursive edits
+M-!		shell command
+M-|		shell command on region
+M-g g		go to line
+M-g <tab>	go to column
+M-g n		go to next error
+C-x 4		use C-x cmds on other window
+C-x 5		frames
+C-x 6		two-column
+
+regexp search
+C-M-s		begin incremental regexp search
+C-M-r		reverse
+C-M-%		query regexp replace
+e		in replace, change replacement
+,		in replace, try replacement and stay at pos
+^		in replace, back to last match
+M-s o		(M-x occur) regexp search in all buffers
+\#N		in regexp, use replacement N as number (not text)
+\,(lisp)	in regexp, eval lisp function
+
+M-x view-buffer|view-mode scroll through buffer
+M-x follow-mode
+
+Hi-lock
+M-x highlight-changes-mode
+M-s h r REGEX	highlight text matching regex
+M-s h u REGEX	unhighlight
+
+M-x display-line-numbers-mode	show line numbers
+
+M-x whitespace-mode	visualize whitespace
+
+M-x bs-show	show/select buffers
+
+register
+C-x r <SPC> reg	 save point to register
+C-x r j reg	 jump to position
+C-x r s reg	 copy region to register
+C-x r i reg	 insert text
+C-x r +	reg	 append to register
+C-x C-k x reg	 kmacro to register
+C-x r j reg	 execute keyboard macro
+
+macros
+C-u C-x (	append to prev macro
+C-x C-k r	macro to region lines
+C-x C-k C-n
+C-x C-k C-p	next/prev keyboard macro
+C-x C-k C-i	insert counter while recording macro
+C-x q		ask for confirmation in a macro
+C-x C-k <SPC>	stepwise edit macro
+
+M-mouse-2	yank
+M-mouse-3	undo
