@@ -22,6 +22,9 @@ inoremap ök <esc>
 inoremap öj <C-O>:update<cr>
 nnoremap öj :update<cr>
 
+set ffs=mac,unix,dos
+set tabstop=4
+
 " set fileformats=mac
-" set fileformat=oberon
+" set filetype=oberon
 " set tabstop=4

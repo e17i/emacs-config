@@ -3,7 +3,7 @@
 ;; installed packages.  Don't delete this line.  If you don't want it,
 ;; just comment it out by adding a semicolon to the start of the line.
 ;; You may delete these explanatory comments.
-(package-initialize)
+;; (package-initialize)
 
 (custom-set-variables
  ;; custom-set-variables was added by Custom.
@@ -11,92 +11,115 @@
  ;; Your init file should contain only one such instance.
  ;; If there is more than one, they won't work right.
  '(blink-cursor-mode nil)
- '(buffers-menu-show-directories t)
  '(column-number-mode t)
- '(comint-completion-autolist t)
- '(delete-selection-mode t)
- '(dired-recursive-deletes (quote top))
- '(dynamic-completion-mode nil)
- '(fill-column 78)
- '(frame-icon-title-format
+ '(exec-path
    (quote
-    (((quote buffer-name)
-      "%b")
-     " || " system-name " || "
-     ((quote buffer-name)
-      "%f"))))
- '(frame-title-format
-   (quote
-    (((quote buffer-name)
-      "%b")
-     " || " system-name " || "
-     ((quote buffer-name)
-      "%f"))) t)
- '(fringe
-   ((((class color)
-      (background light))
-     (:background "grey50"))))
+    ("/usr/bin" "/bin" "/usr/sbin" "/sbin" "/Applications/MacPorts/Emacs.app/Contents/MacOS/bin" "/opt/local/bin")))
  '(fringe-mode 0 nil (fringe))
- '(hippie-expand-verbose nil)
- '(history-delete-duplicates t)
+ '(gud-mixvm-command-name "/opt/local/bin/mixvm")
+ '(mac-emulate-three-button-mouse t)
  '(mouse-drag-copy-region t)
- '(mouse-wheel-scroll-amount (quote (1 ((shift) . 5) ((control)))))
- '(ns-alternate-modifier (quote meta))
+ '(ns-alternate-modifier (quote altername))
+ '(ns-command-modifier (quote meta))
  '(ns-control-modifier (quote control))
- '(ns-right-alternate-modifier nil)
- '(package-selected-packages
-   (quote
-    (markdown-mode cider web-mode org-plus-contrib js2-mode electric-spacing auctex)))
- '(python-mode-hook
-   (quote
-    ((lambda nil "Turn off Indent Tabs mode."
-       (setq indent-tabs-mode nil))
-     set-python-mode-keys init-python-stuff)))
- '(savehist-mode t nil (savehist))
+ '(package-selected-packages (quote (org auctex)))
+ '(paren-match-face (quote paren-face-match-light))
+ '(paren-sexp-mode t)
  '(scroll-bar-mode nil)
- '(select-enable-clipboard t)
- '(server-mode t)
- '(show-paren-mode t)
- '(sql-oracle-options (list oracle-startup-script))
- '(svn-status-hide-unmodified t))
+ '(size-indication-mode t)
+ '(tool-bar-mode nil))
 (custom-set-faces
  ;; custom-set-faces was added by Custom.
  ;; If you edit it by hand, you could mess it up, so be careful.
  ;; Your init file should contain only one such instance.
  ;; If there is more than one, they won't work right.
- '(cursor ((t (:background "darkred" :foreground "white")))))
+ '(cursor ((t (:background "grey50"))))
+ '(fringe ((((class color) (background light)) (:background "grey50")))))
 
-(set-frame-parameter nil 'alpha '(90 . 90))
+(setenv "PATH" "/usr/bin:/bin:/usr/sbin:/sbin:/usr/local/bin:/opt/local/bin:/usr/X11/bin")
+;;(set-background-color "ARGBccffffff")
+(set-frame-parameter nil 'alpha '(85 . 85))
 (set-background-color "Black")
 (set-foreground-color "Green")
+;;(require 'ns-platform-support)
+;;(ns-extended-platform-support-mode)
+(define-key global-map [ns-drag-file] 'ns-find-file)
 
-(setq split-width-threshold 999)
+(defun maximize-frame () 
+  (interactive)
+  (set-frame-position (selected-frame) 0 0)
+  (set-frame-size (selected-frame) 1000 1000))
+(global-set-key (kbd "<M-S-return>") 'maximize-frame)
 
-(tool-bar-mode 0)
-
-(global-set-key "\C-x\C-b" 'electric-buffer-list)
-(global-set-key "\C-c\C-v" 'find-file-at-point)
-(global-set-key "\C-x\C-f" 'find-file)
-(global-set-key "\C-cg" 'goto-line)
-(global-set-key "\C-c-" 'shrink-window)
-(global-set-key "\C-c+" 'enlarge-window)
+(global-set-key [(wheel-down)] (lambda()(interactive)(scroll-up 3)))
+(global-set-key [(wheel-up)] (lambda()(interactive)(scroll-down 3)))
+(global-set-key (kbd "<M-down>") 'scroll-up-line)
+(global-set-key (kbd "<M-up>") 'scroll-down-line)
+;;(global-set-key "\A-SPC" 'set-mark-command)
 (global-set-key "\M-p" 'scroll-down-line)
 (global-set-key "\M-n" 'scroll-up-line)
-;; for mac: select: mouse-1, copy/cut: mouse-3, yank: M-mouse-2, undo: M-mouse-3
-(global-set-key [M-mouse-2] 'mouse-yank-at-click)
-(global-set-key [M-mouse-3] 'undo)
-(global-set-key [M-up] 'scroll-down-line)
-(global-set-key [M-down] 'scroll-up-line)
-(global-set-key [end] 'move-end-of-line)
-(global-set-key [home] 'move-beginning-of-line)
-
+(global-set-key "\M-L" 'end-of-buffer)
+(global-set-key "\M-K" 'beginning-of-buffer)
+(global-set-key "\M-H" 'previous-buffer)
+(global-set-key "\M-J" 'next-buffer)
+(global-set-key "\C-x\C-b" 'electric-buffer-list)
+(global-set-key "\C-c\C-v" 'find-file-at-point)
+(global-set-key [(f1)] (lambda()(interactive)(manual-entry (current-word))))
+(global-set-key "\C-c+" 'enlarge-window)
+(global-set-key "\C-c-" 'shrink-window)
+(global-set-key (kbd "<s-mouse-1>") 'mouse-yank-at-click)
+(setq gc-cons-threshold 1000000)
+;;(setq inhibit-startup-message t)
+;; visible bell workaround for el capitan
+;;(setq visible-bell t)
+(setq visible-bell nil) ;; The default
+(setq ring-bell-function 'ignore)
+;; end of workaround
 (setq c-basic-offset 2)
-(setq indent-tabs-mode nil)
+;;(standard-display-european 1)
+;;(require 'iso-syntax)
+(server-start)
 
-;; (add-to-list 'package-archives
-;;              '("melpa-stable" . "https://stable.melpa.org/packages/") t)
+;; etags
+(global-set-key "\C-ct" 'tag-complete-symbol)
+(global-set-key "\C-cs" 'tags-search)
+(global-set-key "\C-cr" 'tags-query-replace)
+(defun my-generate-etags ()
+  (interactive)
+  (let* ((dir (read-string "project: "))
+	 (cctarget (concat "../" dir "/*.cc"))
+	 (hhtarget (concat "../" dir "/*.hh"))
+	 (ctarget (concat "../" dir "/*.c"))
+	 (htarget (concat "../" dir "/*.h")))
+    (shell-command (concat "etags -a " cctarget " " hhtarget " " ctarget " " htarget " >/dev/null") nil)
+    )
+  )
+(global-set-key "\C-ci" 'my-generate-etags)
+
+(put 'eval-expression 'disabled nil)
+(global-set-key "\C-cc" 'compile)
+(global-set-key "\C-cn" 'next-error)
+(global-set-key "\C-cl" 'goto-line)
+
+;; add hooks for auto fill
+;;
+(add-hook 'fundamental-mode-hook
+	  (lambda () (auto-fill-mode 1)))
+(add-hook 'text-mode-hook
+	  (lambda () (auto-fill-mode 1)))
+
+;; calendar/diary
+(setq view-diary-entries-initially t)
+(setq view-calendar-holidays-initially t)
+(setq mark-diary-entries-in-calendar t)
+(setq mark-holidays-in-calendar t)
 
 ;; C++ mode customization
+;;(defun my-c++-hook () 
+;;  (outline-minor-mode)
+;;  (make-local-variable 'outline-regexp)
+;;  (setq outline-regexp "[ \t]*// -+ "))
+;;(add-hook 'c++-mode-hook 'my-c++-hook)
 (add-hook 'c-mode-common-hook
           (function
            (lambda ()
@@ -109,49 +132,40 @@
                                             (class-open after)
                                             (inline-open after)
                                             (substatement-open after))))))
+(autoload 'c++-mode   "cc-mode" "C++ Editing Mode" t)
+(autoload 'c-mode "cc-mode" "C Editing Mode" t)
+(setq auto-mode-alist
+      (append '(("\\.C$"  . c++-mode)
+                ("\\.cc$" . c++-mode)
+                ("\\.m$" . objc-mode)
+                ("\\.c$"  . c-mode)   ; to edit C code
+                ("\\.h$"  . c-mode)   ; to edit C code
+                ) auto-mode-alist))
 
-;; python mode customization
-(defun python-mode-untabify ()
-    (save-excursion
-      (goto-char (point-min))
-      (while (re-search-forward "[ \t]+$" nil t)
-        (delete-region (match-beginning 0) (match-end 0)))
-      (goto-char (point-min))
-      (if (search-forward "\t" nil t)
-          (untabify (1- (point)) (point-max))))
-    nil)
+(put 'narrow-to-region 'disabled nil)
+(setq minibuffer-max-depth nil)
 
-;;(add-hook 'python-mode-hook
-;;            '(lambda ()
-;;               (make-local-variable 'write-contents-hooks)
-;;               (add-hook 'write-contents-hooks 'python-mode-untabify)))
 
-;; markdown-mode
+;; pov ray
+(setq load-path (cons "~/.emacs.d/lisp" load-path))
+(autoload 'pov-mode "pov-mode.el" "PoVray scene file mode" t)
+(setq auto-mode-alist
+      (append '(("\\.pov$" . pov-mode)
+		("\\.inc$" . pov-mode)
+		) auto-mode-alist))
+(setq pov-indent-level '2)
+
+;; MIX (GNU MDK)
+(setq load-path (cons "/opt/local/share/mdk" load-path))
+(autoload 'mixal-mode "mixal-mode" t)
+(add-to-list 'auto-mode-alist '("\\.mixal\\'" . mixal-mode))
+(autoload 'mixvm "mixvm" "mixvm/gud interaction" t)
+
+;; svn
+;;(load-library "psvn")
+
+;; markdown-mode.el
 (autoload 'markdown-mode "markdown-mode"
   "Major mode for editing Markdown files" t)
 (add-to-list 'auto-mode-alist '("\\.markdown\\'" . markdown-mode))
 (add-to-list 'auto-mode-alist '("\\.md\\'" . markdown-mode))
-(setq markdown-command "/Users/jko/Programming/node/node_modules/.bin/md2html")
-
-;; js2-JSX
-(add-to-list 'auto-mode-alist '("\\.jsx\\'" . web-mode))
-(add-hook 'web-mode-hook 'js2-minor-mode)
-
-;; nxml hide/unhide xml elements (C-c h)
-(require 'hideshow)
-(require 'sgml-mode)
-(require 'nxml-mode)
-
-(add-to-list 'hs-special-modes-alist
-	     '(nxml-mode
-	       "<!--\\|<[^/>]*[^/]>"
-	       "-->\\|</[^/]*[^/]>"
-
-	       "<!--"
-	       sgml-skip-tag-forward
-	       nil))
-
-(add-hook 'nxml-mode-hook 'hs-minor-mode)
-
-;; optional key bindings, easier than hs defaults
-(define-key nxml-mode-map (kbd "C-c h") 'hs-toggle-hiding)
