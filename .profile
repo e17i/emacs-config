@@ -4,6 +4,9 @@ alias p='cd ..'
 alias l='ls -l'
 alias la='ls -al'
 
+# spacemacs
+alias spacemacs='env HOME=/Users/jko/Programming/emacs /Applications/MacPorts/Emacs.app/Contents/MacOS/Emacs'
+
 # see https://news.ycombinator.com/item?id=11070797
 alias config='git --git-dir=$HOME/.myconf --work-tree=$HOME'
 alias config_clone='git clone --separate-git-dir=$HOME/.myconf $1 $HOME/myconf-tmp'
