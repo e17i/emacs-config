@@ -15,23 +15,17 @@
  '(column-number-mode t)
  '(comint-completion-autolist t)
  '(delete-selection-mode t)
- '(dired-recursive-deletes (quote top))
+ '(dired-recursive-deletes 'top)
  '(dynamic-completion-mode nil)
  '(fill-column 78)
  '(frame-icon-title-format
-   (quote
-    (((quote buffer-name)
-      "%b")
+   '(('buffer-name "%b")
      " || " system-name " || "
-     ((quote buffer-name)
-      "%f"))))
+     ('buffer-name "%f")))
  '(frame-title-format
-   (quote
-    (((quote buffer-name)
-      "%b")
+   '(('buffer-name "%b")
      " || " system-name " || "
-     ((quote buffer-name)
-      "%f"))) t)
+     ('buffer-name "%f")) t)
  '(fringe
    ((((class color)
       (background light))
@@ -40,18 +34,19 @@
  '(hippie-expand-verbose nil)
  '(history-delete-duplicates t)
  '(mouse-drag-copy-region t)
- '(mouse-wheel-scroll-amount (quote (1 ((shift) . 5) ((control)))))
- '(ns-alternate-modifier (quote meta))
- '(ns-control-modifier (quote control))
+ '(mouse-wheel-scroll-amount '(1 ((shift) . 5) ((control))))
+ '(ns-alternate-modifier 'meta)
+ '(ns-control-modifier 'control)
  '(ns-right-alternate-modifier nil)
+ '(package-archives
+   '(("gnu" . "https://elpa.gnu.org/packages/")
+     ("melpa-stable" . "https://stable.melpa.org/packages/")))
  '(package-selected-packages
-   (quote
-    (markdown-mode cider web-mode org-plus-contrib js2-mode electric-spacing auctex)))
+   '(evil markdown-mode cider web-mode org-plus-contrib js2-mode electric-spacing auctex))
  '(python-mode-hook
-   (quote
-    ((lambda nil "Turn off Indent Tabs mode."
+   '((lambda nil "Turn off Indent Tabs mode."
        (setq indent-tabs-mode nil))
-     set-python-mode-keys init-python-stuff)))
+     set-python-mode-keys init-python-stuff))
  '(savehist-mode t nil (savehist))
  '(scroll-bar-mode nil)
  '(select-enable-clipboard t)
@@ -92,9 +87,6 @@
 
 (setq c-basic-offset 2)
 (setq indent-tabs-mode nil)
-
-;; (add-to-list 'package-archives
-;;              '("melpa-stable" . "https://stable.melpa.org/packages/") t)
 
 ;; C++ mode customization
 (add-hook 'c-mode-common-hook
