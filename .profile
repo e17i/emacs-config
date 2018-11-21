@@ -11,11 +11,8 @@ alias spacemacs='env HOME=/Users/jko/Programming/emacs /Applications/MacPorts/Em
 alias config='git --git-dir=$HOME/.myconf --work-tree=$HOME'
 alias config_clone='git clone --separate-git-dir=$HOME/.myconf $1 $HOME/myconf-tmp'
 alias config_daemon='git daemon --reuseaddr --base-path=/Users/jko --enable=receive-pack  /Users/jko'
-alias runemacs='/Applications/MacPorts/Emacs.app/Contents/MacOS/Emacs&'
-function test_emacs() {
-  if ! ps -ae|grep -q [E]macs; then /Applications/MacPorts/Emacs.app/Contents/MacOS/Emacs & sleep 2; fi
-}
-alias emacsclient='test_emacs; /Applications/MacPorts/Emacs.app/Contents/MacOS/bin/emacsclient -n'
+alias emacs='/Applications/MacPorts/Emacs.app/Contents/MacOS/Emacs'
+alias emacsclient='/Applications/MacPorts/Emacs.app/Contents/MacOS/bin/emacsclient'
 
 function man() {
   open x-man-page://$@
