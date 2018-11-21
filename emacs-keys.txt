@@ -70,3 +70,8 @@ C-x C-k <SPC>	stepwise edit macro
 
 M-mouse-2	yank
 M-mouse-3	undo
+
+emacs --daemon	start in daemon mode (if not yet running)
+emacsclient -t	start new frame in terminal
+emacsclient -c start new window frame
+M-x kill-emacs  exit daemonized emacs
