@@ -12,8 +12,8 @@ alias p='cd ..'
 
 # see https://news.ycombinator.com/item?id=11070797
 alias config='git --git-dir=$HOME/.myconf --work-tree=$HOME'
-alias config_clone='git clone --separate-git-dir=$HOME/.myconf $1 $HOME/myconf -tmp'
-alias config_daemon='git daemon --reuseaddr --base-path=/Users/jko --enable=receive-pack /Users/jko'
+alias config_clone='git clone --separate-git-dir=$HOME/.myconf $1 $HOME/myconf-tmp'
+alias config_daemon='git daemon --reuseaddr --base-path=/Users/joergk--enable=receive-pack /Users/joergk'
 
 alias emacs='/Applications/MacPorts/Emacs.app/Contents/MacOS/Emacs'
 alias emacsclient='/Applications/MacPorts/Emacs.app/Contents/MacOS/bin/emacsclient'

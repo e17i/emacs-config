@@ -14,7 +14,7 @@ map <leader>ü <C-]>
 map <leader>b :buffers!<cr>
 map <leader>n :bn<cr>
 map <leader>p :bp<cr>
-map <leader>l :set number!<cr>:set rnu<cr>
+map <leader>l :set number!<cr>:set rnu!<cr>
 map <leader># :buffers!<cr>:buffer
 map <leader>	 <C-^>
 
@@ -22,9 +22,6 @@ inoremap ök <esc>
 inoremap öj <C-O>:update<cr>
 nnoremap öj :update<cr>
 
-set ffs=mac,unix,dos
-set tabstop=4
-
-" set fileformats=mac
+set fileformats=unix,dos,mac
 " set filetype=oberon
-" set tabstop=4
+set tabstop=2
