@@ -40,9 +40,14 @@
 
 (setenv "PATH" "/usr/bin:/bin:/usr/sbin:/sbin:/usr/local/bin:/opt/local/bin:/usr/X11/bin")
 ;;(set-background-color "ARGBccffffff")
-(set-frame-parameter nil 'alpha '(85 . 85))
-(set-background-color "Black")
-(set-foreground-color "Green")
+(add-hook 'after-make-frame-functions
+	  (lambda (frame)
+	    (set-frame-parameter frame 'alpha '(85 . 85))
+	    (with-selected-frame frame
+	      (set-background-color "Black")
+	      (set-foreground-color "Green"))
+	    ))
+(run-hook-with-args 'after-make-frame-functions (selected-frame))
 ;;(require 'ns-platform-support)
 ;;(ns-extended-platform-support-mode)
 (define-key global-map [ns-drag-file] 'ns-find-file)
