@@ -61,9 +61,14 @@
  ;; If there is more than one, they won't work right.
  '(cursor ((t (:background "darkred" :foreground "white")))))
 
-(set-frame-parameter nil 'alpha '(90 . 90))
-(set-background-color "Black")
-(set-foreground-color "Green")
+(add-hook 'after-make-frame-functions
+         (lambda (frame)
+           (set-frame-parameter nil 'alpha '(90 . 90))
+           (with-selected-frame frame
+             (set-background-color "Black")
+             (set-foreground-color "Green")
+           )))
+(run-hook-with-args 'after-make-frame-functions (selected-frame))
 
 (setq split-width-threshold 999)
 
@@ -71,8 +76,6 @@
 
 (global-set-key "\C-x\C-b" 'electric-buffer-list)
 (global-set-key "\C-c\C-v" 'find-file-at-point)
-(global-set-key "\C-x\C-f" 'find-file)
-(global-set-key "\C-cg" 'goto-line)
 (global-set-key "\C-c-" 'shrink-window)
 (global-set-key "\C-c+" 'enlarge-window)
 (global-set-key "\M-p" 'scroll-down-line)
