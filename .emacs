@@ -72,6 +72,7 @@
 (global-set-key "\C-x\C-b" 'electric-buffer-list)
 (global-set-key "\C-c\C-v" 'find-file-at-point)
 (global-set-key [(f1)] (lambda()(interactive)(manual-entry (current-word))))
+(global-set-key "\C-x\C-f" 'find-file)
 (global-set-key "\C-c+" 'enlarge-window)
 (global-set-key "\C-c-" 'shrink-window)
 (global-set-key (kbd "<s-mouse-1>") 'mouse-yank-at-click)
