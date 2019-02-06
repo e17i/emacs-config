@@ -76,6 +76,7 @@
 
 (global-set-key "\C-x\C-b" 'electric-buffer-list)
 (global-set-key "\C-c\C-v" 'find-file-at-point)
+(global-set-key "\C-x\C-f" 'find-file)
 (global-set-key "\C-c-" 'shrink-window)
 (global-set-key "\C-c+" 'enlarge-window)
 (global-set-key "\M-p" 'scroll-down-line)
