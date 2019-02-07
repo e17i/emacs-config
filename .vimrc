@@ -10,13 +10,15 @@ map <ScrollWheelUp> <C-y>
 
 set scrolloff=0
 let mapleader=" "
-map <leader>ü <C-]>
+map <leader>ü <C-[>
+inoremap üü <C-[>
+map <leader>+ <C-]>
 map <leader>b :buffers!<cr>
 map <leader>n :bn<cr>
 map <leader>p :bp<cr>
 map <leader>l :set number!<cr>:set rnu!<cr>
 map <leader># :buffers!<cr>:buffer
-map <leader>	 <C-^>
+map <leader>^ <C-^>
 
 inoremap ök <esc>
 inoremap öj <C-O>:update<cr>
