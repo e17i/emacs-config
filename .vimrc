@@ -1,14 +1,14 @@
 unlet! skip_defaults_vim
 source $VIMRUNTIME/defaults.vim
 unmap Q
+set scrolloff=0
 
 set bg=dark
 set autoindent
-set mouse=a
 map <ScrollWheelDown> <C-e>
 map <ScrollWheelUp> <C-y>
+set hlsearch
 
-set scrolloff=0
 let mapleader=" "
 map <leader>ü <C-[>
 inoremap üü <C-[>
