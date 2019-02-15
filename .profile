@@ -6,6 +6,8 @@ alias la='ls -al'
 
 # spacemacs
 alias spacemacs='env HOME=/Users/jko/Programming/emacs /Applications/MacPorts/Emacs.app/Contents/MacOS/Emacs'
+# clojure emacs
+alias clojuremacs='env HOME=/Users/jko/Programming/clojure /Applications/MacPorts/Emacs.app/Contents/MacOS/Emacs'
 
 # see https://news.ycombinator.com/item?id=11070797
 alias config='git --git-dir=$HOME/.myconf --work-tree=$HOME'
@@ -14,7 +16,7 @@ alias config_daemon='git daemon --reuseaddr --base-path=/Users/jko --enable=rece
 alias emacs='/Applications/MacPorts/Emacs.app/Contents/MacOS/Emacs'
 alias emacsclient='/Applications/MacPorts/Emacs.app/Contents/MacOS/bin/emacsclient'
 
-function man() {
+function mman() {
   open x-man-page://$@
 }
 
