@@ -17,6 +17,8 @@ alias config_daemon='git daemon --reuseaddr --base-path=/Users/joergk--enable=re
 
 alias emacs='/Applications/MacPorts/Emacs.app/Contents/MacOS/Emacs'
 alias emacsclient='/Applications/MacPorts/Emacs.app/Contents/MacOS/bin/emacsclient'
+# spacemacs                                                                                                            
+alias spacemacs='env HOME=/Users/joergk/Programming/emacs /Applications/MacPorts/Emacs.app/Contents/MacOS/Emacs'
 
 function pman() {
   /usr/bin/man -t "$@" | open -f -a Preview;
