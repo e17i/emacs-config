@@ -35,9 +35,6 @@
  '(history-delete-duplicates t)
  '(mouse-drag-copy-region t)
  '(mouse-wheel-scroll-amount '(1 ((shift) . 5) ((control))))
- '(ns-alternate-modifier 'meta)
- '(ns-control-modifier 'control)
- '(ns-right-alternate-modifier nil)
  '(package-archives
    '(("gnu" . "https://elpa.gnu.org/packages/")
      ("melpa-stable" . "https://stable.melpa.org/packages/")))
@@ -70,6 +67,8 @@
            )))
 (run-hook-with-args 'after-make-frame-functions (selected-frame))
 
+;; my customizations added manually
+(load-file "~/.emacs.d/keyboard-pc.el")
 (setq split-width-threshold 999)
 
 (tool-bar-mode 0)
