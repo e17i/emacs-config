@@ -69,7 +69,9 @@
 
 ;; my customizations added manually
 (load-file "~/.emacs.d/keyboard-pc.el")
-(setq split-width-threshold 999)
+;; (setq split-width-threshold 999)
+(global-undo-tree-mode)
+(ido-mode)
 
 (tool-bar-mode 0)
 
