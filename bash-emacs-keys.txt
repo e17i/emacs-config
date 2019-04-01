@@ -25,6 +25,6 @@
 	quoted literal insert	  scroll (visual)
 	delete word backwards	  delete region
 	^X^X jump to prev pos	  exec command prefix
-	yank
+	yank						next in kill ring
 	suspend
 	undo
