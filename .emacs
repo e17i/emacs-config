@@ -37,6 +37,7 @@
  '(mouse-wheel-scroll-amount '(1 ((shift) . 5) ((control))))
  '(package-archives
    '(("gnu" . "https://elpa.gnu.org/packages/")
+     ("marmalade" . "https://marmalade-repo.org/packages/")
      ("melpa-stable" . "https://stable.melpa.org/packages/")))
  '(package-selected-packages
    '(evil markdown-mode cider web-mode org-plus-contrib js2-mode electric-spacing auctex))
@@ -58,6 +59,7 @@
  ;; If there is more than one, they won't work right.
  '(cursor ((t (:background "darkred" :foreground "white")))))
 
+;; my customizations added manually
 (add-hook 'after-make-frame-functions
          (lambda (frame)
            (set-frame-parameter nil 'alpha '(90 . 90))
@@ -67,11 +69,10 @@
            )))
 (run-hook-with-args 'after-make-frame-functions (selected-frame))
 
-;; my customizations added manually
 (load-file "~/.emacs.d/keyboard-pc.el")
 ;; (setq split-width-threshold 999)
 (global-undo-tree-mode)
-(ido-mode)
+;; (ido-mode)
 
 (tool-bar-mode 0)
 
