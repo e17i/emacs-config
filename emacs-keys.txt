@@ -4,6 +4,7 @@ C-x ESC ESC	re-execute last minibuffer cmd
 C-l		center point at screen (next up/down) (C-u set line position)
 C-M-l		reposition window heuristically
 M-r		move point to center/top/bottom line
+M-m		move point to first non-whitespace
 C-u C-<SPC>	jump to last mark position
 M-x list-command-history
 M-x icomplete-mode  minibuffer advanced
@@ -35,6 +36,9 @@ e		in replace, change replacement
 M-s o		(M-x occur) regexp search in all buffers
 \#N		in regexp, use replacement N as number (not text)
 \,(lisp)	in regexp, eval lisp function
+
+M-x undo-tree-mode
+C-x u		display undo tree
 
 M-x view-buffer|view-mode scroll through buffer
 M-x follow-mode
