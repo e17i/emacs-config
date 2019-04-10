@@ -23,8 +23,9 @@
  '(ns-control-modifier 'control)
  '(package-archives
    '(("gnu" . "https://elpa.gnu.org/packages/")
+     ("marmalade" . "https://marmalade-repo.org/packages/")
      ("melpa-stable" . "https://stable.melpa.org/packages/")))
- '(package-selected-packages '(evil org auctex))
+ '(package-selected-packages '(realgud evil org auctex))
  '(paren-match-face 'paren-face-match-light)
  '(paren-sexp-mode t)
  '(scroll-bar-mode nil)
@@ -38,6 +39,9 @@
  '(cursor ((t (:background "grey50"))))
  '(fringe ((((class color) (background light)) (:background "grey50")))))
 
+;; my customizations
+(load-library "realgud")
+(global-undo-tree-mode)
 (setenv "PATH" "/usr/bin:/bin:/usr/sbin:/sbin:/usr/local/bin:/opt/local/bin:/usr/X11/bin")
 ;;(set-background-color "ARGBccffffff")
 (add-hook 'after-make-frame-functions
@@ -168,9 +172,6 @@
 (autoload 'mixal-mode "mixal-mode" t)
 (add-to-list 'auto-mode-alist '("\\.mixal\\'" . mixal-mode))
 (autoload 'mixvm "mixvm" "mixvm/gud interaction" t)
-
-;; svn
-;;(load-library "psvn")
 
 ;; markdown-mode.el
 (autoload 'markdown-mode "markdown-mode"
