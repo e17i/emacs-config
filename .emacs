@@ -40,7 +40,7 @@
      ("marmalade" . "https://marmalade-repo.org/packages/")
      ("melpa-stable" . "https://stable.melpa.org/packages/")))
  '(package-selected-packages
-   '(evil markdown-mode cider web-mode org-plus-contrib js2-mode electric-spacing auctex))
+   '(realgud evil markdown-mode cider web-mode org-plus-contrib js2-mode electric-spacing auctex))
  '(python-mode-hook
    '((lambda nil "Turn off Indent Tabs mode."
        (setq indent-tabs-mode nil))
@@ -71,6 +71,7 @@
 
 (load-file "~/.emacs.d/keyboard-pc.el")
 ;; (setq split-width-threshold 999)
+(load-library "realgud")
 (global-undo-tree-mode)
 ;; (ido-mode)
 
