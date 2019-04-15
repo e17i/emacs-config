@@ -35,6 +35,11 @@
  '(history-delete-duplicates t)
  '(mouse-drag-copy-region t)
  '(mouse-wheel-scroll-amount '(1 ((shift) . 5) ((control))))
+ '(ns-alternate-modifier 'meta)
+ '(ns-command-modifier 'super)
+ '(ns-control-modifier 'control)
+ '(ns-right-alternate-modifier 'none)
+ '(ns-right-command-modifier 'left)
  '(package-archives
    '(("gnu" . "https://elpa.gnu.org/packages/")
      ("marmalade" . "https://marmalade-repo.org/packages/")
@@ -44,7 +49,7 @@
  '(python-mode-hook
    '((lambda nil "Turn off Indent Tabs mode."
        (setq indent-tabs-mode nil))
-     set-python-mode-keys init-python-stuff))
+     set-python-mode-keys init-python-stuff) t)
  '(savehist-mode t nil (savehist))
  '(scroll-bar-mode nil)
  '(select-enable-clipboard t)
