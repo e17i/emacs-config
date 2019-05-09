@@ -45,7 +45,7 @@
      ("marmalade" . "https://marmalade-repo.org/packages/")
      ("melpa-stable" . "https://stable.melpa.org/packages/")))
  '(package-selected-packages
-   '(realgud evil markdown-mode cider web-mode org-plus-contrib js2-mode electric-spacing auctex))
+   '(helm realgud evil markdown-mode cider web-mode org-plus-contrib js2-mode electric-spacing auctex))
  '(python-mode-hook
    '((lambda nil "Turn off Indent Tabs mode."
        (setq indent-tabs-mode nil))
@@ -53,6 +53,7 @@
  '(savehist-mode t nil (savehist))
  '(scroll-bar-mode nil)
  '(select-enable-clipboard t)
+ '(sentence-end-double-space nil)
  '(server-mode t)
  '(show-paren-mode t)
  '(sql-oracle-options (list oracle-startup-script))
@@ -78,11 +79,10 @@
 ;; (setq split-width-threshold 999)
 (load-library "realgud")
 (global-undo-tree-mode)
-;; (ido-mode)
 
 (tool-bar-mode 0)
 
-(global-set-key "\C-x\C-b" 'electric-buffer-list)
+(global-set-key "\C-x\C-b" 'bs-show)	;; electric-buffer-mode
 (global-set-key "\C-c\C-v" 'find-file-at-point)
 (global-set-key "\C-x\C-f" 'find-file)
 (global-set-key "\C-c-" 'shrink-window)
