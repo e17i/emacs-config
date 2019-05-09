@@ -1,9 +1,11 @@
+C-x C-q		toggle read only
 C-x z		repeat last command
 C-x h		select whole buffer
 C-x ESC ESC	re-execute last minibuffer cmd
 C-l		center point at screen (next up/down) (C-u set line position)
 C-M-l		reposition window heuristically
 M-r		move point to center/top/bottom line
+M-m		move point to first non-whitespace
 C-u C-<SPC>	jump to last mark position
 M-x list-command-history
 M-x icomplete-mode  minibuffer advanced
@@ -12,6 +14,7 @@ C-h l		list of last key commands
 C-x C-x		exchange mark and point
 C-M-w		kill and append to prev kill
 C-o		open new line
+M-^		join lines
 C-x C-o		delete blank lines
 C-u 0 C-k	kill line backwards
 C-r		in query-replace etc activate recursive editing
@@ -36,6 +39,17 @@ M-s o		(M-x occur) regexp search in all buffers
 \#N		in regexp, use replacement N as number (not text)
 \,(lisp)	in regexp, eval lisp function
 
+M-x ibuffer	interactive buffer editor incl multi-occur
+
+M-x undo-tree-mode
+C-_/M-_		 undo/redo in current branch
+C-x u		 display undo tree
+
+helm
+C-x c i		 helm imenu
+C-x c f		 helm file/buffer menu
+
+M-x auto-revert-tail-mode
 M-x view-buffer|view-mode scroll through buffer
 M-x follow-mode
 
@@ -55,6 +69,7 @@ C-x r <SPC> reg	 save point to register
 C-x r j reg	 jump to position
 C-x r s reg	 copy region to register
 C-x r i reg	 insert text
+C-x r w reg	 window config to register
 C-x r +	reg	 append to register
 C-x C-k x reg	 kmacro to register
 C-x r j reg	 execute keyboard macro
@@ -75,3 +90,34 @@ emacs --daemon	start in daemon mode (if not yet running)
 emacsclient -t	start new frame in terminal
 emacsclient -c start new window frame
 M-x kill-emacs  exit daemonized emacs
+
+ f b              p n              @                d                a e              h                k
++----------------+----------------+----------------+----------------+----------------+----------------+----------------+
+|forward/backward|prev/next       |                |delete          |                |                |                |CTRL
+|char            |char            |                |char            |                |                |                |
+|C-f C-b         |C-p C-n         |                |C-d             |                |                |                |
++----------------+----------------+----------------+----------------+----------------+----------------+----------------+
+|                |                |                |                |start/end of    |                |kill rest of    |
+|                |                |                |                |line            |                |line            |
+|                |                |                |                |C-a C-e         |                |C-k             |
++----------------+----------------+----------------+----------------+----------------+----------------+----------------+
+|forward/backward|                |mark            |delete          |                |                |                |META
+|word            |                |word            |word            |                |                |                |
+|M-f M-b         |                |M-@             |M-d             |                |                |                |
++----------------+----------------+----------------+----------------+----------------+----------------+----------------+
+|                |                |                |                |start/end of    |                |kill rest of    |
+|                |                |                |                |sentence        |                |sentence        |
+|                |                |                |                |M-a M-e         |                |M-k             |
++----------------+----------------+----------------+----------------+----------------+----------------+----------------+
+|                |                |                |                |start/end of    |mark            |                |
+|                |                |                |                |paragraph       |paragraph       |                |
+|                |                |                |                |M-{ M-}         |M-h             |                |
++----------------+----------------+----------------+----------------+----------------+----------------+----------------+
+|forward/backward|prev/next       |mark            |up/down         |                |                |kill rest of    |CTRL-META
+|s-exp           |list            |s-exp           |list            |                |                |s-exp           |
+|C-M-f C-M-b     |C-M-p C-M-n     |C-M-@ C-M-SPC   |C-M-u C-M-d     |                |                |C-M-k           |
++----------------+----------------+----------------+----------------+----------------+----------------+----------------+
+|                |                |                |                |start/end of    |mark            |                |
+|                |                |                |                |defun           |defun           |                |
+|                |                |                |                |C-M-a C-M-e     |C-M-h           |                |
++----------------+----------------+----------------+----------------+----------------+----------------+----------------+

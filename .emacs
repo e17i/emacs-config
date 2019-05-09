@@ -25,10 +25,11 @@
    '(("gnu" . "https://elpa.gnu.org/packages/")
      ("marmalade" . "https://marmalade-repo.org/packages/")
      ("melpa-stable" . "https://stable.melpa.org/packages/")))
- '(package-selected-packages '(realgud evil org auctex))
+ '(package-selected-packages '(helm realgud evil org auctex))
  '(paren-match-face 'paren-face-match-light)
  '(paren-sexp-mode t)
  '(scroll-bar-mode nil)
+ '(sentence-end-double-space nil)
  '(size-indication-mode t)
  '(tool-bar-mode nil))
 (custom-set-faces
@@ -42,6 +43,8 @@
 ;; my customizations
 (load-library "realgud")
 (global-undo-tree-mode)
+(require 'helm-config)
+
 (setenv "PATH" "/usr/bin:/bin:/usr/sbin:/sbin:/usr/local/bin:/opt/local/bin:/usr/X11/bin")
 ;;(set-background-color "ARGBccffffff")
 (add-hook 'after-make-frame-functions
@@ -73,7 +76,7 @@
 (global-set-key "\M-K" 'beginning-of-buffer)
 (global-set-key "\M-H" 'previous-buffer)
 (global-set-key "\M-L" 'next-buffer)
-(global-set-key "\C-x\C-b" 'electric-buffer-list)
+(global-set-key "\C-x\C-b" 'bs-show)    ;; 'electric-buffer-list
 (global-set-key "\C-c\C-v" 'find-file-at-point)
 (global-set-key [(f1)] (lambda()(interactive)(manual-entry (current-word))))
 (global-set-key "\C-x\C-f" 'find-file)
