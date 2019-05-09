@@ -39,8 +39,15 @@ M-s o		(M-x occur) regexp search in all buffers
 \#N		in regexp, use replacement N as number (not text)
 \,(lisp)	in regexp, eval lisp function
 
+M-x ibuffer	interactive buffer editor incl multi-occur
+
 M-x undo-tree-mode
-C-x u		display undo tree
+C-_/M-_		 undo/redo in current branch
+C-x u		 display undo tree
+
+helm
+C-x c i		 helm imenu
+C-x c f		 helm file/buffer menu
 
 M-x auto-revert-tail-mode
 M-x view-buffer|view-mode scroll through buffer
