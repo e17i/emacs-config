@@ -79,6 +79,7 @@
 ;; (setq split-width-threshold 999)
 (load-library "realgud")
 (global-undo-tree-mode)
+(require 'helm-config)
 
 (tool-bar-mode 0)
 
