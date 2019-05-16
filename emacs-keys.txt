@@ -59,6 +59,7 @@ M-s h r REGEX	highlight text matching regex
 M-s h u REGEX	unhighlight
 
 M-x display-line-numbers-mode	show line numbers
+M-x global-linum-mode		activate line numbers globally
 
 M-x whitespace-mode	visualize whitespace
 
