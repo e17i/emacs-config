@@ -45,7 +45,7 @@
      ("marmalade" . "https://marmalade-repo.org/packages/")
      ("melpa-stable" . "https://stable.melpa.org/packages/")))
  '(package-selected-packages
-   '(helm realgud evil markdown-mode cider web-mode org-plus-contrib js2-mode electric-spacing auctex))
+   '(zzz-to-char ace-jump-mode helm realgud evil markdown-mode cider web-mode org-plus-contrib js2-mode electric-spacing auctex))
  '(python-mode-hook
    '((lambda nil "Turn off Indent Tabs mode."
        (setq indent-tabs-mode nil))
@@ -83,13 +83,18 @@
 
 (tool-bar-mode 0)
 
-(global-set-key "\C-x\C-b" 'bs-show)	;; electric-buffer-mode
+(global-set-key "\C-x\C-b" 'bs-show)	;; electric-buffer-list
 (global-set-key "\C-c\C-v" 'find-file-at-point)
 (global-set-key "\C-x\C-f" 'find-file)
 (global-set-key "\C-c-" 'shrink-window)
 (global-set-key "\C-c+" 'enlarge-window)
-(global-set-key "\M-p" 'scroll-down-line)
-(global-set-key "\M-n" 'scroll-up-line)
+(global-set-key "\M-p" 'previous-line)
+(global-set-key "\M-n" 'next-line)
+(global-set-key "\M-P" 'scroll-down-line)
+(global-set-key "\M-N" 'scroll-up-line)
+(global-set-key "\M-J" 'ace-jump-mode)
+(global-set-key "\C-x\C-j" 'ace-jump-mode-pop-mark)
+(global-set-key "\C-x\C-z" 'zzz-up-to-char)
 ;; for mac: select: mouse-1, copy/cut: mouse-3, yank: M-mouse-2, undo: M-mouse-3
 (global-set-key [M-mouse-2] 'mouse-yank-at-click)
 (global-set-key [M-mouse-3] 'undo)
