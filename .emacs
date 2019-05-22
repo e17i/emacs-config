@@ -80,6 +80,7 @@
 (load-library "realgud")
 (global-undo-tree-mode)
 (require 'helm-config)
+(global-set-key [remap dabbrev-expand] 'hippie-expand)
 
 (tool-bar-mode 0)
 

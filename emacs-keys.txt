@@ -49,9 +49,20 @@ helm
 C-x c i		 helm imenu
 C-x c f		 helm file/buffer menu
 
+hippie-expand
+M-/		expand text
+M-C-/		show all expansions
+M-x jedi	python/javascript: show function args/docstrings
+M-x realgud:pdb	debug python
+
+M-x flyspell-mode
+M-x ispell-buffer|region
+
 M-x auto-revert-tail-mode
+M-x keep-lines|flush-lines
 M-x view-buffer|view-mode scroll through buffer
 M-x follow-mode
+M-x table-recognize
 
 Hi-lock
 M-x highlight-changes-mode
@@ -83,6 +94,8 @@ C-x C-k C-p	next/prev keyboard macro
 C-x C-k C-i	insert counter while recording macro
 C-x q		ask for confirmation in a macro
 C-x C-k <SPC>	stepwise edit macro
+C-x C-k RET	edit last macro
+C-x C-k l	edit lossage (build macro from previous actions)
 
 M-mouse-2	yank
 M-mouse-3	undo
