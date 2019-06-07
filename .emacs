@@ -33,19 +33,21 @@
  '(fringe-mode 0 nil (fringe))
  '(hippie-expand-verbose nil)
  '(history-delete-duplicates t)
+ '(isearch-lazy-count t)
+ '(magit-git-executable "/opt/local/bin/git")
  '(mouse-drag-copy-region t)
  '(mouse-wheel-scroll-amount '(1 ((shift) . 5) ((control))))
  '(ns-alternate-modifier 'meta)
  '(ns-command-modifier 'super)
  '(ns-control-modifier 'control)
  '(ns-right-alternate-modifier 'none)
- '(ns-right-command-modifier 'left)
+ '(ns-right-command-modifier 'meta)
  '(package-archives
    '(("gnu" . "https://elpa.gnu.org/packages/")
      ("marmalade" . "https://marmalade-repo.org/packages/")
      ("melpa-stable" . "https://stable.melpa.org/packages/")))
  '(package-selected-packages
-   '(zzz-to-char ace-jump-mode helm realgud evil markdown-mode cider web-mode org-plus-contrib js2-mode electric-spacing auctex))
+   '(magit zzz-to-char ace-jump-mode helm realgud evil markdown-mode cider web-mode org-plus-contrib js2-mode electric-spacing auctex))
  '(python-mode-hook
    '((lambda nil "Turn off Indent Tabs mode."
        (setq indent-tabs-mode nil))
@@ -74,6 +76,8 @@
              (set-foreground-color "Green")
            )))
 (run-hook-with-args 'after-make-frame-functions (selected-frame))
+
+(setenv "PATH" (concat "/opt/local/bin:/opt/local/sbin:" (getenv "PATH")))
 
 (load-file "~/.emacs.d/keyboard-pc.el")
 ;; (setq split-width-threshold 999)
