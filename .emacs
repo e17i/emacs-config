@@ -81,6 +81,7 @@
 
 (load-file "~/.emacs.d/keyboard-pc.el")
 ;; (setq split-width-threshold 999)
+(setq org-element-use-cache nil)  # temporarily disable org element cache
 (load-library "realgud")
 (global-undo-tree-mode)
 (require 'helm-config)
