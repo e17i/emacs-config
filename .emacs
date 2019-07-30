@@ -42,6 +42,8 @@
  '(ns-control-modifier 'control)
  '(ns-right-alternate-modifier 'none)
  '(ns-right-command-modifier 'meta)
+ '(org-babel-python-command "python2")
+ '(org-goto-auto-isearch nil)
  '(package-archives
    '(("gnu" . "https://elpa.gnu.org/packages/")
      ("marmalade" . "https://marmalade-repo.org/packages/")
