@@ -42,6 +42,7 @@
  '(ns-control-modifier 'control)
  '(ns-right-alternate-modifier 'none)
  '(ns-right-command-modifier 'meta)
+ '(org-agenda-files nil)
  '(org-babel-python-command "python2")
  '(org-goto-auto-isearch nil)
  '(package-archives
@@ -88,6 +89,7 @@
 (global-undo-tree-mode)
 (require 'helm-config)
 (global-set-key [remap dabbrev-expand] 'hippie-expand)
+(setq erc-autojoin-channels-alist '(("freenode.net" "#latex-de" "##latinitas" "#NetBSD" "##bash-de" "#git" "#vim" "#emacs" "#erc" "#oberon" "#macosx")))
 
 (tool-bar-mode 0)
 
