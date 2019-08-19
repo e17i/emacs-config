@@ -48,9 +48,10 @@
  '(package-archives
    '(("gnu" . "https://elpa.gnu.org/packages/")
      ("marmalade" . "https://marmalade-repo.org/packages/")
-     ("melpa-stable" . "https://stable.melpa.org/packages/")))
+     ("melpa-stable" . "https://stable.melpa.org/packages/")
+     ("melpa" . "https://melpa.org/packages/")))
  '(package-selected-packages
-   '(magit zzz-to-char ace-jump-mode helm realgud evil markdown-mode cider web-mode org-plus-contrib js2-mode electric-spacing auctex))
+   '(ox-rst magit zzz-to-char ace-jump-mode helm realgud evil markdown-mode cider web-mode org-plus-contrib js2-mode electric-spacing auctex))
  '(python-mode-hook
    '((lambda nil "Turn off Indent Tabs mode."
        (setq indent-tabs-mode nil))
@@ -88,6 +89,7 @@
 (load-library "realgud")
 (global-undo-tree-mode)
 (require 'helm-config)
+(require 'ox-rst)
 (global-set-key [remap dabbrev-expand] 'hippie-expand)
 (setq erc-autojoin-channels-alist '(("freenode.net" "#latex-de" "##latinitas" "#NetBSD" "##bash-de" "#git" "#vim" "#emacs" "#erc" "#oberon" "#macosx")))
 
@@ -102,7 +104,7 @@
 (global-set-key "\M-n" 'next-line)
 (global-set-key "\M-P" 'scroll-down-line)
 (global-set-key "\M-N" 'scroll-up-line)
-(global-set-key "\M-J" 'ace-jump-mode)
+(global-set-key "\M-J" 'ace-jump-char-mode)
 (global-set-key "\C-x\C-j" 'ace-jump-mode-pop-mark)
 (global-set-key "\C-x\C-z" 'zzz-up-to-char)
 ;; for mac: select: mouse-1, copy/cut: mouse-3, yank: M-mouse-2, undo: M-mouse-3
