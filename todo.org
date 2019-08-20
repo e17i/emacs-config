@@ -239,6 +239,8 @@ morecad.com
 ** TODO paper about immutable software with literate programming
 - publish immutable algorithms, use new versions of a function to implement changes
 
+#+INCLUDE: "/Users/jko/Programming/tex/tex/src/test/tex/src/Memo.org"
+
 
 * Metafont
 
