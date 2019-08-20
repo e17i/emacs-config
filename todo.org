@@ -1,0 +1,248 @@
+
+* IT
+
+** TODO CI/CD
+- experiment with circle ci?
+- use ci to build articles from github checked in tex sources
+- push pdf to seafile
+- push html to github pages
+- use ci to build new docker image from checked in tex sources
+- deploy to registry
+- build article html using image
+
+** TODO Docker
+- how to build receipes
+- use embedded software like a command
+
+** TODO NetBSD stacked file systems
+- in memory?
+
+** TODO ZFS
+
+** TODO QEmu
+- define Oberon RISC proc?
+- derive from lola sources?
+- Archimedes/RISC OS in qemu?
+
+** TODO Microkernel
+- gnu hurd
+- apple mach
+
+** TODO GNU parallel
+
+
+* Article themes
+
+** how to implement gemeration of xml/output schemes
+** how to use EAI as CI (see democase webhook)
+
+
+* more languages
+
+** TODO scheme
+** TODO lua
+** TODO julia
+** TODO clojure
+** TODO elm/elixir?
+** TODO Go/rust?
+** TODO swift
+
+
+* EAI todo
+
+** implement a sample custom xml reader
+*** implement simple classes for each level
+** detail how to proceed with this data
+*** encapsulate input, in processor just call reader then actually process
+** implement a sample custom producer
+   That is, have a transferable and produce needed xml or json
+** attach producers as xml/json methods to transferable
+** generate xgs by the way?
+** have destination pipeline just use streaming interface  
+- write flush to send to destination/receive answer
+- declare output interface legacy
+
+** REST paths
+- eai/sap/sharedobjects
+- eai/psi/part/12345
+- eai/part_response
+
+** pushpin lib turning REST into event driven APIs
+** promise impl in python
+- handle post and later receive into a "single" call
+
+
+* Emacs
+
+** TODO split config in automatic part (customize) and config files
+** TODO unify config files
+** TODO explore org-mode
+** TODO explore emacs lisp
+
+
+* HW
+
+** TODO setup ppc
+- NetBSD/OpenBSD/Linux?
+
+
+* OS games
+- oolite - Elite
+- Crimson Fields - Battle Isle
+- bass - beneath a steel sky
+- freeciv - civilization
+- freecol - colonization
+- frotz - infocom interpreter
+- openmule - mule
+- widelands - Siedler
+
+
+* Pascal-P5
+morecad.com
+
+** Compile Steps
+1. compile pcom with p2c - c-code and binary
+2. compile pcom with pcom binary - p-code
+3. compile pint with p2c - binary
+4. compile pcom with pint/pcom p-code - same output as in 2.
+
+** create fork
+** adapt pint to oberon module?
+** add functionality
+- implement file handles in pcom
+- associate main files with buffers or file names
+- reset/rewrite to associate with further file names
+- what else?
+
+** compile pint to js/wasm
+** adapt pint to be cooperative
+- split input etc into two - return when called, jump in when input exists
+  (like a coroutine reactivation)
+- enable running tex/mf pcode in browser
+
+** adapt pint to oberon
+- take a text as input
+- weave/tangle it
+- forward results directly to pcom/tex generating pcode/dvi
+
+
+* Markdown
+
+** overall idea:
+- use md as support tool generating semantic hierarchies (html5). Use
+  indentation or different length markers as level indicator (- first level,
+  --- third level or "-" first "  -" third)
+- when setting tex, use semantics to inflect paragraph numbers etx
+
+** scan into tokens including bol and eol tokens
+
+** define regular expressions
+- e.g. title: bol text eol bol -+ eol
+- title2: bol text eol bol =+ eol
+- paragraph break: eol bol eol
+- bol ### text (###*) eol
+- _|* text _|*
+
+** define plugins?
+- | other syntax \ (declare a default if nothing specified? see below)
+- what about TeX usage?
+- |tex: text|
+- |oberon: text|
+- problem: terminator's meaning in other language
+- how to specify syntax for a block?
+
+
+* Oberon
+
+** impl
+
+*** TODO RISC interpreter in js
+*** TODO container 
+- provide a shell interface enabling call/argument/input/output file passing
+- inside an image is executed by calling requested module/main function
+*** TODO oberon in org?
+
+** im mobilen web
+- tap auf Element führt zu Auslösen des sinnvollsten Effekts
+- langes Halten zeigt Menu mit den Funktionen links mitte rechts und
+  Kombinationen
+- slide - scrolling?
+- tap auf Wort: execute
+- slide - select text with right button
+
+
+* TeX
+
+** TODO webdvi
+- erster pass für char generierung
+  - scale vs style.size
+- large text sections mit page breaks?
+- steering control html rahmen in js verpacken
+
+** TODO metafont
+- interactive rauspatchen
+- in webdvi.js einbetten
+- laden von mf sources per ajax
+- rendern von fonts jeweils on the fly zu resolution und magnification
+- mf-parameter on the fly verändern? Damit neuen driver generieren, neue
+  mf-instanz anlegen und alle danach gerenderten fonts beziehen die neuen
+  parameter
+
+** TODO webdvi links/Media embedding
+- implement cwebmac like pdf link commands for web etc
+
+** TODO deploy js, change webdvi
+** TODO 2 side view
+** TODO experiment with other dpi sizes
+** TODO paper containing web changes
+** TODO twill experiment
+** TODO Adv in js mit web terminal
+** TODO jstweave
+** TODO finetune docs (convert/typos)
+
+** TODO pnmtogf gftopnm
+** TODO xml format as input - tex as xml processor/pdf converter
+** TODO lisp lang
+- execute lisp
+- let tex set program and doc
+- exec lisp macros while setting tex 
+** TODO float text through consecutive arbitrarily shaped boxes
+** TODO map äöü euro etc on keys
+** TODO algorithm computing metrics of latin
+** TODO latin sty mit switch showmetrics showlang showpositionlang
+** TODO 8 Damen
+** TODO TeXbook mit pdf links (Inhalt und Index) und eigenen Kommentaren am Seitenrand
+** TODO TeX Output html format (dvi+js?)
+** TODO javascript web
+- jstangle/weave perhaps implemented in tex/tex environment for js
+- in weave: pretty printed
+- in tangle: execute js in html output as interactive page
+- in browser view have one field toggling between source view and ececution
+  view
+** TODO thematik tex/webdvi in the cloud
+*** containerize tex/webdvi
+*** build a ci/cd to generate new container versions
+*** build a ci/cd to generate papers in html and/or pdf
+** TODO (simple) tangle and weave for python
+- tex code aus dem der pythoncode extrahiert wird
+- see org
+** TODO 3-pass tex
+- let weave output contents at beginning
+- let tex output contents.tex in first 2 passes, dvi only in 3rd pass
+- let webman.tex include tangle.tex and weave.tex and produce a complete dvi
+** TODO tex with integrated mf code
+** TODO tex as c library
+- with c callbacks enabling surrounding c/python/nodejs to inspect/modify structures
+** TODO tex macros for mix
+** TODO tex with music
+- set music sheets and play via midi from single source
+** TODO paper about immutable software with literate programming
+- publish immutable algorithms, use new versions of a function to implement changes
+
+
+* Metafont
+
+1. compile as is for nodejs
+2. change API (open read usw to ajax and buffers)
+3. change write API to buffers
+4. change input proc?
