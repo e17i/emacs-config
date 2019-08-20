@@ -1,5 +1,5 @@
-# emacs todo
- - split config in automatic part (customize) and config files
- - unify config files
- - explore org-mode
- - explore emacs lisp
+* emacs todo
+** TODO split config in automatic part (customize) and config files
+** TODO unify config files
+** TODO explore org-mode
+** TODO explore emacs lisp
