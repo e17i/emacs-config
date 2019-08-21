@@ -1,3 +1,7 @@
+* Programming
+
+** wrap all the python experiments in tests into org articles
+
 
 * IT
 
@@ -76,6 +80,7 @@
 
 ** TODO split config in automatic part (customize) and config files
 ** TODO unify config files
+** TODO explore company/jedi mode
 ** TODO explore org-mode
 ** TODO explore emacs lisp
 
