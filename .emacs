@@ -45,6 +45,7 @@
  '(org-agenda-files nil)
  '(org-babel-python-command "python2")
  '(org-goto-auto-isearch nil)
+ '(org-src-preserve-indentation t)
  '(package-archives
    '(("gnu" . "https://elpa.gnu.org/packages/")
      ("marmalade" . "https://marmalade-repo.org/packages/")
