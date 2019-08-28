@@ -178,3 +178,5 @@
 
 ;; optional key bindings, easier than hs defaults
 (define-key nxml-mode-map (kbd "C-c h") 'hs-toggle-hiding)
+(put 'narrow-to-region 'disabled nil)
+(put 'narrow-to-page 'disabled nil)
