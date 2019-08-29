@@ -105,6 +105,11 @@ emacsclient -t	start new frame in terminal
 emacsclient -c start new window frame
 M-x kill-emacs  exit daemonized emacs
 
+dired
+i		insert directory view into current dired buffer
+C-x [/C-x ]	next page/prev page: jump to dir views in dired buffer
+C-0 k	  	remove marked dir view from dired buffer
+
  f b              p n              @                d                a e              h                k
 +----------------+----------------+----------------+----------------+----------------+----------------+----------------+
 |forward/backward|prev/next       |                |delete          |                |                |                |CTRL
