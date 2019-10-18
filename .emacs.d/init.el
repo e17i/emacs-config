@@ -82,6 +82,23 @@
            )))
 (run-hook-with-args 'after-make-frame-functions (selected-frame))
 
+;; convenience functions handling other window
+(defun go-back-other-window ()
+  "Go back to previous help topic in other window."
+  (interactive)
+  (with-current-buffer (window-buffer (next-window))
+    (help-go-back)))
+
+(defun quit-restore-other-window ()
+  "Quit other window and deal with its buffer, possibly restoring
+the buffer previously displayed in other window."
+  (interactive)
+  (quit-restore-window (next-window)))
+
+(global-set-key "\C-x4q" 'quit-restore-other-window)
+(global-set-key "\C-x4l" 'go-back-other-window)
+;;
+
 (setenv "PATH" (concat "/opt/local/bin:/opt/local/sbin:" (getenv "PATH")))
 
 (load-file "~/.emacs.d/keyboard-pc.el")
