@@ -123,7 +123,7 @@ the buffer previously displayed in other window."
 (global-set-key "\M-P" 'scroll-down-line)
 (global-set-key "\M-N" 'scroll-up-line)
 (global-set-key "\M-J" 'ace-jump-char-mode)
-(global-set-key "\C-x\C-j" 'ace-jump-mode-pop-mark)
+;;;(global-set-key "\C-x\C-j" 'ace-jump-mode-pop-mark) ;; this is dired-jump
 (global-set-key "\C-x\C-z" 'zzz-up-to-char)
 ;; for mac: select: mouse-1, copy/cut: mouse-3, yank: M-mouse-2, undo: M-mouse-3
 (global-set-key [M-mouse-2] 'mouse-yank-at-click)
