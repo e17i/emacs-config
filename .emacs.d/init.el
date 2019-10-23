@@ -97,6 +97,8 @@ the buffer previously displayed in other window."
 
 (global-set-key "\C-x4q" 'quit-restore-other-window)
 (global-set-key "\C-x4l" 'go-back-other-window)
+(global-set-key [201326652] (quote beginning-of-buffer-other-window))
+(global-set-key [201326654] (quote end-of-buffer-other-window))
 ;;
 
 (setenv "PATH" (concat "/opt/local/bin:/opt/local/sbin:" (getenv "PATH")))
