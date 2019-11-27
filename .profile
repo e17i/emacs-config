@@ -16,6 +16,10 @@ alias config_daemon='git daemon --reuseaddr --base-path=/Users/jko --enable=rece
 alias emacs='/Applications/MacPorts/Emacs.app/Contents/MacOS/Emacs'
 alias emacsclient='/Applications/MacPorts/Emacs.app/Contents/MacOS/bin/emacsclient'
 
+if [ "${INSIDE_EMACS-no}" != "no" ]; then
+    export EDITOR='/Applications/MacPorts/Emacs.app/Contents/MacOS/bin/emacsclient'
+fi
+
 function pman() {
   /usr/bin/man -t "$@" | open -f -a Preview;
 }
