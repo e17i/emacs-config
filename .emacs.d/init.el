@@ -97,6 +97,9 @@ the buffer previously displayed in other window."
 
 (global-set-key "\C-x4q" 'quit-restore-other-window)
 (global-set-key "\C-x4l" 'go-back-other-window)
+;; whats this? we want to jump to beginning/end in other buffer by C-M-< and C-M->
+;; how to get here? M-x global-set-key RET C-M-< beg.. then C-x ESC ESC and copy the
+;; resulting parametrized command from minibuffer
 (global-set-key [201326652] (quote beginning-of-buffer-other-window))
 (global-set-key [201326654] (quote end-of-buffer-other-window))
 ;;
