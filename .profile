@@ -1,4 +1,4 @@
-export PATH=~/Programming/node/node_modules/.bin:$PATH
+export PATH=$PATH:~/Programming/node/node_modules/.bin
 
 alias p='cd ..'
 alias l='ls -l'
