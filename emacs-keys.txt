@@ -63,6 +63,7 @@ M-x keep-lines|flush-lines
 M-x view-buffer|view-mode scroll through buffer
 M-x follow-mode
 M-x table-recognize
+M-x ielm	elisp repl
 
 Hi-lock
 M-x highlight-changes-mode
