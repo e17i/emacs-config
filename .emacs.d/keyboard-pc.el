@@ -1,7 +1,4 @@
-(custom-set-variables
- '(ns-control-modifier 'control)
- '(ns-alternate-modifier 'meta)
- '(ns-right-alternate-modifier 'none)
- '(ns-command-modifier 'super)
- '(ns-right-command-modifier 'meta)
- )
+(setq w32-alt-is-meta 't)
+(setq w32-lwindow-modifier nil)
+(setq w32-pass-lwindow-to-system 't)
+
