@@ -107,6 +107,7 @@ emacsclient -c start new window frame
 M-x kill-emacs  exit daemonized emacs
 
 dired
+C-x C-j		dired-jump to directory of current file, showing it
 i		insert directory view into current dired buffer
 C-x [/C-x ]	next page/prev page: jump to dir views in dired buffer
 C-0 k	  	remove marked dir view from dired buffer
