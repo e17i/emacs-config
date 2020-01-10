@@ -3,4 +3,4 @@
 
 STORE=/mnt/c/Users/jko/AppData/Roaming
 
-alias emgit='git --git-dir=$HOME/emacs-config/.git --work-tree=$STORE'
+alias emgit='git --git-dir=$STORE/emacs-config/.git --work-tree=$STORE'
