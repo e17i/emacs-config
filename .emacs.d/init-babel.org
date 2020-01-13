@@ -1,0 +1,283 @@
+* Emacs Configuration
+
+** Lisp functions
+
+We want to set each frame to reasonable color defaults by defining an
+appropriate hook. We also call it for the current frame.
+
+#+BEGIN_SRC emacs-lisp
+(add-hook 'after-make-frame-functions
+         (lambda (frame)
+           (set-frame-parameter nil 'alpha '(95 . 95))
+           (with-selected-frame frame
+             (set-background-color "Black")
+             (set-foreground-color "Green")
+           )))
+(run-hook-with-args 'after-make-frame-functions (selected-frame))
+#+END_SRC
+
+I'm adding some useful functions for handling the other window after calling
+or navigating within help texts for example.
+
+#+BEGIN_SRC emacs-lisp
+(defun go-back-other-window ()
+  "Go back to previous help topic in other window."
+  (interactive)
+  (with-current-buffer (window-buffer (next-window))
+    (help-go-back)))
+
+(defun quit-restore-other-window ()
+  "Quit other window and deal with its buffer, possibly restoring
+the buffer previously displayed in other window."
+  (interactive)
+  (quit-restore-window (next-window)))
+#+END_SRC
+
+For Windows, we define a few shortcuts running command shells, using these as
+a kind of ~ansi-term~ replacement.
+
+#+BEGIN_SRC emacs-lisp
+(defun run-cmdexe ()
+      (interactive)
+      (let ((shell-file-name "cmd.exe"))
+            (shell "*cmd.exe*")))
+
+(defun run-sdk ()
+      (interactive)
+      (let ((shell-file-name "c:\\sdk\\win32\\1.1\\scripts\\sdk-shell-vs90.bat"))
+            (shell "*sdk*")))
+
+(defun run-bash ()
+      (interactive)
+      (let ((shell-file-name "c:\\Program Files\\Git\\bin\\bash.exe"))
+            (shell "*bash*")))
+#+END_SRC
+
+** Global key bindings
+
+Some convenience keys for handling buffers, files and window sizes. Use
+caution and check to not shadow future functionality here.
+
+#+BEGIN_SRC emacs-lisp
+(global-set-key "\C-x\C-b" 'bs-show)	;; this used to be electric-buffer-list
+(global-set-key "\C-c\C-v" 'find-file-at-point)
+(global-set-key "\C-x\C-f" 'find-file)
+(global-set-key "\C-c-" 'shrink-window)
+(global-set-key "\C-c+" 'enlarge-window)
+#+END_SRC
+
+Convenience keys for buffer scrolling. Enables up/down also with /Meta/
+modifier. Together with /Shift/ this enables scrolling. This way you can very
+conveniently move the pointer and scroll by just adding/releasing the /Shift/
+modifier.
+
+#+BEGIN_SRC emacs-lisp
+(global-set-key "\M-p" 'previous-line)
+(global-set-key "\M-n" 'next-line)
+(global-set-key "\M-P" 'scroll-down-line)
+(global-set-key "\M-N" 'scroll-up-line)
+(global-set-key [end] 'move-end-of-line)
+(global-set-key [home] 'move-beginning-of-line)
+#+END_SRC
+
+Ace enables some more vi-style jumping and zapping (see ~M-z~ for the basic
+~zap-to-char~ function).
+
+#+BEGIN_SRC emacs-lisp
+(global-set-key "\M-J" 'ace-jump-char-mode)
+;;;(global-set-key "\C-x\C-j" 'ace-jump-mode-pop-mark) ;; this is dired-jump
+(global-set-key "\C-x\C-z" 'zzz-up-to-char)
+#+END_SRC
+
+Mouse keys: remember basic mouse button handling in emacs: left - set pointer,
+right - define region and save to kill ring, double right - kill to kill ring,
+middle - yank to click position. As on Mac middle and right buttons may be
+otherwise occupied, use them together with /Meta/.
+
+Also enable mouse wheel scrolling. With /Meta/, scroll pagewise.
+
+#+BEGIN_SRC emacs-lisp
+(global-set-key [M-up] 'scroll-down-line)
+(global-set-key [M-down] 'scroll-up-line)
+(global-set-key [(M-wheel-down)] 'scroll-up-command)
+(global-set-key [(M-wheel-up)] 'scroll-down-command)
+;; for mac: select: mouse-1, copy/cut: mouse-3, yank: M-mouse-2, undo: M-mouse-3
+(global-set-key [M-mouse-2] 'mouse-yank-at-click)
+(global-set-key [M-mouse-3] 'undo)
+#+END_SRC
+
+As I got quite used to remote control the other window using ~C-x 4~ keys, 
+I'm adding a few ones which I missed so far.
+
+#+BEGIN_SRC emacs-lisp
+(global-set-key "\C-x4q" 'quit-restore-other-window)
+(global-set-key "\C-x4l" 'go-back-other-window)
+#+END_SRC
+
+We also want to jump to beginning/end in other window by ~C-M-<~ and ~C-M->~
+(cf. ~C-M-v~ and ~C-M-V~ to scroll pagewise in other window).
+
+#+BEGIN_SRC emacs-lisp
+(global-set-key [201326652] (quote beginning-of-buffer-other-window))
+(global-set-key [201326654] (quote end-of-buffer-other-window))
+#+END_SRC
+
+How to get these codes? Call ~M-x global-set-key RET C-M-< beg~.. to manually
+define such a key, then call ~C-x ESC ESC~ and copy the resulting parametrized
+command from minibuffer.
+
+When using evil-mode, set ~evil-exit-emacs-state~ to ~C-M-z~, as I'm used to
+~suspend-frame~.
+#+BEGIN_SRC emacs-lisp
+;; (global-set-key "\C-\M-z" 'suspend-frame)  ;; because of evil
+#+END_SRC
+
+** Misc
+
+#+BEGIN_SRC emacs-lisp
+;; (setenv "PATH" (concat "/opt/local/bin:/opt/local/sbin:" (getenv "PATH")))
+
+;; (load-file "~/.emacs.d/keyboard-pc.el")
+
+;; (setq split-width-threshold 999)
+(setq split-width-threshold 160
+      w32-apps-modifier 'meta)
+
+(setenv "PYTHONUNBUFFERED" "x")  ;; needed for windows? running python in comint frame
+(setenv "SSH_ASKPASS" "git-gui--askpass")
+
+(setq org-element-use-cache nil)  ;; temporarily disable org element cache
+(load-library "realgud")
+(global-undo-tree-mode)
+(require 'helm-config)
+(require 'ox-rst)
+(global-set-key [remap dabbrev-expand] 'hippie-expand)
+(setq erc-autojoin-channels-alist '(("freenode.net" "#latex-de" "##latinitas" "#NetBSD" "##bash-de" "#git" "#vim" "#emacs" "#erc" "#oberon" "#macosx")))
+
+(global-magit-file-mode t)
+(load-library "evil")
+(require 'dired) ;; also enable C-x C-j
+
+;; python
+(elpy-enable)
+;; Enable Flycheck
+(when (require 'flycheck nil t)
+  (setq elpy-modules (delq 'elpy-module-flymake elpy-modules))
+  (add-hook 'elpy-mode-hook 'flycheck-mode))
+;; Enable autopep8
+(require 'py-autopep8)
+;;(add-hook 'elpy-mode-hook 'py-autopep8-enable-on-save)
+;;(global-linum-mode)    ;; show line numbers
+(global-hl-line-mode) ;; highlight current line of point
+
+(define-key elpy-mode-map [remap previous-error] 'flycheck-previous-error)
+(define-key elpy-mode-map [remap next-error] 'flycheck-next-error)
+
+;; C-c C-z starts python interpreter in current project
+;; for this, set python-shell-interpreter to path of buildout powerscript exe
+;; and python-shell-interpreter-args to ""
+
+(tool-bar-mode 0)
+
+(setq c-basic-offset 2)
+(setq indent-tabs-mode nil)
+#+END_SRC
+
+** Mode-specific customizations
+*** C++ mode customizations, in use for aeons now
+
+#+BEGIN_SRC emacs-lisp
+(add-hook 'c-mode-common-hook
+          (function
+           (lambda ()
+             (c-toggle-auto-hungry-state 1)
+             (c-set-style "Stroustrup")
+	     (setq c-basic-offset 2)
+             (setq c-hanging-braces-alist '((brace-list-open)
+                                            (brace-list-close after)
+                                            (defun-open after)
+                                            (class-open after)
+                                            (inline-open after)
+                                            (substatement-open after))))))
+#+END_SRC
+
+*** python mode
+
+The untabify-function defined here is currently disabled.
+
+#+BEGIN_SRC emacs-lisp
+(defun python-mode-untabify ()
+    (save-excursion
+      (goto-char (point-min))
+      (while (re-search-forward "[ \t]+$" nil t)
+        (delete-region (match-beginning 0) (match-end 0)))
+      (goto-char (point-min))
+      (if (search-forward "\t" nil t)
+          (untabify (1- (point)) (point-max))))
+    nil)
+
+;;(add-hook 'python-mode-hook
+;;            '(lambda ()
+;;               (make-local-variable 'write-contents-hooks)
+;;               (add-hook 'write-contents-hooks 'python-mode-untabify)))
+#+END_SRC
+
+*** React programming
+
+Combine javascript and web-mode, supporting ~jsx~ templates within. This is
+probably outdated and should be re-evaluated. Is there already a real
+react-mode? Otherwise, combine it with more up-to-date html-mode?
+
+#+BEGIN_SRC emacs-lisp
+(add-to-list 'auto-mode-alist '("\\.jsx\\'" . web-mode))
+(add-hook 'web-mode-hook 'js2-minor-mode)
+#+END_SRC
+
+*** XML-mode 
+
+**** hiding of subtrees
+
+Here we use ~hs-mode~, enabling tag view toggling and tag level hiding. Also
+~S-mouse-2~ can be used to toggle tag views.
+
+#+BEGIN_SRC emacs-lisp
+(setq sgml-quick-keys t)
+(require 'hideshow)
+(require 'sgml-mode)
+(require 'nxml-mode)
+
+(add-to-list 'hs-special-modes-alist
+             '(nxml-mode
+               "<!--\\|<[^/>]*[^/]>"
+               "-->\\|</[^/>]*[^/]>"
+
+               "<!--"
+               sgml-skip-tag-forward
+               nil))
+
+(add-hook 'nxml-mode-hook 'hs-minor-mode)
+
+(define-key nxml-mode-map (kbd "C-c C-h") 'hs-toggle-hiding)
+(define-key nxml-mode-map (kbd "C-c C-l") 'hs-hide-level)
+#+END_SRC
+
+**** tagedit-mode
+
+tbd
+
+*** markdown mode
+
+#+BEGIN_SRC emacs-lisp
+(autoload 'markdown-mode "markdown-mode"
+  "Major mode for editing Markdown files" t)
+(add-to-list 'auto-mode-alist '("\\.markdown\\'" . markdown-mode))
+(add-to-list 'auto-mode-alist '("\\.md\\'" . markdown-mode))
+(setq markdown-command "/Users/jko/Programming/node/node_modules/.bin/md2html")
+#+END_SRC
+
+** Disabled commands
+
+#+BEGIN_SRC emacs-lisp
+(put 'narrow-to-region 'disabled nil)
+(put 'narrow-to-page 'disabled nil)
+#+END_SRC
