@@ -1,5 +1,4 @@
 * Emacs Configuration
-
 ** Lisp functions
 
 We want to set each frame to reasonable color defaults by defining an
