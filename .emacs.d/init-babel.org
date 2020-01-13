@@ -33,6 +33,26 @@ the buffer previously displayed in other window."
   (quit-restore-window (next-window)))
 #+END_SRC
 
+For Windows, we define a few shortcuts running command shells, using these as
+a kind of ~ansi-term~ replacement.
+
+#+BEGIN_SRC emacs-lisp
+(defun run-cmdexe ()
+      (interactive)
+      (let ((shell-file-name "cmd.exe"))
+            (shell "*cmd.exe*")))
+
+(defun run-sdk ()
+      (interactive)
+      (let ((shell-file-name "c:\\sdk\\win32\\1.1\\scripts\\sdk-shell-vs90.bat"))
+            (shell "*sdk*")))
+
+(defun run-bash ()
+      (interactive)
+      (let ((shell-file-name "c:\\Program Files\\Git\\bin\\bash.exe"))
+            (shell "*bash*")))
+#+END_SRC
+
 ** Global key bindings
 
 Some convenience keys for handling buffers, files and window sizes. Use
@@ -106,6 +126,12 @@ How to get these codes? Call ~M-x global-set-key RET C-M-< beg~.. to manually
 define such a key, then call ~C-x ESC ESC~ and copy the resulting parametrized
 command from minibuffer.
 
+When using evil-mode, set ~evil-exit-emacs-state~ to ~C-M-z~, as I'm used to
+~suspend-frame~.
+#+BEGIN_SRC emacs-lisp
+;; (global-set-key "\C-\M-z" 'suspend-frame)  ;; because of evil
+#+END_SRC
+
 ** Misc
 
 #+BEGIN_SRC emacs-lisp
@@ -113,6 +139,13 @@ command from minibuffer.
 
 (load-file "~/.emacs.d/keyboard-pc.el")
 ;; (setq split-width-threshold 999)
+
+;; (setq split-width-threshold 160
+;;       w32-apps-modifier 'meta)
+
+;; (setenv "PYTHONUNBUFFERED" "x")  ;; needed for windows? running python in comint frame
+;; (setenv "SSH_ASKPASS" "git-gui--askpass")
+
 (setq org-element-use-cache nil)  ;; temporarily disable org element cache
 (load-library "realgud")
 (global-undo-tree-mode)
@@ -121,17 +154,39 @@ command from minibuffer.
 (global-set-key [remap dabbrev-expand] 'hippie-expand)
 (setq erc-autojoin-channels-alist '(("freenode.net" "#latex-de" "##latinitas" "#NetBSD" "##bash-de" "#git" "#vim" "#emacs" "#erc" "#oberon" "#macosx")))
 
-(tool-bar-mode 0)
+(global-magit-file-mode t)
+(load-library "evil")
+(require 'dired) ;; also enable C-x C-j
 
+;; python
+(elpy-enable)
+;; Enable Flycheck
+(when (require 'flycheck nil t)
+  (setq elpy-modules (delq 'elpy-module-flymake elpy-modules))
+  (add-hook 'elpy-mode-hook 'flycheck-mode))
+;; Enable autopep8
+(require 'py-autopep8)
+;;(add-hook 'elpy-mode-hook 'py-autopep8-enable-on-save)
+;;(global-linum-mode)    ;; show line numbers
+(global-hl-line-mode) ;; highlight current line of point
+
+(define-key elpy-mode-map [remap previous-error] 'flycheck-previous-error)
+(define-key elpy-mode-map [remap next-error] 'flycheck-next-error)
+
+;; C-c C-z starts python interpreter in current project
+;; for this, set python-shell-interpreter to path of buildout powerscript exe
+;; and python-shell-interpreter-args to ""
+
+(tool-bar-mode 0)
 
 (setq c-basic-offset 2)
 (setq indent-tabs-mode nil)
 #+END_SRC
 
 ** Mode-specific customizations
+*** C++ mode customizations, in use for aeons now
 
 #+BEGIN_SRC emacs-lisp
-;; C++ mode customization
 (add-hook 'c-mode-common-hook
           (function
            (lambda ()
@@ -144,8 +199,13 @@ command from minibuffer.
                                             (class-open after)
                                             (inline-open after)
                                             (substatement-open after))))))
+#+END_SRC
 
-;; python mode customization
+*** python mode
+
+The untabify-function defined here is currently disabled.
+
+#+BEGIN_SRC emacs-lisp
 (defun python-mode-untabify ()
     (save-excursion
       (goto-char (point-min))
@@ -160,36 +220,60 @@ command from minibuffer.
 ;;            '(lambda ()
 ;;               (make-local-variable 'write-contents-hooks)
 ;;               (add-hook 'write-contents-hooks 'python-mode-untabify)))
+#+END_SRC
 
-;; markdown-mode
+*** React programming
+
+Combine javascript and web-mode, supporting ~jsx~ templates within. This is
+probably outdated and should be re-evaluated. Is there already a real
+react-mode? Otherwise, combine it with more up-to-date html-mode?
+
+#+BEGIN_SRC emacs-lisp
+(add-to-list 'auto-mode-alist '("\\.jsx\\'" . web-mode))
+(add-hook 'web-mode-hook 'js2-minor-mode)
+#+END_SRC
+
+*** XML-mode 
+
+**** hiding of subtrees
+
+Here we use ~hs-mode~, enabling tag view toggling and tag level hiding. Also
+~S-mouse-2~ can be used to toggle tag views.
+
+#+BEGIN_SRC emacs-lisp
+(setq sgml-quick-keys t)
+(require 'hideshow)
+(require 'sgml-mode)
+(require 'nxml-mode)
+
+(add-to-list 'hs-special-modes-alist
+             '(nxml-mode
+               "<!--\\|<[^/>]*[^/]>"
+               "-->\\|</[^/>]*[^/]>"
+
+               "<!--"
+               sgml-skip-tag-forward
+               nil))
+
+(add-hook 'nxml-mode-hook 'hs-minor-mode)
+
+(define-key nxml-mode-map (kbd "C-c C-h") 'hs-toggle-hiding)
+(define-key nxml-mode-map (kbd "C-c C-l") 'hs-hide-level)
+#+END_SRC
+
+**** tagedit-mode
+
+tbd
+
+*** markdown mode
+
+#+BEGIN_SRC emacs-lisp
 (autoload 'markdown-mode "markdown-mode"
   "Major mode for editing Markdown files" t)
 (add-to-list 'auto-mode-alist '("\\.markdown\\'" . markdown-mode))
 (add-to-list 'auto-mode-alist '("\\.md\\'" . markdown-mode))
 (setq markdown-command "/Users/jko/Programming/node/node_modules/.bin/md2html")
 
-;; js2-JSX
-(add-to-list 'auto-mode-alist '("\\.jsx\\'" . web-mode))
-(add-hook 'web-mode-hook 'js2-minor-mode)
-
-;; nxml hide/unhide xml elements (C-c h)
-(require 'hideshow)
-(require 'sgml-mode)
-(require 'nxml-mode)
-
-(add-to-list 'hs-special-modes-alist
-	     '(nxml-mode
-	       "<!--\\|<[^/>]*[^/]>"
-	       "-->\\|</[^/]*[^/]>"
-
-	       "<!--"
-	       sgml-skip-tag-forward
-	       nil))
-
-(add-hook 'nxml-mode-hook 'hs-minor-mode)
-
-;; optional key bindings, easier than hs defaults
-(define-key nxml-mode-map (kbd "C-c h") 'hs-toggle-hiding)
 #+END_SRC
 
 ** Disabled commands
