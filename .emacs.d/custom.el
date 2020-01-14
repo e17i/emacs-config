@@ -46,6 +46,7 @@
  '(mouse-drag-copy-region t)
  '(mouse-wheel-scroll-amount (quote (1 ((shift) . 5) ((control)))))
  '(nxml-sexp-element-flag t)
+ '(org-src-preserve-indentation t)
  '(package-archives
    (quote
     (("gnu" . "https://elpa.gnu.org/packages/")

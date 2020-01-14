@@ -7,12 +7,12 @@ appropriate hook. We also call it for the current frame.
 
 #+BEGIN_SRC emacs-lisp
 (add-hook 'after-make-frame-functions
-         (lambda (frame)
-           (set-frame-parameter nil 'alpha '(95 . 95))
-           (with-selected-frame frame
-             (set-background-color "Black")
-             (set-foreground-color "Green")
-           )))
+	  (lambda (frame)
+	    (set-frame-parameter nil 'alpha '(95 . 95))
+	    (with-selected-frame frame
+	      (set-background-color "Black")
+	      (set-foreground-color "Green")
+	      )))
 (run-hook-with-args 'after-make-frame-functions (selected-frame))
 #+END_SRC
 
@@ -20,28 +20,28 @@ I'm adding some useful functions for handling the other window after calling
 or navigating within help texts for example.
 
 #+BEGIN_SRC emacs-lisp
-  (defun go-back-other-window ()
-    "Go back to previous help topic in other window."
-    (interactive)
-    (with-current-buffer (window-buffer (next-window))
-      (help-go-back)))
+(defun go-back-other-window ()
+  "Go back to previous help topic in other window."
+  (interactive)
+  (with-current-buffer (window-buffer (next-window))
+    (help-go-back)))
 
-  (defun quit-restore-other-window ()
-    "Quit other window and deal with its buffer, possibly restoring
-    the buffer previously displayed in other window."
-    (interactive)
-    (quit-restore-window (next-window)))
+(defun quit-restore-other-window ()
+  "Quit other window and deal with its buffer, possibly restoring
+      the buffer previously displayed in other window."
+  (interactive)
+  (quit-restore-window (next-window)))
 
-  (defun shrink-other-window-if-larger-than-buffer ()
-    "Shrink height of other window if its buffer doesn't need so many lines."
-    (interactive)
-    (shrink-window-if-larger-than-buffer (next-window)))
+(defun shrink-other-window-if-larger-than-buffer ()
+  "Shrink height of other window if its buffer doesn't need so many lines."
+  (interactive)
+  (shrink-window-if-larger-than-buffer (next-window)))
 
-  (defun fit-other-window ()
-    "balance or shrink other window giving it an appropriate space."
-    (interactive)
-    (balance-windows)
-    (shrink-window-if-larger-than-buffer (next-window)))
+(defun fit-other-window ()
+  "balance or shrink other window giving it an appropriate space."
+  (interactive)
+  (balance-windows)
+  (shrink-window-if-larger-than-buffer (next-window)))
 #+END_SRC
 
 For Windows, we define a few shortcuts running command shells, using these as
@@ -49,19 +49,19 @@ a kind of ~ansi-term~ replacement.
 
 #+BEGIN_SRC emacs-lisp
 (defun run-cmdexe ()
-      (interactive)
-      (let ((shell-file-name "cmd.exe"))
-            (shell "*cmd.exe*")))
+  (interactive)
+  (let ((shell-file-name "cmd.exe"))
+    (shell "*cmd.exe*")))
 
 (defun run-sdk ()
-      (interactive)
-      (let ((shell-file-name "c:\\sdk\\win32\\1.1\\scripts\\sdk-shell-vs90.bat"))
-            (shell "*sdk*")))
+  (interactive)
+  (let ((shell-file-name "c:\\sdk\\win32\\1.1\\scripts\\sdk-shell-vs90.bat"))
+    (shell "*sdk*")))
 
 (defun run-bash ()
-      (interactive)
-      (let ((shell-file-name "c:\\Program Files\\Git\\bin\\bash.exe"))
-            (shell "*bash*")))
+  (interactive)
+  (let ((shell-file-name "c:\\Program Files\\Git\\bin\\bash.exe"))
+    (shell "*bash*")))
 #+END_SRC
 
 ** Global key bindings
@@ -121,10 +121,10 @@ As I got quite used to remote control the other window using ~C-x 4~ keys,
 I'm adding a few ones which I missed so far.
 
 #+BEGIN_SRC emacs-lisp
-  (global-set-key "\C-x4q" 'quit-restore-other-window)
-  (global-set-key "\C-x4l" 'go-back-other-window)
-  (global-set-key "\C-x4-" 'shrink-other-window-if-larger-than-buffer)
-  (global-set-key "\C-X4+" 'fit-other-window)
+(global-set-key "\C-x4q" 'quit-restore-other-window)
+(global-set-key "\C-x4l" 'go-back-other-window)
+(global-set-key "\C-x4-" 'shrink-other-window-if-larger-than-buffer)
+(global-set-key "\C-X4+" 'fit-other-window)
 #+END_SRC
 
 Note the window size changing keys, ~C-x ^~ to enlarge (also negative) and
@@ -149,64 +149,64 @@ command from minibuffer.
 When using evil-mode, set ~evil-exit-emacs-state~ to ~C-M-z~, as I'm used to
 ~suspend-frame~.
 #+BEGIN_SRC emacs-lisp
-  (define-key evil-emacs-state-map "\C-z" nil)
-  (define-key evil-emacs-state-map "\C-\M-z" 'evil-exit-emacs-state)
-  (define-key evil-normal-state-map "\C-\M-z" 'evil-emacs-state)
+(define-key evil-emacs-state-map "\C-z" nil)
+(define-key evil-emacs-state-map "\C-\M-z" 'evil-exit-emacs-state)
+(define-key evil-normal-state-map "\C-\M-z" 'evil-emacs-state)
 #+END_SRC
 
 ** Misc
 
 #+BEGIN_SRC emacs-lisp
-  ;; (setenv "PATH" (concat "/opt/local/bin:/opt/local/sbin:" (getenv "PATH")))
+;; (setenv "PATH" (concat "/opt/local/bin:/opt/local/sbin:" (getenv "PATH")))
 
-  ;; (load-file "~/.emacs.d/keyboard-pc.el")
-  ;; (setq split-width-threshold 999)
+;; (load-file "~/.emacs.d/keyboard-pc.el")
+;; (setq split-width-threshold 999)
 
-  (setq split-width-threshold 160
-	w32-apps-modifier 'meta)
+(setq split-width-threshold 160
+      w32-apps-modifier 'meta)
 
-  (setenv "PYTHONUNBUFFERED" "x")  ;; needed for windows? running python in comint frame
-  (setenv "SSH_ASKPASS" "git-gui--askpass")
+(setenv "PYTHONUNBUFFERED" "x")  ;; needed for windows? running python in comint frame
+(setenv "SSH_ASKPASS" "git-gui--askpass")
 
-  (setq org-element-use-cache nil)  ;; temporarily disable org element cache
-  (load-library "realgud")
-  (global-undo-tree-mode)
-  (require 'helm-config)
-  (require 'ox-rst)
-  (global-set-key [remap dabbrev-expand] 'hippie-expand)
-  (setq erc-autojoin-channels-alist '(("freenode.net" "#latex-de" "##latinitas" "#NetBSD" "##bash-de" "#git" "#vim" "#emacs" "#erc" "#oberon" "#macosx")))
+(setq org-element-use-cache nil)  ;; temporarily disable org element cache
+(load-library "realgud")
+(global-undo-tree-mode)
+(require 'helm-config)
+(require 'ox-rst)
+(global-set-key [remap dabbrev-expand] 'hippie-expand)
+(setq erc-autojoin-channels-alist '(("freenode.net" "#latex-de" "##latinitas" "#NetBSD" "##bash-de" "#git" "#vim" "#emacs" "#erc" "#oberon" "#macosx")))
 
-  (global-magit-file-mode t)
-  (load-library "evil")
-  (require 'dired) ;; also enable C-x C-j FIXIT..
+(global-magit-file-mode t)
+(load-library "evil")
+(require 'dired) ;; also enable C-x C-j FIXIT..
 
-  ;; smartparens
-  (require 'smartparens-config)
-  (add-hook 'emacs-lisp-mode-hook #'smartparens-mode)
-			    
-  ;; python
-  (elpy-enable)
-  ;; Enable Flycheck
-  (when (require 'flycheck nil t)
-    (setq elpy-modules (delq 'elpy-module-flymake elpy-modules))
-    (add-hook 'elpy-mode-hook 'flycheck-mode))
-  ;; Enable autopep8
-  (require 'py-autopep8)
-  ;;(add-hook 'elpy-mode-hook 'py-autopep8-enable-on-save)
-  ;;(global-linum-mode)    ;; show line numbers
-  (global-hl-line-mode) ;; highlight current line of point
+;; smartparens
+(require 'smartparens-config)
+(add-hook 'emacs-lisp-mode-hook #'smartparens-mode)
 
-  (define-key elpy-mode-map [remap previous-error] 'flycheck-previous-error)
-  (define-key elpy-mode-map [remap next-error] 'flycheck-next-error)
+;; python
+(elpy-enable)
+;; Enable Flycheck
+(when (require 'flycheck nil t)
+  (setq elpy-modules (delq 'elpy-module-flymake elpy-modules))
+  (add-hook 'elpy-mode-hook 'flycheck-mode))
+;; Enable autopep8
+(require 'py-autopep8)
+;;(add-hook 'elpy-mode-hook 'py-autopep8-enable-on-save)
+;;(global-linum-mode)    ;; show line numbers
+(global-hl-line-mode) ;; highlight current line of point
 
-  ;; C-c C-z starts python interpreter in current project
-  ;; for this, set python-shell-interpreter to path of buildout powerscript exe
-  ;; and python-shell-interpreter-args to ""
+(define-key elpy-mode-map [remap previous-error] 'flycheck-previous-error)
+(define-key elpy-mode-map [remap next-error] 'flycheck-next-error)
 
-  (tool-bar-mode 0)
+;; C-c C-z starts python interpreter in current project
+;; for this, set python-shell-interpreter to path of buildout powerscript exe
+;; and python-shell-interpreter-args to ""
 
-  (setq c-basic-offset 2)
-  (setq indent-tabs-mode nil)
+(tool-bar-mode 0)
+
+(setq c-basic-offset 2)
+(setq indent-tabs-mode nil)
 #+END_SRC
 
 ** Mode-specific customizations
