@@ -20,17 +20,22 @@ I'm adding some useful functions for handling the other window after calling
 or navigating within help texts for example.
 
 #+BEGIN_SRC emacs-lisp
-(defun go-back-other-window ()
-  "Go back to previous help topic in other window."
-  (interactive)
-  (with-current-buffer (window-buffer (next-window))
-    (help-go-back)))
+  (defun go-back-other-window ()
+    "Go back to previous help topic in other window."
+    (interactive)
+    (with-current-buffer (window-buffer (next-window))
+      (help-go-back)))
 
-(defun quit-restore-other-window ()
-  "Quit other window and deal with its buffer, possibly restoring
-the buffer previously displayed in other window."
-  (interactive)
-  (quit-restore-window (next-window)))
+  (defun quit-restore-other-window ()
+    "Quit other window and deal with its buffer, possibly restoring
+  the buffer previously displayed in other window."
+    (interactive)
+    (quit-restore-window (next-window)))
+
+  (defun shrink-other-window-if-larger-than-buffer ()
+    "Shrink height of other window if its buffer doesn't need so many lines."
+    (interactive)
+    (shrink-window-if-larger-than-buffer (next-window)))
 #+END_SRC
 
 For Windows, we define a few shortcuts running command shells, using these as
@@ -110,9 +115,16 @@ As I got quite used to remote control the other window using ~C-x 4~ keys,
 I'm adding a few ones which I missed so far.
 
 #+BEGIN_SRC emacs-lisp
-(global-set-key "\C-x4q" 'quit-restore-other-window)
-(global-set-key "\C-x4l" 'go-back-other-window)
+  (global-set-key "\C-x4q" 'quit-restore-other-window)
+  (global-set-key "\C-x4l" 'go-back-other-window)
+  (global-set-key "\C-x4-" 'shrink-other-window-if-larger-than-buffer)
 #+END_SRC
+
+Note the window size changing keys, ~C-x ^~ to enlarge (also negative) and
+~C-x -~ to shrink if buffer is smaller than window are a little bit asymetric.
+While the enlargement key can be used to enlarge and shrink the current
+window, the shrink key works only in one direction. So here we define an
+adjacent key for the other window.
 
 We also want to jump to beginning/end in other window by ~C-M-<~ and ~C-M->~
 (cf. ~C-M-v~ and ~C-M-V~ to scroll pagewise in other window).
