@@ -20,22 +20,28 @@ I'm adding some useful functions for handling the other window after calling
 or navigating within help texts for example.
 
 #+BEGIN_SRC emacs-lisp
-  (defun go-back-other-window ()
-    "Go back to previous help topic in other window."
-    (interactive)
-    (with-current-buffer (window-buffer (next-window))
-      (help-go-back)))
+(defun go-back-other-window ()
+  "Go back to previous help topic in other window."
+  (interactive)
+  (with-current-buffer (window-buffer (next-window))
+    (help-go-back)))
 
-  (defun quit-restore-other-window ()
-    "Quit other window and deal with its buffer, possibly restoring
-    the buffer previously displayed in other window."
-    (interactive)
-    (quit-restore-window (next-window)))
+(defun quit-restore-other-window ()
+  "Quit other window and deal with its buffer, possibly restoring
+      the buffer previously displayed in other window."
+  (interactive)
+  (quit-restore-window (next-window)))
 
-  (defun shrink-other-window-if-larger-than-buffer ()
-    "Shrink height of other window if its buffer doesn't need so many lines."
-    (interactive)
-    (shrink-window-if-larger-than-buffer (next-window)))
+(defun shrink-other-window-if-larger-than-buffer ()
+  "Shrink height of other window if its buffer doesn't need so many lines."
+  (interactive)
+  (shrink-window-if-larger-than-buffer (next-window)))
+
+(defun fit-other-window ()
+  "balance or shrink other window giving it an appropriate space."
+  (interactive)
+  (balance-windows)
+  (shrink-window-if-larger-than-buffer (next-window)))
 #+END_SRC
 
 For Windows, we define a few shortcuts running command shells, using these as
@@ -43,19 +49,19 @@ a kind of ~ansi-term~ replacement.
 
 #+BEGIN_SRC emacs-lisp
 (defun run-cmdexe ()
-      (interactive)
-      (let ((shell-file-name "cmd.exe"))
-            (shell "*cmd.exe*")))
+  (interactive)
+  (let ((shell-file-name "cmd.exe"))
+    (shell "*cmd.exe*")))
 
 (defun run-sdk ()
-      (interactive)
-      (let ((shell-file-name "c:\\sdk\\win32\\1.1\\scripts\\sdk-shell-vs90.bat"))
-            (shell "*sdk*")))
+  (interactive)
+  (let ((shell-file-name "c:\\sdk\\win32\\1.1\\scripts\\sdk-shell-vs90.bat"))
+    (shell "*sdk*")))
 
 (defun run-bash ()
-      (interactive)
-      (let ((shell-file-name "c:\\Program Files\\Git\\bin\\bash.exe"))
-            (shell "*bash*")))
+  (interactive)
+  (let ((shell-file-name "c:\\Program Files\\Git\\bin\\bash.exe"))
+    (shell "*bash*")))
 #+END_SRC
 
 ** Global key bindings
@@ -115,9 +121,10 @@ As I got quite used to remote control the other window using ~C-x 4~ keys,
 I'm adding a few ones which I missed so far.
 
 #+BEGIN_SRC emacs-lisp
-  (global-set-key "\C-x4q" 'quit-restore-other-window)
-  (global-set-key "\C-x4l" 'go-back-other-window)
-  (global-set-key "\C-x4-" 'shrink-other-window-if-larger-than-buffer)
+(global-set-key "\C-x4q" 'quit-restore-other-window)
+(global-set-key "\C-x4l" 'go-back-other-window)
+(global-set-key "\C-x4-" 'shrink-other-window-if-larger-than-buffer)
+(global-set-key "\C-X4+" 'fit-other-window)
 #+END_SRC
 
 Note the window size changing keys, ~C-x ^~ to enlarge (also negative) and
@@ -142,7 +149,9 @@ command from minibuffer.
 When using evil-mode, set ~evil-exit-emacs-state~ to ~C-M-z~, as I'm used to
 ~suspend-frame~.
 #+BEGIN_SRC emacs-lisp
-;; (global-set-key "\C-\M-z" 'suspend-frame)  ;; because of evil
+(define-key evil-emacs-state-map "\C-z" nil)
+(define-key evil-emacs-state-map "\C-\M-z" 'evil-exit-emacs-state)
+(define-key evil-normal-state-map "\C-\M-z" 'evil-emacs-state)
 #+END_SRC
 
 ** Misc
@@ -169,7 +178,11 @@ When using evil-mode, set ~evil-exit-emacs-state~ to ~C-M-z~, as I'm used to
 
 (global-magit-file-mode t)
 (load-library "evil")
-(require 'dired) ;; also enable C-x C-j
+(require 'dired) ;; also enable C-x C-j FIXIT..
+
+;; smartparens
+(require 'smartparens-config)
+(add-hook 'emacs-lisp-mode-hook #'smartparens-mode)
 
 ;; python
 (elpy-enable)
