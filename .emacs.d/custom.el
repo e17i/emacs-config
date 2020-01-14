@@ -55,6 +55,8 @@
  '(scroll-bar-mode nil)
  '(select-enable-clipboard t)
  '(sentence-end-double-space nil)
+ '(size-indication-mode t)
+ '(sp-base-key-bindings (quote sp))
  '(server-mode t)
  '(show-paren-mode t)
  '(sql-oracle-options (list oracle-startup-script))
