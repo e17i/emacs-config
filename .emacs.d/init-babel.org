@@ -28,7 +28,7 @@ or navigating within help texts for example.
 
   (defun quit-restore-other-window ()
     "Quit other window and deal with its buffer, possibly restoring
-  the buffer previously displayed in other window."
+    the buffer previously displayed in other window."
     (interactive)
     (quit-restore-window (next-window)))
 
@@ -124,7 +124,8 @@ Note the window size changing keys, ~C-x ^~ to enlarge (also negative) and
 ~C-x -~ to shrink if buffer is smaller than window are a little bit asymetric.
 While the enlargement key can be used to enlarge and shrink the current
 window, the shrink key works only in one direction. So here we define an
-adjacent key for the other window.
+adjacent key for the other window. For rescue, there is always ~C-x +~ to
+balance windows.
 
 We also want to jump to beginning/end in other window by ~C-M-<~ and ~C-M->~
 (cf. ~C-M-v~ and ~C-M-V~ to scroll pagewise in other window).
@@ -150,8 +151,8 @@ When using evil-mode, set ~evil-exit-emacs-state~ to ~C-M-z~, as I'm used to
 ;; (setenv "PATH" (concat "/opt/local/bin:/opt/local/sbin:" (getenv "PATH")))
 
 ;; (load-file "~/.emacs.d/keyboard-pc.el")
-
 ;; (setq split-width-threshold 999)
+
 (setq split-width-threshold 160
       w32-apps-modifier 'meta)
 
