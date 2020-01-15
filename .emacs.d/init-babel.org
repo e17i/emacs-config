@@ -146,14 +146,6 @@ How to get these codes? Call ~M-x global-set-key RET C-M-< beg~.. to manually
 define such a key, then call ~C-x ESC ESC~ and copy the resulting parametrized
 command from minibuffer.
 
-When using evil-mode, set ~evil-exit-emacs-state~ to ~C-M-z~, as I'm used to
-~suspend-frame~.
-#+BEGIN_SRC emacs-lisp
-(define-key evil-emacs-state-map "\C-z" nil)
-(define-key evil-emacs-state-map "\C-\M-z" 'evil-exit-emacs-state)
-(define-key evil-normal-state-map "\C-\M-z" 'evil-emacs-state)
-#+END_SRC
-
 ** Misc
 
 #+BEGIN_SRC emacs-lisp
@@ -170,6 +162,7 @@ When using evil-mode, set ~evil-exit-emacs-state~ to ~C-M-z~, as I'm used to
 
 (setq org-element-use-cache nil)  ;; temporarily disable org element cache
 (load-library "realgud")
+(load-library "evil")
 (global-undo-tree-mode)
 (require 'helm-config)
 (require 'ox-rst)
@@ -177,7 +170,6 @@ When using evil-mode, set ~evil-exit-emacs-state~ to ~C-M-z~, as I'm used to
 (setq erc-autojoin-channels-alist '(("freenode.net" "#latex-de" "##latinitas" "#NetBSD" "##bash-de" "#git" "#vim" "#emacs" "#erc" "#oberon" "#macosx")))
 
 (global-magit-file-mode t)
-(load-library "evil")
 (require 'dired) ;; also enable C-x C-j FIXIT..
 
 ;; smartparens
@@ -210,6 +202,17 @@ When using evil-mode, set ~evil-exit-emacs-state~ to ~C-M-z~, as I'm used to
 #+END_SRC
 
 ** Mode-specific customizations
+*** Evil mode
+
+When using evil-mode, set ~evil-exit-emacs-state~ to ~C-M-z~, as I'm used to
+~suspend-frame~.
+
+#+BEGIN_SRC emacs-lisp
+(define-key evil-emacs-state-map "\C-z" nil)
+(define-key evil-emacs-state-map "\C-\M-z" 'evil-exit-emacs-state)
+(define-key evil-normal-state-map "\C-\M-z" 'evil-emacs-state)
+#+END_SRC
+
 *** C++ mode customizations, in use for aeons now
 
 #+BEGIN_SRC emacs-lisp
