@@ -7,4 +7,5 @@
 (setq custom-file "~/.emacs.d/custom.el")
 (load custom-file)
 
+(setq org-element-use-cache nil)  ;; temporarily disable org element cache
 (org-babel-load-file "~/.emacs.d/init-babel.org")
