@@ -2,6 +2,8 @@
 
 ** Lisp functions
 
+*** Initialization
+
 We want to set each frame to reasonable color defaults by defining an
 appropriate hook. We also call it for the current frame.
 
@@ -15,6 +17,8 @@ appropriate hook. We also call it for the current frame.
 	      )))
 (run-hook-with-args 'after-make-frame-functions (selected-frame))
 #+END_SRC
+
+*** Handling of other window
 
 I'm adding some useful functions for handling the other window after calling
 or navigating within help texts for example.
@@ -43,6 +47,55 @@ or navigating within help texts for example.
   (balance-windows)
   (shrink-window-if-larger-than-buffer (next-window)))
 #+END_SRC
+
+*** Convenient error stepping
+
+Often I want to quickly navigate through a list of error messages or
+occurencies, jumping to the places the errors are indicating. There are
+different ways to archieve this. First of all, with ~C-x C-f~ you can activate
+~error-follow-minor-mode~, allowing to move the mark through the error buffer,
+letting the referenced source buffers follow you. But if you want to have the
+source buffer active, you would need to jump to the error buffer for each next
+step. As a remedy, the following functions are introduced. While they follow
+the previous scheme adding remote control functions for the other window, they
+also show a cool feature of setting a temporary keymap in place, allowing
+further navigation steps by using shortcuts. This way, the long key sequence
+of addressing the other window (~C-x 4~) and starting the goto sequence
+(~M-g~) needs to be casted only as an initiation. Afterwards, it gets really
+easy. This is quite convenient in the most different applications.
+
+#+BEGIN_SRC emacs-lisp
+(defun error-step ()
+  (macrolet ((step-msg ()
+		       '(message "Use n,p,< to navigate further")))
+    (step-msg)
+    (set-transient-map
+     (let ((map (make-sparse-keymap)))
+       (dolist (modk '(() (meta)))
+	 (define-key map (vector (append modk '(?n)))
+	   (lambda () (interactive) (next-error) (step-msg)))
+	 (define-key map (vector (append modk '(?<)))
+	   (lambda () (interactive) (first-error) (step-msg)))
+	 (define-key map (vector (append modk '(?p)))
+	   (lambda () (interactive) (previous-error) (step-msg))))
+       map) 't)))
+
+(defun next-error-other-window (&optional arg)
+  "Visit next error message displayed in other window's buffer."
+  (interactive "P")
+  (with-current-buffer (window-buffer (next-window))
+    (next-error arg)
+    (error-step)))
+
+(defun previous-error-other-window (&optional arg)
+  "Visit previous error message displayed in other window's buffer."
+  (interactive "P")
+  (with-current-buffer (window-buffer (next-window))
+    (previous-error arg)
+    (error-step)))
+#+END_SRC
+
+*** Windows run commands
 
 For Windows, we define a few shortcuts running command shells, using these as
 a kind of ~ansi-term~ replacement.
@@ -145,6 +198,15 @@ We also want to jump to beginning/end in other window by ~C-M-<~ and ~C-M->~
 How to get these codes? Call ~M-x global-set-key RET C-M-< beg~.. to manually
 define such a key, then call ~C-x ESC ESC~ and copy the resulting parametrized
 command from minibuffer.
+
+Now come the key bindings for convenient error navigation, as promised above.
+
+#+BEGIN_SRC emacs-lisp
+(define-prefix-command 'other-goto-map)
+(global-set-key "\C-x4\M-g" 'other-goto-map)
+(define-key other-goto-map "\M-n" 'next-error-other-window)
+(define-key other-goto-map "\M-p" 'previous-error-other-window)
+#+END_SRC
 
 ** Misc
 
