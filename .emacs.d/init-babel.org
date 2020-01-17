@@ -65,6 +65,8 @@ of addressing the other window (~C-x 4~) and starting the goto sequence
 easy. This is quite convenient in the most different applications.
 
 #+BEGIN_SRC emacs-lisp
+(require 'cl)
+
 (defun error-step ()
   (macrolet ((step-msg ()
 		       '(message "Use n,p,< to navigate further")))
