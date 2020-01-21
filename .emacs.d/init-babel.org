@@ -125,7 +125,7 @@ allowing to specify a remote window to be comtrolled."
 			      `(lambda () (interactive)
 				 (with-selected-window window
 				   ,@body))))
-	(message "naviagate ([0-9] n,p,N,P,v,V,<,>,l, )")
+	(message "naviagate ([0-9] n,p,N,P,v,V,<,>,[,],l, )")
 	(set-transient-map
 	 (let ((map (make-sparse-keymap)))
 	   (dolist (num '(?0 ?1 ?2 ?3 ?4 ?5 ?6 ?7 ?8 ?9))
@@ -141,6 +141,8 @@ allowing to specify a remote window to be comtrolled."
 	   (define-key map "l" (with-window (recenter-top-bottom (get-arg-acc))))
 	   (define-key map "<" (with-window (beginning-of-buffer (get-arg-acc))))
 	   (define-key map ">" (with-window (end-of-buffer (get-arg-acc))))
+	   (define-key map "]" (with-window (forward-paragraph (get-arg-acc))))
+	   (define-key map "[" (with-window (backward-paragraph (get-arg-acc))))
 	   (define-key map "N" (with-window (scroll-up-line (get-arg-acc 1))))
 	   (define-key map "P" (with-window (scroll-down-line (get-arg-acc 1))))
 	   (define-key map "v" (with-window (scroll-up-command (get-arg-acc))))
