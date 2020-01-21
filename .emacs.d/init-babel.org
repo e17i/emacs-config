@@ -95,6 +95,64 @@ easy. This is quite convenient in the most different applications.
     (error-step)))
 #+END_SRC
 
+*** Convenient Navigation Mode
+
+This is an experimental feature in the spirit of previous means of other
+window handling, allowing for activation of a temporary navigation mode. Using
+this, you can conveniently navigate, scroll, set marks and jump to previous
+mark positions. Features include navigating up and down of the point,
+scrolling up and down, jumping to begin and end of buffer, pagewise up and
+down. Most of these can be combined with a numeric argument. The mode is
+cancelled by using any other key.
+
+#+BEGIN_SRC emacs-lisp
+(defun navigate-buffer (&optional window)
+  "Enter a temporary buffer navigation mode. WINDOW specifies an optional window pointer,
+allowing to specify a remote window to be comtrolled."
+  (interactive)
+  (lexical-let ((arg-acc 0)
+		(window (or window (selected-window))))
+    (labels ((get-arg-acc (&optional default)
+			  (let ((res (if (> arg-acc 0) arg-acc default)))
+			    (setq arg-acc 0)
+			    res))
+	     (arg-accumulate (num)
+			     (setq arg-acc (+ (* arg-acc 10) num))
+			     (message " %d" arg-acc)))
+      (macrolet ((with-window (&rest body)
+			      `(lambda () (interactive)
+				 (with-selected-window window
+				   ,@body))))
+	(message "naviagate ([0-9] n,p,N,P,v,V,<,>,l, )")
+	(set-transient-map
+	 (let ((map (make-sparse-keymap)))
+	   (dolist (num '(?0 ?1 ?2 ?3 ?4 ?5 ?6 ?7 ?8 ?9))
+	     (define-key map (vector num)
+	       (lambda ()
+		 (interactive)
+		 (let* ((ev last-command-event)
+			(base (event-basic-type ev)))
+		   (arg-accumulate (- base 48))))))
+	   (define-key map " " (with-window (set-mark-command (get-arg-acc))))
+	   (define-key map "n" (with-window (next-line (get-arg-acc 1))))
+	   (define-key map "p" (with-window (previous-line (get-arg-acc 1))))
+	   (define-key map "l" (with-window (recenter-top-bottom (get-arg-acc))))
+	   (define-key map "<" (with-window (beginning-of-buffer (get-arg-acc))))
+	   (define-key map ">" (with-window (end-of-buffer (get-arg-acc))))
+	   (define-key map "N" (with-window (scroll-up-line (get-arg-acc 1))))
+	   (define-key map "P" (with-window (scroll-down-line (get-arg-acc 1))))
+	   (define-key map "v" (with-window (scroll-up-command (get-arg-acc))))
+	   (define-key map "V" (with-window (scroll-down-command (get-arg-acc))))
+	 map) 't)))))
+
+(defun navigate-other-window ()
+  "Enter a temporary remote buffer navigation mode. This way, the next or other window
+can be controlled remotely. This allows moving around the other window without deactivating
+the current window, enabling a very convenient means of temorarily moving around help windows."
+  (interactive)
+  (navigate-buffer (next-window)))
+#+END_SRC
+
 *** Windows run commands
 
 For Windows, we define a few shortcuts running command shells, using these as
@@ -206,6 +264,14 @@ Now come the key bindings for convenient error navigation, as promised above.
 (global-set-key "\C-x4\M-g" 'other-goto-map)
 (define-key other-goto-map "\M-n" 'next-error-other-window)
 (define-key other-goto-map "\M-p" 'previous-error-other-window)
+#+END_SRC
+
+Here we bind the temporary navigation mode to some useful keys for current and
+other window.
+
+#+BEGIN_SRC emacs-lisp
+(global-set-key "\C-x\C-v" 'navigate-buffer)
+(global-set-key "\C-x4v" 'navigate-other-window)
 #+END_SRC
 
 ** Misc
