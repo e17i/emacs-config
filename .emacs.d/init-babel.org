@@ -1,0 +1,563 @@
+* Emacs Configuration
+
+** Lisp functions
+
+*** Initialization
+
+We want to set each frame to reasonable color defaults by defining an
+appropriate hook. We also call it for the current frame.
+
+#+BEGIN_SRC emacs-lisp
+(add-hook 'after-make-frame-functions
+	  (lambda (frame)
+	    (set-frame-parameter frame 'alpha '(85 . 85))
+	    (with-selected-frame frame
+	      (set-background-color "Black")
+	      (set-foreground-color "Green"))
+	    ))
+(run-hook-with-args 'after-make-frame-functions (selected-frame))
+#+END_SRC
+
+*** Handling of other window
+
+I'm adding some useful functions for handling the other window after calling
+or navigating within help texts for example.
+
+#+BEGIN_SRC emacs-lisp
+(defun go-back-other-window ()
+  "Go back to previous help topic in other window."
+  (interactive)
+  (with-current-buffer (window-buffer (next-window))
+    (help-go-back)))
+
+(defun quit-restore-other-window ()
+  "Quit other window and deal with its buffer, possibly restoring
+      the buffer previously displayed in other window."
+  (interactive)
+  (quit-restore-window (next-window)))
+
+(defun shrink-other-window-if-larger-than-buffer ()
+  "Shrink height of other window if its buffer doesn't need so many lines."
+  (interactive)
+  (shrink-window-if-larger-than-buffer (next-window)))
+
+(defun fit-other-window ()
+  "balance or shrink other window giving it an appropriate space."
+  (interactive)
+  (balance-windows)
+  (shrink-window-if-larger-than-buffer (next-window)))
+#+END_SRC
+
+*** Convenient error stepping
+
+Often I want to quickly navigate through a list of error messages or
+occurencies, jumping to the places the errors are indicating. There are
+different ways to archieve this. First of all, with ~C-x C-f~ you can activate
+~error-follow-minor-mode~, allowing to move the mark through the error buffer,
+letting the referenced source buffers follow you. But if you want to have the
+source buffer active, you would need to jump to the error buffer for each next
+step. As a remedy, the following functions are introduced. While they follow
+the previous scheme adding remote control functions for the other window, they
+also show a cool feature of setting a temporary keymap in place, allowing
+further navigation steps by using shortcuts. This way, the long key sequence
+of addressing the other window (~C-x 4~) and starting the goto sequence
+(~M-g~) needs to be casted only as an initiation. Afterwards, it gets really
+easy. This is quite convenient in the most different applications.
+
+#+BEGIN_SRC emacs-lisp
+(require 'cl)
+
+(defun error-step ()
+  (macrolet ((step-msg ()
+		       '(message "Use n,p,< to navigate further")))
+    (step-msg)
+    (set-transient-map
+     (let ((map (make-sparse-keymap)))
+       (dolist (modk '(() (meta)))
+	 (define-key map (vector (append modk '(?n)))
+	   (lambda () (interactive) (next-error) (step-msg)))
+	 (define-key map (vector (append modk '(?<)))
+	   (lambda () (interactive) (first-error) (step-msg)))
+	 (define-key map (vector (append modk '(?p)))
+	   (lambda () (interactive) (previous-error) (step-msg))))
+       map) 't)))
+
+(defun next-error-other-window (&optional arg)
+  "Visit next error message displayed in other window's buffer."
+  (interactive "P")
+  (with-current-buffer (window-buffer (next-window))
+    (next-error arg)
+    (error-step)))
+
+(defun previous-error-other-window (&optional arg)
+  "Visit previous error message displayed in other window's buffer."
+  (interactive "P")
+  (with-current-buffer (window-buffer (next-window))
+    (previous-error arg)
+    (error-step)))
+#+END_SRC
+
+*** Convenient Navigation Mode
+
+This is an experimental feature in the spirit of previous means of other
+window handling, allowing for activation of a temporary navigation mode. Using
+this, you can conveniently navigate, scroll, set marks and jump to previous
+mark positions. Features include navigating up and down of the point,
+scrolling up and down, jumping to begin and end of buffer, pagewise up and
+down. Most of these can be combined with a numeric argument. The mode is
+cancelled by using any other key.
+
+#+BEGIN_SRC emacs-lisp
+(defun navigate-buffer (&optional window)
+  "Enter a temporary buffer navigation mode. WINDOW specifies an optional window pointer,
+allowing to specify a remote window to be controlled."
+  (interactive)
+  (lexical-let ((arg-acc 0)
+		(arg-neg nil)
+		(window (or window (selected-window))))
+    (labels ((get-arg-acc (&optional default)
+			  (let ((res (if (> arg-acc 0)
+					 (* arg-acc (if arg-neg -1 1))
+				       default)))
+			    (setq arg-acc 0 arg-neg nil)
+			    res))
+	     (arg-negate ()
+			 (setq arg-neg (if arg-neg nil '?-))
+			 (message " %c %d" (if arg-neg arg-neg '? ) arg-acc))
+	     (arg-accumulate (num)
+			     (setq arg-acc (+ (* arg-acc 10) num))
+			     (message " %c %d" (if arg-neg arg-neg '? ) arg-acc)))
+      (macrolet ((with-window (&rest body)
+			      `(lambda () (interactive)
+				 (with-selected-window window
+				   ,@body))))
+	(message "navigate ([-,0-9] n,p,N,P,v,V,<,>,[,],l, )")
+	(set-transient-map
+	 (let ((map (make-sparse-keymap)))
+	   (define-key map [?-] (lambda () (interactive) (arg-negate)))
+	   (dolist (num '(?0 ?1 ?2 ?3 ?4 ?5 ?6 ?7 ?8 ?9))
+	     (define-key map (vector num)
+	       (lambda ()
+		 (interactive)
+		 (let* ((ev last-command-event)
+			(base (event-basic-type ev)))
+		   (arg-accumulate (- base 48))))))
+	   (define-key map " " (with-window (set-mark-command (get-arg-acc))))
+	   (define-key map "n" (with-window (next-line (get-arg-acc 1))))
+	   (define-key map "p" (with-window (previous-line (get-arg-acc 1))))
+	   (define-key map "l" (with-window (recenter-top-bottom (get-arg-acc))))
+	   (define-key map "<" (with-window (beginning-of-buffer (get-arg-acc))))
+	   (define-key map ">" (with-window (end-of-buffer (get-arg-acc))))
+	   (define-key map "]" (with-window (forward-paragraph (get-arg-acc))))
+	   (define-key map "[" (with-window (backward-paragraph (get-arg-acc))))
+	   (define-key map "N" (with-window (scroll-up-line (get-arg-acc 1))))
+	   (define-key map "P" (with-window (scroll-down-line (get-arg-acc 1))))
+	   (define-key map "v" (with-window (scroll-up-command (get-arg-acc))))
+	   (define-key map "V" (with-window (scroll-down-command (get-arg-acc))))
+	 map) 't)))))
+
+(defun navigate-other-window ()
+  "Enter a temporary remote buffer navigation mode. This way, the next or other window
+can be controlled remotely. This allows moving around the other window without deactivating
+the current window, enabling a very convenient means of temorarily moving around help windows."
+  (interactive)
+  (navigate-buffer (next-window)))
+#+END_SRC
+
+*** Windows run commands
+
+For Windows, we define a few shortcuts running command shells, using these as
+a kind of ~ansi-term~ replacement.
+
+#+BEGIN_SRC emacs-lisp
+(defun run-cmdexe ()
+  (interactive)
+  (let ((shell-file-name "cmd.exe"))
+    (shell "*cmd.exe*")))
+
+(defun run-sdk ()
+  (interactive)
+  (let ((shell-file-name "c:\\sdk\\win32\\1.1\\scripts\\sdk-shell-vs90.bat"))
+    (shell "*sdk*")))
+
+(defun run-bash ()
+  (interactive)
+  (let ((shell-file-name "c:\\Program Files\\Git\\bin\\bash.exe"))
+    (shell "*bash*")))
+#+END_SRC
+
+*** Frame size
+
+This used to be a frame maximize function for Mac, which is not longer neeeded
+here. Nevertheless, this may work as foundation for functions realizing some
+visually attractive full screen mode and reverting to the previous frame size.
+"Visually attractive" would then be something like "leave a small configurable
+space outside the frame and use the rest of screen".
+
+#+BEGIN_SRC emacs-lisp
+(defun maximize-frame () 
+  (interactive)
+  (set-frame-position (selected-frame) 0 0)
+  (set-frame-size (selected-frame) 1000 1000))
+#+END_SRC
+
+** Global key bindings
+
+Some convenience keys for handling buffers, files and window sizes. Use
+caution and check to not shadow future functionality here.
+
+#+BEGIN_SRC emacs-lisp
+(global-set-key "\C-x\C-b" 'bs-show)	;; this used to be electric-buffer-list
+(global-set-key "\C-c\C-v" 'find-file-at-point)
+(global-set-key "\C-x\C-f" 'find-file)
+(global-set-key "\C-c-" 'shrink-window)
+(global-set-key "\C-c+" 'enlarge-window)
+#+END_SRC
+
+Convenience keys for buffer scrolling. Enables up/down also with /Meta/
+modifier. Together with /Shift/ this enables scrolling. This way you can very
+conveniently move the pointer and scroll by just adding/releasing the /Shift/
+modifier.
+
+#+BEGIN_SRC emacs-lisp
+(global-set-key "\M-p" 'previous-line)
+(global-set-key "\M-n" 'next-line)
+(global-set-key "\M-P" 'scroll-down-line)
+(global-set-key "\M-N" 'scroll-up-line)
+(global-set-key [end] 'move-end-of-line)
+(global-set-key [home] 'move-beginning-of-line)
+#+END_SRC
+
+Ace enables some more vi-style jumping and zapping (see ~M-z~ for the basic
+~zap-to-char~ function).
+
+#+BEGIN_SRC emacs-lisp
+(global-set-key "\M-J" 'ace-jump-char-mode)
+;;;(global-set-key "\C-x\C-j" 'ace-jump-mode-pop-mark) ;; this is dired-jump
+(global-set-key "\C-x\C-z" 'zzz-up-to-char)
+#+END_SRC
+
+Mouse keys: remember basic mouse button handling in emacs: left - set pointer,
+right - define region and save to kill ring, double right - kill to kill ring,
+middle - yank to click position. As on Mac middle and right buttons may be
+otherwise occupied, use them together with /Meta/.
+
+Also enable mouse wheel scrolling. With /Meta/, scroll pagewise.
+
+#+BEGIN_SRC emacs-lisp
+(global-set-key [M-up] 'scroll-down-line)
+(global-set-key [M-down] 'scroll-up-line)
+;; this used to be active on cassiopeia. re-evaluate?
+;; (global-set-key [(wheel-down)] (lambda()(interactive)(scroll-up 3)))
+;; (global-set-key [(wheel-up)] (lambda()(interactive)(scroll-down 3)))
+;; (global-set-key (kbd "<M-down>") 'scroll-up-line)
+;; (global-set-key (kbd "<M-up>") 'scroll-down-line)
+(global-set-key [(M-wheel-down)] 'scroll-up-command)
+(global-set-key [(M-wheel-up)] 'scroll-down-command)
+;; for mac: select: mouse-1, copy/cut: mouse-3, yank: M-mouse-2, undo: M-mouse-3
+(global-set-key [M-mouse-2] 'mouse-yank-at-click)
+(global-set-key [M-mouse-3] 'undo)
+#+END_SRC
+
+As I got quite used to remote control the other window using ~C-x 4~ keys, 
+I'm adding a few ones which I missed so far.
+
+#+BEGIN_SRC emacs-lisp
+(global-set-key "\C-x4q" 'quit-restore-other-window)
+(global-set-key "\C-x4l" 'go-back-other-window)
+(global-set-key "\C-x4-" 'shrink-other-window-if-larger-than-buffer)
+(global-set-key "\C-X4+" 'fit-other-window)
+#+END_SRC
+
+Note the window size changing keys, ~C-x ^~ to enlarge (also negative) and
+~C-x -~ to shrink if buffer is smaller than window are a little bit asymetric.
+While the enlargement key can be used to enlarge and shrink the current
+window, the shrink key works only in one direction. So here we define an
+adjacent key for the other window. For rescue, there is always ~C-x +~ to
+balance windows.
+
+We also want to jump to beginning/end in other window by ~C-M-<~ and ~C-M->~
+(cf. ~C-M-v~ and ~C-M-V~ to scroll pagewise in other window).
+
+#+BEGIN_SRC emacs-lisp
+(global-set-key [201326652] (quote beginning-of-buffer-other-window))
+(global-set-key [201326654] (quote end-of-buffer-other-window))
+#+END_SRC
+
+How to get these codes? Call ~M-x global-set-key RET C-M-< beg~.. to manually
+define such a key, then call ~C-x ESC ESC~ and copy the resulting parametrized
+command from minibuffer.
+
+Now come the key bindings for convenient error navigation, as promised above.
+
+#+BEGIN_SRC emacs-lisp
+(define-prefix-command 'other-goto-map)
+(global-set-key "\C-x4\M-g" 'other-goto-map)
+(define-key other-goto-map "\M-n" 'next-error-other-window)
+(define-key other-goto-map "\M-p" 'previous-error-other-window)
+#+END_SRC
+
+Here we bind the temporary navigation mode to some useful keys for current and
+other window.
+
+#+BEGIN_SRC emacs-lisp
+(global-set-key "\C-x\C-v" 'navigate-buffer)
+(global-set-key "\C-x4v" 'navigate-other-window)
+#+END_SRC
+
+** Misc
+
+#+BEGIN_SRC emacs-lisp
+(setenv "PATH" (concat "/opt/local/bin:/opt/local/sbin:" (getenv "PATH")))
+
+(load-file "~/.emacs.d/keyboard-pc.el")
+;; (setq split-width-threshold 999)
+
+;; (setq split-width-threshold 160
+;;       w32-apps-modifier 'meta)
+
+;; (setenv "PYTHONUNBUFFERED" "x")  ;; needed for windows? running python in comint frame
+;; (setenv "SSH_ASKPASS" "git-gui--askpass")
+
+(setq org-element-use-cache nil)  ;; temporarily disable org element cache
+(load-library "realgud")
+(load-library "evil")
+(global-undo-tree-mode)
+(require 'helm-config)
+(require 'ox-rst)
+(global-set-key [remap dabbrev-expand] 'hippie-expand)
+(setq erc-autojoin-channels-alist '(("freenode.net" "#latex-de" "##latinitas" "#NetBSD" "##bash-de" "#git" "#vim" "#emacs" "#erc" "#oberon" "#macosx")))
+
+(global-magit-file-mode t)
+(require 'dired) ;; also enable C-x C-j FIXIT..
+
+(define-key global-map [ns-drag-file] 'ns-find-file)
+;; (setq gc-cons-threshold 1000000)  ;; re-evaluate
+;; re-evaluate bell handling
+(setq visible-bell nil) ;; The default
+(setq ring-bell-function 'ignore)
+;; (setq c-basic-offset 2) ;; already in c++-mode hook?
+(setq minibuffer-max-depth nil)  ;; what's this?
+
+;; (server-start) ;; replace with custom server-mode
+
+;; smartparens
+(require 'smartparens-config)
+(add-hook 'emacs-lisp-mode-hook #'smartparens-mode)
+
+;; python
+(elpy-enable)
+;; Enable Flycheck
+(when (require 'flycheck nil t)
+  (setq elpy-modules (delq 'elpy-module-flymake elpy-modules))
+  (add-hook 'elpy-mode-hook 'flycheck-mode))
+;; Enable autopep8
+(require 'py-autopep8)
+;;(add-hook 'elpy-mode-hook 'py-autopep8-enable-on-save)
+;;(global-linum-mode)    ;; show line numbers
+(global-hl-line-mode) ;; highlight current line of point
+
+(define-key elpy-mode-map [remap previous-error] 'flycheck-previous-error)
+(define-key elpy-mode-map [remap next-error] 'flycheck-next-error)
+
+;; C-c C-z starts python interpreter in current project
+;; for this, set python-shell-interpreter to path of buildout powerscript exe
+;; and python-shell-interpreter-args to ""
+
+(tool-bar-mode 0)
+
+(setq c-basic-offset 2)
+(setq indent-tabs-mode nil)
+#+END_SRC
+
+** Mode-specific customizations
+*** Evil mode
+
+When using evil-mode, set ~evil-exit-emacs-state~ to ~C-M-z~, as I'm used to
+~suspend-frame~.
+
+#+BEGIN_SRC emacs-lisp
+(define-key evil-emacs-state-map "\C-z" nil)
+(define-key evil-emacs-state-map "\C-\M-z" 'evil-exit-emacs-state)
+(define-key evil-normal-state-map "\C-\M-z" 'evil-emacs-state)
+#+END_SRC
+
+#+INCLUDE: "evil-defines.org"
+
+*** Etags
+
+#+BEGIN_SRC emacs-lisp
+(global-set-key "\C-ct" 'tag-complete-symbol)
+(global-set-key "\C-cs" 'tags-search)
+(global-set-key "\C-cr" 'tags-query-replace)
+(defun my-generate-etags ()
+  (interactive)
+  (let* ((dir (read-string "project: "))
+	 (cctarget (concat "../" dir "/*.cc"))
+	 (hhtarget (concat "../" dir "/*.hh"))
+	 (ctarget (concat "../" dir "/*.c"))
+	 (htarget (concat "../" dir "/*.h")))
+    (shell-command (concat "etags -a " cctarget " " hhtarget " " ctarget " " htarget " >/dev/null") nil)
+    )
+  )
+(global-set-key "\C-ci" 'my-generate-etags)
+#+END_SRC
+
+*** C++ mode customizations, in use for aeons now
+
+#+BEGIN_SRC emacs-lisp
+(add-hook 'c-mode-common-hook
+          (function
+           (lambda ()
+             (c-toggle-auto-hungry-state 1)
+             (c-set-style "Stroustrup")
+	     (setq c-basic-offset 2)
+             (setq c-hanging-braces-alist '((brace-list-open)
+                                            (brace-list-close after)
+                                            (defun-open after)
+                                            (class-open after)
+                                            (inline-open after)
+                                            (substatement-open after))))))
+;; (autoload 'c++-mode   "cc-mode" "C++ Editing Mode" t)  ;; needed?
+;; (autoload 'c-mode "cc-mode" "C Editing Mode" t)
+;; re-check
+(setq auto-mode-alist
+      (append '(("\\.C$"  . c++-mode)
+                ("\\.cc$" . c++-mode)
+                ("\\.m$" . objc-mode)
+                ("\\.c$"  . c-mode)   ; to edit C code
+                ("\\.h$"  . c-mode)   ; to edit C code
+                ) auto-mode-alist))
+
+#+END_SRC
+
+*** compilation mode
+
+#+BEGIN_SRC emacs-lisp
+;; (global-set-key "\C-cc" 'compile)  ;; here probably use make better.. 
+;; (global-set-key "\C-cn" 'next-error)  ;;  this is now M-g M-n
+;; (global-set-key "\C-cl" 'goto-line)
+#+END_SRC
+
+*** Auto-fill-mode
+
+#+BEGIN_SRC emacs-lisp
+(add-hook 'fundamental-mode-hook
+	  (lambda () (auto-fill-mode 1)))
+(add-hook 'text-mode-hook
+	  (lambda () (auto-fill-mode 1)))
+(add-hook 'org-mode-hook
+	  (lambda () (auto-fill-mode 1)))
+#+END_SRC
+
+*** python mode
+
+The untabify-function defined here is currently disabled.
+
+#+BEGIN_SRC emacs-lisp
+(defun python-mode-untabify ()
+    (save-excursion
+      (goto-char (point-min))
+      (while (re-search-forward "[ \t]+$" nil t)
+        (delete-region (match-beginning 0) (match-end 0)))
+      (goto-char (point-min))
+      (if (search-forward "\t" nil t)
+          (untabify (1- (point)) (point-max))))
+    nil)
+
+;;(add-hook 'python-mode-hook
+;;            '(lambda ()
+;;               (make-local-variable 'write-contents-hooks)
+;;               (add-hook 'write-contents-hooks 'python-mode-untabify)))
+#+END_SRC
+
+*** React programming
+
+Combine javascript and web-mode, supporting ~jsx~ templates within. This is
+probably outdated and should be re-evaluated. Is there already a real
+react-mode? Otherwise, combine it with more up-to-date html-mode?
+
+#+BEGIN_SRC emacs-lisp
+(add-to-list 'auto-mode-alist '("\\.jsx\\'" . web-mode))
+(add-hook 'web-mode-hook 'js2-minor-mode)
+#+END_SRC
+
+*** XML-mode 
+
+**** hiding of subtrees
+
+Here we use ~hs-mode~, enabling tag view toggling and tag level hiding. Also
+~S-mouse-2~ can be used to toggle tag views.
+
+#+BEGIN_SRC emacs-lisp
+(setq sgml-quick-keys t)
+(require 'hideshow)
+(require 'sgml-mode)
+(require 'nxml-mode)
+
+(add-to-list 'hs-special-modes-alist
+             '(nxml-mode
+               "<!--\\|<[^/>]*[^/]>"
+               "-->\\|</[^/>]*[^/]>"
+
+               "<!--"
+               sgml-skip-tag-forward
+               nil))
+
+(add-hook 'nxml-mode-hook 'hs-minor-mode)
+
+(define-key nxml-mode-map (kbd "C-c C-h") 'hs-toggle-hiding)
+(define-key nxml-mode-map (kbd "C-c C-l") 'hs-hide-level)
+#+END_SRC
+
+**** tagedit-mode
+
+tbd
+
+*** markdown mode
+
+#+BEGIN_SRC emacs-lisp
+(autoload 'markdown-mode "markdown-mode"
+  "Major mode for editing Markdown files" t)
+(add-to-list 'auto-mode-alist '("\\.markdown\\'" . markdown-mode))
+(add-to-list 'auto-mode-alist '("\\.md\\'" . markdown-mode))
+(setq markdown-command "/Users/jko/Programming/node/node_modules/.bin/md2html")
+#+END_SRC
+
+*** calendar/diary
+
+#+BEGIN_SRC emacs-lisp
+(setq view-diary-entries-initially t)
+(setq view-calendar-holidays-initially t)
+(setq mark-diary-entries-in-calendar t)
+(setq mark-holidays-in-calendar t)
+#+END_SRC
+
+*** POV-Ray
+
+#+BEGIN_SRC emacs-lisp
+(setq load-path (cons "~/.emacs.d/lisp" load-path))
+(autoload 'pov-mode "pov-mode.el" "PoVray scene file mode" t)
+(setq auto-mode-alist
+      (append '(("\\.pov$" . pov-mode)
+		("\\.inc$" . pov-mode)
+		) auto-mode-alist))
+(setq pov-indent-level '2)
+#+END_SRC
+
+*** MIX (GNU MDK)
+
+#+BEGIN_SRC emacs-lisp
+(setq load-path (cons "/opt/local/share/mdk" load-path))
+(autoload 'mixal-mode "mixal-mode" t)
+(add-to-list 'auto-mode-alist '("\\.mixal\\'" . mixal-mode))
+(autoload 'mixvm "mixvm" "mixvm/gud interaction" t)
+#+END_SRC
+
+** Disabled commands
+
+#+BEGIN_SRC emacs-lisp
+(put 'narrow-to-region 'disabled nil)
+(put 'narrow-to-page 'disabled nil)
+;; (put 'eval-expression 'disabled nil)  ;; needed?
+#+END_SRC

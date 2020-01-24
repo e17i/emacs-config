@@ -1,0 +1,20 @@
+* Evil defines
+
+This is an example of defining an evil leader key and some adjacent keymaps.
+
+#+BEGIN_SRC emacs-lisp
+(define-prefix-command 'leader-map)
+
+(define-key evil-normal-state-map " " leader-map)
+
+(define-key leader-map "b" 'list-buffers)
+(define-key leader-map "#" 'bs-show)
+(define-key leader-map "l" 'global-linum-mode)
+
+(define-prefix-command 'other-map)
+(define-key leader-map "4" other-map)
+(define-key other-map "-" 'shrink-other-window-if-larger-than-buffer)
+(define-key other-map "+" 'fit-other-window)
+(define-key other-map "q" 'quit-restore-other-window)
+(define-key other-map "l" 'go-back-other-window)
+#+END_SRC
