@@ -237,26 +237,27 @@ Ace enables some more vi-style jumping and zapping (see ~M-z~ for the basic
 (global-set-key "\C-x\C-z" 'zzz-up-to-char)
 #+END_SRC
 
-Mouse keys: remember basic mouse button handling in emacs: left - set pointer,
-right - define region and save to kill ring, double right - kill to kill ring,
-middle - yank to click position. As on Mac middle and right buttons may be
-otherwise occupied, use them together with /Meta/.
+Mouse keys: remember basic mouse button handling in emacs: left - set
+pointer, double left - select word, drag - select, drag after double -
+select words, right - define region and save to kill ring, right after
+double click - define region up to next word, double right - kill to
+kill ring, middle - yank to click position.
 
-Also enable mouse wheel scrolling. With /Meta/, scroll pagewise.
+As on Mac middle button may be otherwise occupied, use mouse-3
+together with /Meta/ as replacement.
+
+~mouse-wheel-mode~ also enables mouse wheel scrolling. With /Meta/,
+enables scroll turbo; with /shift/, scale text.
 
 #+BEGIN_SRC emacs-lisp
-(global-set-key [M-up] 'scroll-down-line)
-(global-set-key [M-down] 'scroll-up-line)
-;; this used to be active on cassiopeia. re-evaluate?
-;; (global-set-key [(wheel-down)] (lambda()(interactive)(scroll-up 3)))
-;; (global-set-key [(wheel-up)] (lambda()(interactive)(scroll-down 3)))
-;; (global-set-key (kbd "<M-down>") 'scroll-up-line)
-;; (global-set-key (kbd "<M-up>") 'scroll-down-line)
-(global-set-key [(M-wheel-down)] 'scroll-up-command)
-(global-set-key [(M-wheel-up)] 'scroll-down-command)
-;; for mac: select: mouse-1, copy/cut: mouse-3, yank: M-mouse-2, undo: M-mouse-3
-(global-set-key [M-mouse-2] 'mouse-yank-at-click)
-(global-set-key [M-mouse-3] 'undo)
+  ;; mac trackpad: select: mouse-1, copy/cut: mouse-3, yank: M-mouse-2
+  ;; (define-key key-translation-map (kbd "<M-mouse-3>") (kbd "<mouse-2>"))
+  (define-key key-translation-map (kbd "<mode-line> <M-mouse-3>") (kbd "<mode-line> <mouse-2>"))
+  (global-set-key [M-mouse-3] 'mouse-yank-at-click)
+  ;; mac mouse: select: mouse-1, copy/cut: mouse-3, yank: M-mouse-2,
+  ;; undo: M-mouse-3
+  ;; (global-set-key [M-mouse-2] 'mouse-yank-at-click)
+  ;; (global-set-key [M-mouse-3] 'undo)
 #+END_SRC
 
 As I got quite used to remote control the other window using ~C-x 4~ keys, 

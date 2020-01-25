@@ -52,7 +52,7 @@
 (global-set-key "\C-x\C-f" 'find-file)
 (global-set-key "\C-c+" 'enlarge-window)
 (global-set-key "\C-c-" 'shrink-window)
-(global-set-key (kbd "<s-mouse-1>") 'mouse-yank-at-click)
+;; (global-set-key (kbd "<s-mouse-1>") 'mouse-yank-at-click)
 (setq gc-cons-threshold 1000000)
 ;;(setq inhibit-startup-message t)
 ;; visible bell workaround for el capitan

@@ -5,13 +5,14 @@
  ;; If there is more than one, they won't work right.
  '(blink-cursor-mode nil)
  '(column-number-mode t)
+ '(custom-file "~/.emacs.d/custom.el")
  '(exec-path
    '("/usr/bin" "/bin" "/usr/sbin" "/sbin" "/Applications/MacPorts/Emacs.app/Contents/MacOS/bin" "/opt/local/bin"))
  '(fringe-mode 0 nil (fringe))
  '(gud-mixvm-command-name "/opt/local/bin/mixvm")
  '(isearch-lazy-count t)
- '(mac-emulate-three-button-mouse t)
  '(mouse-drag-copy-region t)
+ '(mouse-wheel-scroll-amount '(1 ((meta) . 3) ((shift) . text-scale)))
  '(ns-alternate-modifier 'altername)
  '(ns-command-modifier 'meta)
  '(ns-control-modifier 'control)
