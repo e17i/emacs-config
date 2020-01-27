@@ -30,7 +30,7 @@
  '(isearch-lazy-count t)
  '(magit-git-executable "/opt/local/bin/git")
  '(mouse-drag-copy-region t)
- '(mouse-wheel-scroll-amount '(1 ((shift) . 5) ((control))))
+ '(mouse-wheel-scroll-amount '(1 ((meta) . 3) ((shift) . text-scale)))
  '(ns-alternate-modifier 'meta)
  '(ns-command-modifier 'super)
  '(ns-control-modifier 'control)
