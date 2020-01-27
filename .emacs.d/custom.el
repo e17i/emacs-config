@@ -44,8 +44,11 @@
  '(jedi:tooltip-method nil)
  '(magit-process-find-password-functions (quote (magit-process-password-prompt ignore)))
  '(mouse-drag-copy-region t)
- '(mouse-wheel-scroll-amount (quote (1 ((shift) . 5) ((control)))))
  '(nxml-sexp-element-flag t)
+ '(mouse-wheel-scroll-amount '(1 ((meta) . 3) ((shift) . text-scale)))
+ '(org-agenda-files nil)
+ '(org-babel-python-command "python2")
+ '(org-goto-auto-isearch nil)
  '(org-src-preserve-indentation t)
  '(package-archives
    (quote

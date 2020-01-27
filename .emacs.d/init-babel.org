@@ -221,6 +221,21 @@ a kind of ~ansi-term~ replacement.
     (shell "*bash*")))
 #+END_SRC
 
+*** Frame size
+
+This used to be a frame maximize function for Mac, which is not longer neeeded
+here. Nevertheless, this may work as foundation for functions realizing some
+visually attractive full screen mode and reverting to the previous frame size.
+"Visually attractive" would then be something like "leave a small configurable
+space outside the frame and use the rest of screen".
+
+#+BEGIN_SRC emacs-lisp
+(defun maximize-frame () 
+  (interactive)
+  (set-frame-position (selected-frame) 0 0)
+  (set-frame-size (selected-frame) 1000 1000))
+#+END_SRC
+
 ** Global key bindings
 
 Some convenience keys for handling buffers, files and window sizes. Use
@@ -258,16 +273,23 @@ Ace enables some more vi-style jumping and zapping (see ~M-z~ for the basic
 #+END_SRC
 
 Mouse keys: remember basic mouse button handling in emacs: left - set pointer,
-right - define region and save to kill ring, double right - kill to kill ring,
-middle - yank to click position. As on Mac middle and right buttons may be
-otherwise occupied, use them together with /Meta/.
+double left - select word, triple left - select line, drag - select, drag
+after double - select words, right - define region and save to kill ring,
+right after double click - define region up to next word, double right - kill
+to kill ring, middle - yank to click position.
 
-Also enable mouse wheel scrolling. With /Meta/, scroll pagewise.
+As on Mac middle button may be otherwise occupied, use mouse-3
+together with /Meta/ as replacement.
+
+~mouse-wheel-mode~ also enables mouse wheel scrolling. With /Meta/,
+enables scroll turbo; with /shift/, scale text.
 
 #+BEGIN_SRC emacs-lisp
-(global-set-key [M-up] 'scroll-down-line)
-(global-set-key [M-down] 'scroll-up-line)
-;; for mac: select: mouse-1, copy/cut: mouse-3, yank: M-mouse-2, undo: M-mouse-3
+;; mac trackpad: select: mouse-1, copy/cut: mouse-3, yank: M-mouse-2
+(define-key key-translation-map (kbd "<mode-line> <M-mouse-3>") (kbd "<mode-line> <mouse-2>"))
+(global-set-key [M-mouse-3] 'mouse-yank-at-click)
+;; mac mouse: select: mouse-1, copy/cut: mouse-3, yank: M-mouse-2,
+;; undo: M-mouse-3
 (global-set-key [M-mouse-2] 'mouse-yank-at-click)
 (global-set-key [M-mouse-3] 'undo)
 #+END_SRC
@@ -402,6 +424,17 @@ When using evil-mode, set ~evil-exit-emacs-state~ to ~C-M-z~, as I'm used to
                                             (class-open after)
                                             (inline-open after)
                                             (substatement-open after))))))
+#+END_SRC
+
+*** Auto-fill-mode
+
+#+BEGIN_SRC emacs-lisp
+(add-hook 'fundamental-mode-hook
+         (lambda () (auto-fill-mode 1)))
+(add-hook 'text-mode-hook
+         (lambda () (auto-fill-mode 1)))
+(add-hook 'org-mode-hook
+         (lambda () (auto-fill-mode 1)))
 #+END_SRC
 
 *** python mode
