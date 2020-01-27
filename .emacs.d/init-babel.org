@@ -199,28 +199,6 @@ For details, see `navigate-window'."
   (navigate-buffer (next-window)))
 #+END_SRC
 
-*** Windows run commands
-
-For Windows, we define a few shortcuts running command shells, using these as
-a kind of ~ansi-term~ replacement.
-
-#+BEGIN_SRC emacs-lisp
-(defun run-cmdexe ()
-  (interactive)
-  (let ((shell-file-name "cmd.exe"))
-    (shell "*cmd.exe*")))
-
-(defun run-sdk ()
-  (interactive)
-  (let ((shell-file-name "c:\\sdk\\win32\\1.1\\scripts\\sdk-shell-vs90.bat"))
-    (shell "*sdk*")))
-
-(defun run-bash ()
-  (interactive)
-  (let ((shell-file-name "c:\\Program Files\\Git\\bin\\bash.exe"))
-    (shell "*bash*")))
-#+END_SRC
-
 *** Frame size
 
 This used to be a frame maximize function for Mac, which is not longer neeeded
