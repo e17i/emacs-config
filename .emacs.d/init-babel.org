@@ -188,7 +188,7 @@ Keys are:
   (navigate-buffer
    (let ((wnd (selected-window))
 	 (cnt (if arg arg 0)))
-     (while (> cnt 0)
+     (while (> cnt 1)
        (setq wnd (next-window wnd) cnt (- cnt 1)))
      wnd)))
 
