@@ -112,14 +112,16 @@ cancelled by using any other key.
   "Enter a temporary buffer navigation mode. WINDOW specifies an optional window pointer,
 allowing to specify a remote window to be controlled."
   (interactive)
-  (lexical-let ((arg-acc 0)
-		(arg-neg nil)
+  (lexical-let ((arg-acc 0) (arg-neg nil) (consumed nil)
 		(window (or window (selected-window))))
-    (labels ((get-arg-acc (&optional default)
+    (labels ((set-consumed () (setq consumed 't))
+	     (acc-reset ()
+			(if consumed
+			    (setq arg-acc 0 arg-neg nil consumed nil)))
+	     (get-arg-acc (&optional default)
 			  (let ((res (if (> arg-acc 0)
 					 (* arg-acc (if arg-neg -1 1))
 				       default)))
-			    (setq arg-acc 0 arg-neg nil)
 			    res))
 	     (acc-status () (message "navigate ([-,0-9] n,p,N,P,v,V,<,>,[,],l, ) %c %d"
 				     (if arg-neg arg-neg '? ) arg-acc))
@@ -131,21 +133,26 @@ allowing to specify a remote window to be controlled."
 			     (acc-status)))
       (macrolet ((with-window (&rest body)
 			      `(lambda () (interactive)
+				 (set-consumed)
 				 (with-selected-window window
 				   ,@body
 				   (acc-status)))))
 	(acc-status)
 	(set-transient-map
 	 (let ((map (make-sparse-keymap)))
-	   (define-key map [?-] (lambda () (interactive) (arg-negate)))
+	   (define-key map [?-] (lambda () (interactive) (acc-reset) (arg-negate)))
 	   (dolist (num '(?0 ?1 ?2 ?3 ?4 ?5 ?6 ?7 ?8 ?9))
 	     (define-key map (vector num)
 	       (lambda ()
 		 (interactive)
+		 (acc-reset)
 		 (let* ((ev last-command-event)
 			(base (event-basic-type ev)))
 		   (arg-accumulate (- base 48))))))
-	   (define-key map " " (with-window (set-mark-command (get-arg-acc))))
+	   (define-key map " " (with-window
+				(if (eq arg-acc 0)
+				    (progn (set-mark-command nil)(deactivate-mark))
+				  (set-mark-command (get-arg-acc)))))
 	   (define-key map "n" (with-window (next-line (get-arg-acc 1))))
 	   (define-key map "p" (with-window (previous-line (get-arg-acc 1))))
 	   (define-key map "l" (with-window (recenter-top-bottom (get-arg-acc))))
@@ -156,8 +163,6 @@ allowing to specify a remote window to be controlled."
 	   (define-key map "[" (with-window (backward-paragraph (get-arg-acc))))
 	   (define-key map "N" (with-window (scroll-up-line (get-arg-acc 1))))
 	   (define-key map "P" (with-window (scroll-down-line (get-arg-acc 1))))
-	   (define-key map "d" (with-window (scroll-up-command (/ (window-height window) 3))))
-	   (define-key map "u" (with-window (scroll-down-command (/ (window-height window) 3))))
 	   (define-key map "v" (with-window (scroll-up-command (get-arg-acc))))
 	   (define-key map "V" (with-window (scroll-down-command (get-arg-acc))))
 	 map) 't)))))
@@ -315,7 +320,7 @@ other window.
 (setq erc-autojoin-channels-alist '(("freenode.net" "#latex-de" "##latinitas" "#NetBSD" "##bash-de" "#git" "#vim" "#emacs" "#erc" "#oberon" "#macosx")))
 
 (global-magit-file-mode t)
-(require 'dired) ;; also enable C-x C-j FIXIT..
+(load "dired-x.el") ;; also enable C-x C-j
 
 ;; smartparens
 (require 'smartparens-config)
