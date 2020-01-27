@@ -111,7 +111,6 @@ cancelled by using any other key.
 (defun navigate-buffer (&optional window)
   "Enter a temporary buffer navigation mode. WINDOW specifies an optional window pointer,
 allowing to specify a remote window to be controlled."
-  (interactive)
   (lexical-let ((arg-acc 0) (arg-neg nil) (consumed nil)
 		(window (or window (selected-window))))
     (labels ((set-consumed () (setq consumed 't))
@@ -167,10 +166,35 @@ allowing to specify a remote window to be controlled."
 	   (define-key map "V" (with-window (scroll-down-command (get-arg-acc))))
 	 map) 't)))))
 
+(defun navigate-window (&optional arg)
+  "Enter a temporary buffer navigation mode, allowing some window to be
+controlled remotely. Default is the selected window. Optional argument
+selects the nth window. This allows moving around some window without
+de-selecting the current window, enabling a very convenient means of
+temporarily moving around. 
+
+Keys are:
+  -, 0-9: set an argument to following commands, which stays in effect until
+          reset (e.g. by pressing 0)
+  space: set a mark; with arg jump to mark
+  n, p: move point to next/previous line
+  l: recenter buffer to point
+  r: move point to window center
+  <, >: move point to beginning/end of buffer
+  [, ]: move point forward/backward in paragraphs
+  N, P: scroll up/down
+  v, V: pagewise scroll up/down"
+  (interactive "p")
+  (navigate-buffer
+   (let ((wnd (selected-window))
+	 (cnt (if arg arg 0)))
+     (while (> cnt 0)
+       (setq wnd (next-window wnd) cnt (- cnt 1)))
+     wnd)))
+
 (defun navigate-other-window ()
-  "Enter a temporary remote buffer navigation mode. This way, the next or other window
-can be controlled remotely. This allows moving around the other window without deactivating
-the current window, enabling a very convenient means of temorarily moving around help windows."
+  "Enter a temporary remote buffer navigation mode for next or other window.
+For details, see `navigate-window'."
   (interactive)
   (navigate-buffer (next-window)))
 #+END_SRC
@@ -243,8 +267,6 @@ Also enable mouse wheel scrolling. With /Meta/, scroll pagewise.
 #+BEGIN_SRC emacs-lisp
 (global-set-key [M-up] 'scroll-down-line)
 (global-set-key [M-down] 'scroll-up-line)
-(global-set-key [(M-wheel-down)] 'scroll-up-command)
-(global-set-key [(M-wheel-up)] 'scroll-down-command)
 ;; for mac: select: mouse-1, copy/cut: mouse-3, yank: M-mouse-2, undo: M-mouse-3
 (global-set-key [M-mouse-2] 'mouse-yank-at-click)
 (global-set-key [M-mouse-3] 'undo)
@@ -292,7 +314,7 @@ Here we bind the temporary navigation mode to some useful keys for current and
 other window.
 
 #+BEGIN_SRC emacs-lisp
-(global-set-key "\C-x\C-v" 'navigate-buffer)
+(global-set-key "\C-x\C-v" 'navigate-window)
 (global-set-key "\C-x4v" 'navigate-other-window)
 #+END_SRC
 
