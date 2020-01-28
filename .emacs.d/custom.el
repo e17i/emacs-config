@@ -60,7 +60,8 @@
  '(size-indication-mode t)
  '(sp-base-key-bindings 'sp)
  '(sql-oracle-options (list oracle-startup-script))
- '(svn-status-hide-unmodified t))
+ '(svn-status-hide-unmodified t)
+ '(wdired-allow-to-change-permissions t))
 (custom-set-faces
  ;; custom-set-faces was added by Custom.
  ;; If you edit it by hand, you could mess it up, so be careful.
