@@ -44,8 +44,8 @@
  '(jedi:tooltip-method nil)
  '(magit-process-find-password-functions (quote (magit-process-password-prompt ignore)))
  '(mouse-drag-copy-region t)
+ '(mouse-wheel-scroll-amount (quote (1 ((meta) . 3) ((shift) . text-scale))))
  '(nxml-sexp-element-flag t)
- '(mouse-wheel-scroll-amount '(1 ((meta) . 3) ((shift) . text-scale)))
  '(org-agenda-files nil)
  '(org-babel-python-command "python2")
  '(org-goto-auto-isearch nil)
@@ -84,7 +84,8 @@
  '(sql-oracle-options (list oracle-startup-script))
  '(svn-status-hide-unmodified t)
  '(tool-bar-mode nil)
- '(transient-mark-mode t))
+ '(transient-mark-mode t)
+ '(wdired-allow-to-change-permissions t))
 (custom-set-faces
  ;; custom-set-faces was added by Custom.
  ;; If you edit it by hand, you could mess it up, so be careful.
