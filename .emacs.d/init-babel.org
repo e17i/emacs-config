@@ -1,7 +1,6 @@
+#+TITLE: Jörgs Emacs init
 * Emacs Configuration
-
 ** Lisp functions
-
 *** Initialization
 
 We want to set each frame to reasonable color defaults by defining an
@@ -154,6 +153,7 @@ allowing to specify a remote window to be controlled."
 				  (set-mark-command (get-arg-acc)))))
 	   (define-key map "n" (with-window (next-line (get-arg-acc 1))))
 	   (define-key map "p" (with-window (previous-line (get-arg-acc 1))))
+	   (define-key map "/" (with-window (isearch-forward))) ;not documented
 	   (define-key map "l" (with-window (recenter-top-bottom (get-arg-acc))))
 	   (define-key map "r" (with-window (move-to-window-line-top-bottom (get-arg-acc))))
 	   (define-key map "<" (with-window (beginning-of-buffer (get-arg-acc))))
@@ -237,6 +237,7 @@ space outside the frame and use the rest of screen".
 #+END_SRC
 
 ** Global key bindings
+*** Generic
 
 Some convenience keys for handling buffers, files and window sizes. Use
 caution and check to not shadow future functionality here.
@@ -248,6 +249,8 @@ caution and check to not shadow future functionality here.
 (global-set-key "\C-c-" 'shrink-window)
 (global-set-key "\C-c+" 'enlarge-window)
 #+END_SRC
+
+*** Scrolling
 
 Convenience keys for buffer scrolling. Enables up/down also with /Meta/
 modifier. Together with /Shift/ this enables scrolling. This way you can very
@@ -263,6 +266,8 @@ modifier.
 (global-set-key [home] 'move-beginning-of-line)
 #+END_SRC
 
+*** Ace zapping
+
 Ace enables some more vi-style jumping and zapping (see ~M-z~ for the basic
 ~zap-to-char~ function).
 
@@ -271,6 +276,8 @@ Ace enables some more vi-style jumping and zapping (see ~M-z~ for the basic
 ;;;(global-set-key "\C-x\C-j" 'ace-jump-mode-pop-mark) ;; this is dired-jump
 (global-set-key "\C-x\C-z" 'zzz-up-to-char)
 #+END_SRC
+
+*** Mouse handling
 
 Mouse keys: remember basic mouse button handling in emacs: left - set pointer,
 double left - select word, triple left - select line, drag - select, drag
@@ -293,6 +300,8 @@ enables scroll turbo; with /shift/, scale text.
 (global-set-key [M-mouse-2] 'mouse-yank-at-click)
 (global-set-key [M-mouse-3] 'undo)
 #+END_SRC
+
+*** Remote controlling other window
 
 As I got quite used to remote control the other window using ~C-x 4~ keys, 
 I'm adding a few ones which I missed so far.
@@ -407,7 +416,26 @@ When using evil-mode, set ~evil-exit-emacs-state~ to ~C-M-z~, as I'm used to
 (define-key evil-normal-state-map "\C-\M-z" 'evil-emacs-state)
 #+END_SRC
 
-#+INCLUDE: "evil-defines.org"
+**** Evil defines
+
+This is an example of defining an evil leader key and some adjacent keymaps.
+
+#+BEGIN_SRC emacs-lisp
+(define-prefix-command 'leader-map)
+
+(define-key evil-normal-state-map " " leader-map)
+
+(define-key leader-map "b" 'list-buffers)
+(define-key leader-map "#" 'bs-show)
+(define-key leader-map "l" 'global-linum-mode)
+
+(define-prefix-command 'other-map)
+(define-key leader-map "4" other-map)
+(define-key other-map "-" 'shrink-other-window-if-larger-than-buffer)
+(define-key other-map "+" 'fit-other-window)
+(define-key other-map "q" 'quit-restore-other-window)
+(define-key other-map "l" 'go-back-other-window)
+#+END_SRC
 
 *** C++ mode customizations, in use for aeons now
 
