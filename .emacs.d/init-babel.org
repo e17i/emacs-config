@@ -301,6 +301,21 @@ enables scroll turbo; with /shift/, scale text.
 (global-set-key [M-mouse-3] 'undo)
 #+END_SRC
 
+*** Keyboard handling
+
+On a german keyboard, we want some of the more obscure mappings to be within
+easier reach. This is done here for combinations otherwise unmapped.
+
+#+BEGIN_SRC emacs-lisp
+(defun activate-german-keymap ()
+  "activate some generic mappings to be reachable in usual places on german keyboard."
+  (global-set-key "\242" 'mark-word) ; M-@
+  (global-set-key "\246" 'delete-indentation) ; M-^
+  (global-set-key "\C-x&" 'enlarge-window) ; C-x ^
+  (global-set-key "\C-x*" 'enlarge-window-horizontally) ; C-x }
+  (global-set-key "\C-x‹" 'shrink-window-horizontally) ; C-x {
+#+END_SRC
+
 *** Remote controlling other window
 
 As I got quite used to remote control the other window using ~C-x 4~ keys, 
@@ -331,6 +346,7 @@ We also want to jump to beginning/end in other window by ~C-M-<~ and ~C-M->~
 How to get these codes? Call ~M-x global-set-key RET C-M-< beg~.. to manually
 define such a key, then call ~C-x ESC ESC~ and copy the resulting parametrized
 command from minibuffer.
+Alternatively, call ~M-: (read-key-sequence "> ")~.
 
 Now come the key bindings for convenient error navigation, as promised above.
 
