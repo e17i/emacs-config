@@ -256,9 +256,13 @@ together with /Meta/ as replacement.
 enables scroll turbo; with /shift/, scale text.
 
 #+BEGIN_SRC emacs-lisp
-  ;; mac trackpad: select: mouse-1, copy/cut: mouse-3, yank: M-mouse-2
+  ;; mac trackpad: select: mouse-1, copy/cut: mouse-3, yank: M-mouse-3
+  ;; undo: C-M-mouse-3
+  ;; as a convenience, on mode line M-mouse-1 is also mouse-2
   ;; (define-key key-translation-map (kbd "<M-mouse-3>") (kbd "<mouse-2>"))
+  (global-set-key [C-M-mouse-3] 'undo)
   (define-key key-translation-map (kbd "<mode-line> <M-mouse-3>") (kbd "<mode-line> <mouse-2>"))
+  (define-key key-translation-map (kbd "<mode-line> <M-mouse-1>") (kbd "<mode-line> <mouse-2>"))
   (global-set-key [M-mouse-3] 'mouse-yank-at-click)
   ;; mac mouse: select: mouse-1, copy/cut: mouse-3, yank: M-mouse-2,
   ;; undo: M-mouse-3
