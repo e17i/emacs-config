@@ -199,7 +199,42 @@ For details, see `navigate-window'."
   (navigate-buffer (next-window)))
 #+END_SRC
 
-*** Frame size
+*** Frame and window size
+
+Interactively resize windows.
+
+#+BEGIN_SRC emacs-lisp
+(defun resize-window ()
+  "Resize current window interactively using continuous key presses.
+Keys supported:
+
+ - shrink window vertically
+ + enlarge window vertically
+ [ shrink window horizontally
+ ] enlarge window horizontally
+ 0 balance all frames window sizes"
+  (interactive)
+  (macrolet ((msg ()
+		  '(message "resize window (-,+,[,],0)"))
+	     (lmb (fnc)
+		  `(lambda () (interactive)
+		     (msg)
+		     ,fnc)))
+    (msg)
+    (set-transient-map
+     (let ((tmap (make-sparse-keymap)))
+       (define-key tmap "0" (lmb (balance-windows)))
+       (define-key tmap "-" (lmb (shrink-window 1)))
+       (define-key tmap "+" (lmb (enlarge-window 1)))
+       (define-key tmap "=" (lmb (enlarge-window 1))) ; easy access on us keyboard
+       (define-key tmap "^" (lmb (enlarge-window 1))) ; reuse entry key
+       (define-key tmap "&" (lmb (enlarge-window 1))) ; german keyboard
+       (define-key tmap "[" (lmb (shrink-window-horizontally 1)))
+       (define-key tmap "ü" (lmb (shrink-window-horizontally 1))) ; german keyboard
+       (define-key tmap "]" (lmb (enlarge-window-horizontally 1)))
+       (define-key tmap "+" (lmb (enlarge-window-horizontally 1))) ; german keyboard
+       tmap) 't)))
+#+END_SRC
 
 This used to be a frame maximize function for Mac, which is not longer neeeded
 here. Nevertheless, this may work as foundation for functions realizing some
@@ -208,10 +243,35 @@ visually attractive full screen mode and reverting to the previous frame size.
 space outside the frame and use the rest of screen".
 
 #+BEGIN_SRC emacs-lisp
-(defun maximize-frame () 
+(defun switch-frame ()
+  "Set frame to reasonable position and size based on some heuristics.
+  Alternatively, toggles size to maximized."
   (interactive)
-  (set-frame-position (selected-frame) 0 0)
-  (set-frame-size (selected-frame) 1000 1000))
+  (let ((maximized (frame-parameter nil 'fullscreen)))
+    (cond
+     ((eq maximized 'maximized)
+      (let ((lines (frame-parameter nil 'height)))
+	(set-frame-parameter nil 'fullscreen nil)
+	(set-frame-width nil (- split-width-threshold 1))
+	(set-frame-height nil (- lines 1))
+	(set-frame-position nil 0 8)))
+     ('t
+      (set-frame-parameter nil 'fullscreen 'maximized)))))
+#+END_SRC
+
+#+BEGIN_SRC emacs-lisp
+(defun toggle-maximize-frame ()
+  "Toggle fullscreen and switch off menu bar and scroll bar."
+  (interactive)
+  (let ((fullscreen (frame-parameter nil 'fullscreen)))
+    (cond
+     ((memq fullscreen '(fullscreen fullboth))
+      (menu-bar-right-scroll-bar)
+      (toggle-menu-bar-mode-from-frame 1))
+     (t
+      (menu-bar-no-scroll-bar)
+      (toggle-menu-bar-mode-from-frame 0))))
+  (toggle-frame-fullscreen))
 #+END_SRC
 
 ** Global key bindings
@@ -224,8 +284,6 @@ caution and check to not shadow future functionality here.
 (global-set-key "\C-x\C-b" 'bs-show)	;; this used to be electric-buffer-list
 (global-set-key "\C-c\C-v" 'find-file-at-point)
 (global-set-key "\C-x\C-f" 'find-file)
-(global-set-key "\C-c-" 'shrink-window)
-(global-set-key "\C-c+" 'enlarge-window)
 #+END_SRC
 
 *** Scrolling
@@ -279,6 +337,40 @@ enables scroll turbo; with /shift/, scale text.
 (global-set-key [M-mouse-3] 'undo)
 #+END_SRC
 
+*** Keyboard handling
+
+On a german keyboard, we want some of the more obscure mappings to be within
+easier reach. This is done here for combinations otherwise unmapped.
+
+#+BEGIN_SRC emacs-lisp
+(defun activate-german-keymap ()
+  "activate some generic mappings to be reachable in usual places on german keyboard."
+  (global-set-key "\242" 'mark-word) ; M-@, here M-"
+  (global-set-key "\246" 'delete-indentation) ; M-^, here M-&
+  (global-set-key "\C-x&" 'enlarge-window) ; C-x ^, here C-x &
+  (global-set-key "\C-x*" 'enlarge-window-horizontally) ; C-x }
+  (global-set-key "\C-xÜ" 'shrink-window-horizontally) ; C-x {
+#+END_SRC
+
+*** Window handling
+
+We overrule ~C-x ^~ to use our window resizing method.
+
+#+BEGIN_SRC emacs-lisp
+(global-set-key [remap enlarge-window] 'resize-window)
+#+END_SRC
+
+And upgrade fullscreen experience. Use ~Meta-f10~ to toggle between maximized
+and a size comprised of almost full height and a width just below
+~split-width-threshold~; ~Meta-f11~ to toggle fullscreen including no window
+decorations.
+
+#+BEGIN_SRC emacs-lisp
+(global-set-key [remap toggle-frame-fullscreen] 'toggle-maximize-frame)
+(global-set-key [remap toggle-frame-maximized] 'switch-frame)
+(global-set-key (kbd "<M-f11>") 'toggle-maximize-frame)
+#+END_SRC
+
 *** Remote controlling other window
 
 As I got quite used to remote control the other window using ~C-x 4~ keys, 
@@ -309,6 +401,7 @@ We also want to jump to beginning/end in other window by ~C-M-<~ and ~C-M->~
 How to get these codes? Call ~M-x global-set-key RET C-M-< beg~.. to manually
 define such a key, then call ~C-x ESC ESC~ and copy the resulting parametrized
 command from minibuffer.
+Alternatively, call ~M-: (read-key-sequence "> ")~.
 
 Now come the key bindings for convenient error navigation, as promised above.
 
@@ -385,34 +478,49 @@ other window.
 ** Mode-specific customizations
 *** Evil mode
 
+**** Evil defines
+
+Here we implement some kind of .vimrc initialization.
+This is also an example of defining an evil leader key and some adjacent keymaps.
+
+#+BEGIN_SRC emacs-lisp
+(defun evil-rc ()
+  "evil local init/customization"
+  (define-prefix-command 'leader-map)
+
+  (define-key evil-normal-state-map " " leader-map)
+
+  (define-key leader-map "b" 'list-buffers)
+  (define-key leader-map "#" 'bs-show)
+  (define-key leader-map "l" 'global-linum-mode)
+
+  (define-prefix-command 'evil-other-window-map)
+  (define-key leader-map "4" evil-other-window-map)
+  (define-key evil-other-window-map "-" 'shrink-other-window-if-larger-than-buffer)
+  (define-key evil-other-window-map "+" 'fit-other-window)
+  (define-key evil-other-window-map "q" 'quit-restore-other-window)
+  (define-key evil-other-window-map "l" 'go-back-other-window)
+#+END_SRC
+
+**** Evil Emacs config
+
 When using evil-mode, set ~evil-exit-emacs-state~ to ~C-M-z~, as I'm used to
-~suspend-frame~.
+~suspend-frame~. Additionally, always enter evil mode in emacs state. This
+way, without getting in the way it is always only a key press away.
 
 #+BEGIN_SRC emacs-lisp
 (define-key evil-emacs-state-map "\C-z" nil)
 (define-key evil-emacs-state-map "\C-\M-z" 'evil-exit-emacs-state)
 (define-key evil-normal-state-map "\C-\M-z" 'evil-emacs-state)
+(add-hook 'evil-mode-hook
+	  (lambda () (evil-emacs-state)))
 #+END_SRC
 
-**** Evil defines
-
-This is an example of defining an evil leader key and some adjacent keymaps.
+Now, after Initializing evil, we may probably also activate it in all buffers.
 
 #+BEGIN_SRC emacs-lisp
-(define-prefix-command 'leader-map)
-
-(define-key evil-normal-state-map " " leader-map)
-
-(define-key leader-map "b" 'list-buffers)
-(define-key leader-map "#" 'bs-show)
-(define-key leader-map "l" 'global-linum-mode)
-
-(define-prefix-command 'other-map)
-(define-key leader-map "4" other-map)
-(define-key other-map "-" 'shrink-other-window-if-larger-than-buffer)
-(define-key other-map "+" 'fit-other-window)
-(define-key other-map "q" 'quit-restore-other-window)
-(define-key other-map "l" 'go-back-other-window)
+(evil-rc)
+;; (evil-mode)
 #+END_SRC
 
 *** C++ mode customizations, in use for aeons now
