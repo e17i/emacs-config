@@ -221,7 +221,39 @@ a kind of ~ansi-term~ replacement.
     (shell "*bash*")))
 #+END_SRC
 
-*** Frame size
+*** Frame and window size
+
+Interactively resize windows.
+
+#+BEGIN_SRC emacs-lisp
+(defun resize-window ()
+  "Resize current window interactively using continuous key presses.
+Keys supported:
+
+ - shrink window vertically
+ + enlarge window vertically
+ [ shrink window horizontally
+ ] enlarge window horizontally
+ 0 balance all frames window sizes"
+  (interactive)
+  (macrolet ((msg ()
+		  '(message "resize window (-,+,[,],0)"))
+	     (lmb (fnc)
+		  `(lambda () (interactive)
+		     (msg)
+		     ,fnc)))
+    (msg)
+    (set-transient-map
+     (let ((tmap (make-sparse-keymap)))
+       (define-key tmap "0" (lmb (balance-windows)))
+       (define-key tmap "-" (lmb (shrink-window 1)))
+       (define-key tmap "+" (lmb (enlarge-window 1)))
+       (define-key tmap "=" (lmb (enlarge-window 1)))
+       (define-key tmap "^" (lmb (enlarge-window 1)))
+       (define-key tmap "[" (lmb (shrink-window-horizontally 1)))
+       (define-key tmap "]" (lmb (enlarge-window-horizontally 1)))
+       tmap) 't)))
+#+END_SRC
 
 This used to be a frame maximize function for Mac, which is not longer neeeded
 here. Nevertheless, this may work as foundation for functions realizing some
@@ -264,6 +296,14 @@ modifier.
 (global-set-key "\M-N" 'scroll-up-line)
 (global-set-key [end] 'move-end-of-line)
 (global-set-key [home] 'move-beginning-of-line)
+#+END_SRC
+
+*** Window handling
+
+We overrule ~C-x ^~ to use our window resizing method.
+
+#+BEGIN_SRC emacs-lisp
+(global-set-key "\C-x^" 'resize-window)
 #+END_SRC
 
 *** Ace zapping
@@ -311,7 +351,7 @@ easier reach. This is done here for combinations otherwise unmapped.
   "activate some generic mappings to be reachable in usual places on german keyboard."
   (global-set-key "\242" 'mark-word) ; M-@
   (global-set-key "\246" 'delete-indentation) ; M-^
-  (global-set-key "\C-x&" 'enlarge-window) ; C-x ^
+  (global-set-key "\C-x&" 'resize-window) ; C-x ^ (what about rebind?)
   (global-set-key "\C-x*" 'enlarge-window-horizontally) ; C-x }
   (global-set-key "\C-x‹" 'shrink-window-horizontally) ; C-x {
 #+END_SRC
@@ -423,34 +463,49 @@ other window.
 ** Mode-specific customizations
 *** Evil mode
 
+**** Evil defines
+
+Here we implement some kind of .vimrc initialization.
+This is also an example of defining an evil leader key and some adjacent keymaps.
+
+#+BEGIN_SRC emacs-lisp
+(defun evil-rc ()
+  "evil local init/customization"
+  (define-prefix-command 'leader-map)
+
+  (define-key evil-normal-state-map " " leader-map)
+
+  (define-key leader-map "b" 'list-buffers)
+  (define-key leader-map "#" 'bs-show)
+  (define-key leader-map "l" 'global-linum-mode)
+
+  (define-prefix-command 'evil-other-window-map)
+  (define-key leader-map "4" evil-other-window-map)
+  (define-key evil-other-window-map "-" 'shrink-other-window-if-larger-than-buffer)
+  (define-key evil-other-window-map "+" 'fit-other-window)
+  (define-key evil-other-window-map "q" 'quit-restore-other-window)
+  (define-key evil-other-window-map "l" 'go-back-other-window)
+#+END_SRC
+
+**** Evil Emacs config
+
 When using evil-mode, set ~evil-exit-emacs-state~ to ~C-M-z~, as I'm used to
-~suspend-frame~.
+~suspend-frame~. Additionally, always enter evil mode in emacs state. This
+way, without getting in the way it is always only a key press away.
 
 #+BEGIN_SRC emacs-lisp
 (define-key evil-emacs-state-map "\C-z" nil)
 (define-key evil-emacs-state-map "\C-\M-z" 'evil-exit-emacs-state)
 (define-key evil-normal-state-map "\C-\M-z" 'evil-emacs-state)
+(add-hook 'evil-mode-hook
+	  (lambda () (evil-emacs-state)))
 #+END_SRC
 
-**** Evil defines
-
-This is an example of defining an evil leader key and some adjacent keymaps.
+Now, after Initializing evil, we may probably also activate it in all buffers.
 
 #+BEGIN_SRC emacs-lisp
-(define-prefix-command 'leader-map)
-
-(define-key evil-normal-state-map " " leader-map)
-
-(define-key leader-map "b" 'list-buffers)
-(define-key leader-map "#" 'bs-show)
-(define-key leader-map "l" 'global-linum-mode)
-
-(define-prefix-command 'other-map)
-(define-key leader-map "4" other-map)
-(define-key other-map "-" 'shrink-other-window-if-larger-than-buffer)
-(define-key other-map "+" 'fit-other-window)
-(define-key other-map "q" 'quit-restore-other-window)
-(define-key other-map "l" 'go-back-other-window)
+(evil-rc)
+;; (evil-mode)
 #+END_SRC
 
 *** C++ mode customizations, in use for aeons now
