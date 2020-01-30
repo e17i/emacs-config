@@ -248,10 +248,13 @@ Keys supported:
        (define-key tmap "0" (lmb (balance-windows)))
        (define-key tmap "-" (lmb (shrink-window 1)))
        (define-key tmap "+" (lmb (enlarge-window 1)))
-       (define-key tmap "=" (lmb (enlarge-window 1)))
-       (define-key tmap "^" (lmb (enlarge-window 1)))
+       (define-key tmap "=" (lmb (enlarge-window 1))) ; easy access on us keyboard
+       (define-key tmap "^" (lmb (enlarge-window 1))) ; reuse entry key
+       (define-key tmap "&" (lmb (enlarge-window 1))) ; german keyboard
        (define-key tmap "[" (lmb (shrink-window-horizontally 1)))
+       (define-key tmap "ü" (lmb (shrink-window-horizontally 1))) ; german keyboard
        (define-key tmap "]" (lmb (enlarge-window-horizontally 1)))
+       (define-key tmap "+" (lmb (enlarge-window-horizontally 1))) ; german keyboard
        tmap) 't)))
 #+END_SRC
 
@@ -262,10 +265,35 @@ visually attractive full screen mode and reverting to the previous frame size.
 space outside the frame and use the rest of screen".
 
 #+BEGIN_SRC emacs-lisp
-(defun maximize-frame () 
+(defun switch-frame ()
+  "Set frame to reasonable position and size based on some heuristics.
+  Alternatively, toggles size to maximized."
   (interactive)
-  (set-frame-position (selected-frame) 0 0)
-  (set-frame-size (selected-frame) 1000 1000))
+  (let ((maximized (frame-parameter nil 'fullscreen)))
+    (cond
+     ((eq maximized 'maximized)
+      (let ((lines (frame-parameter nil 'height)))
+	(set-frame-parameter nil 'fullscreen nil)
+	(set-frame-width nil (- split-width-threshold 1))
+	(set-frame-height nil (- lines 1))
+	(set-frame-position nil 0 8)))
+     ('t
+      (set-frame-parameter nil 'fullscreen 'maximized)))))
+#+END_SRC
+
+#+BEGIN_SRC emacs-lisp
+(defun toggle-maximize-frame ()
+  "Toggle fullscreen and switch off menu bar and scroll bar."
+  (interactive)
+  (let ((fullscreen (frame-parameter nil 'fullscreen)))
+    (cond
+     ((memq fullscreen '(fullscreen fullboth))
+      (menu-bar-right-scroll-bar)
+      (toggle-menu-bar-mode-from-frame 1))
+     (t
+      (menu-bar-no-scroll-bar)
+      (toggle-menu-bar-mode-from-frame 0))))
+  (toggle-frame-fullscreen))
 #+END_SRC
 
 ** Global key bindings
@@ -278,8 +306,6 @@ caution and check to not shadow future functionality here.
 (global-set-key "\C-x\C-b" 'bs-show)	;; this used to be electric-buffer-list
 (global-set-key "\C-c\C-v" 'find-file-at-point)
 (global-set-key "\C-x\C-f" 'find-file)
-(global-set-key "\C-c-" 'shrink-window)
-(global-set-key "\C-c+" 'enlarge-window)
 #+END_SRC
 
 *** Scrolling
@@ -296,14 +322,6 @@ modifier.
 (global-set-key "\M-N" 'scroll-up-line)
 (global-set-key [end] 'move-end-of-line)
 (global-set-key [home] 'move-beginning-of-line)
-#+END_SRC
-
-*** Window handling
-
-We overrule ~C-x ^~ to use our window resizing method.
-
-#+BEGIN_SRC emacs-lisp
-(global-set-key "\C-x^" 'resize-window)
 #+END_SRC
 
 *** Ace zapping
@@ -349,11 +367,30 @@ easier reach. This is done here for combinations otherwise unmapped.
 #+BEGIN_SRC emacs-lisp
 (defun activate-german-keymap ()
   "activate some generic mappings to be reachable in usual places on german keyboard."
-  (global-set-key "\242" 'mark-word) ; M-@
-  (global-set-key "\246" 'delete-indentation) ; M-^
-  (global-set-key "\C-x&" 'resize-window) ; C-x ^ (what about rebind?)
+  (global-set-key "\242" 'mark-word) ; M-@, here M-"
+  (global-set-key "\246" 'delete-indentation) ; M-^, here M-&
+  (global-set-key "\C-x&" 'enlarge-window) ; C-x ^, here C-x &
   (global-set-key "\C-x*" 'enlarge-window-horizontally) ; C-x }
   (global-set-key "\C-xÜ" 'shrink-window-horizontally) ; C-x {
+#+END_SRC
+
+*** Window handling
+
+We overrule ~C-x ^~ to use our window resizing method.
+
+#+BEGIN_SRC emacs-lisp
+(global-set-key [remap enlarge-window] 'resize-window)
+#+END_SRC
+
+And upgrade fullscreen experience. Use ~Meta-f10~ to toggle between maximized
+and a size comprised of almost full height and a width just below
+~split-width-threshold~; ~Meta-f11~ to toggle fullscreen including no window
+decorations.
+
+#+BEGIN_SRC emacs-lisp
+(global-set-key [remap toggle-frame-fullscreen] 'toggle-maximize-frame)
+(global-set-key [remap toggle-frame-maximized] 'switch-frame)
+(global-set-key (kbd "<M-f11>") 'toggle-maximize-frame)
 #+END_SRC
 
 *** Remote controlling other window
