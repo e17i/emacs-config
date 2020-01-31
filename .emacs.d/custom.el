@@ -19,6 +19,7 @@
  '(dynamic-completion-mode nil)
  '(elpy-rpc-python-command "C:\\sdk\\win32\\tools\\Python27\\python.exe")
  '(elpy-syntax-check-command "c:\\sdk\\win32\\tools\\Python27\\Scripts\\flake8.exe")
+ '(evil-default-state (quote emacs))
  '(fill-column 78)
  '(flycheck-python-flake8-executable "c:\\sdk\\win32\\tools\\Python27\\Scripts\\flake8.exe")
  '(frame-icon-title-format
@@ -38,8 +39,8 @@
  '(fringe-mode (quote (5 . 5)) nil (fringe))
  '(hippie-expand-verbose nil)
  '(history-delete-duplicates t)
- '(inhibit-startup-screen t)
  '(indent-tabs-mode nil)
+ '(inhibit-startup-screen t)
  '(isearch-lazy-count t)
  '(jedi:complete-on-dot t)
  '(jedi:setup-keys t)
@@ -67,8 +68,6 @@
        (setq indent-tabs-mode nil))
      (lambda nil "Activate jedi"
        (jedi:setup))
-     (lambda nil "prepare evil mode"
-       (evil-emacs-state))
      (lambda nil "use superword mode"
        (superword-mode)))) t)
  '(python-shell-interpreter "C:\\\\sdk\\\\win32\\\\tools\\\\Python27\\\\python.exe")
@@ -88,7 +87,7 @@
  '(svn-status-hide-unmodified t)
  '(tool-bar-mode nil)
  '(transient-mark-mode t)
- '(wdired-allow-to-change-permissions 'advanced))
+ '(wdired-allow-to-change-permissions (quote advanced)))
 (custom-set-faces
  ;; custom-set-faces was added by Custom.
  ;; If you edit it by hand, you could mess it up, so be careful.
