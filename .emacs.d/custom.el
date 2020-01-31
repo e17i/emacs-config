@@ -9,6 +9,7 @@
    ["black" "#d55e00" "#009e73" "#f8ec59" "#0072b2" "#cc79a7" "#56b4e9" "white"])
  '(blink-cursor-mode nil)
  '(buffers-menu-show-directories t)
+ '(c-basic-offset 2)
  '(column-number-mode t)
  '(comint-completion-autolist t)
  '(custom-file "~/.emacs.d/custom.el")
@@ -38,6 +39,7 @@
  '(hippie-expand-verbose nil)
  '(history-delete-duplicates t)
  '(inhibit-startup-screen t)
+ '(indent-tabs-mode nil)
  '(isearch-lazy-count t)
  '(jedi:complete-on-dot t)
  '(jedi:setup-keys t)
@@ -81,11 +83,12 @@
  '(show-paren-mode t)
  '(size-indication-mode t)
  '(sp-base-key-bindings (quote sp))
+ '(split-height-threshold 90)
  '(sql-oracle-options (list oracle-startup-script))
  '(svn-status-hide-unmodified t)
  '(tool-bar-mode nil)
  '(transient-mark-mode t)
- '(wdired-allow-to-change-permissions t))
+ '(wdired-allow-to-change-permissions 'advanced))
 (custom-set-faces
  ;; custom-set-faces was added by Custom.
  ;; If you edit it by hand, you could mess it up, so be careful.

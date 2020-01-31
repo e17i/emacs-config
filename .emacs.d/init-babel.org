@@ -251,10 +251,10 @@ Keys supported:
        (define-key tmap "=" (lmb (enlarge-window 1))) ; easy access on us keyboard
        (define-key tmap "^" (lmb (enlarge-window 1))) ; reuse entry key
        (define-key tmap "&" (lmb (enlarge-window 1))) ; german keyboard
-       (define-key tmap "[" (lmb (shrink-window-horizontally 1)))
-       (define-key tmap "ü" (lmb (shrink-window-horizontally 1))) ; german keyboard
-       (define-key tmap "]" (lmb (enlarge-window-horizontally 1)))
-       (define-key tmap "+" (lmb (enlarge-window-horizontally 1))) ; german keyboard
+       (define-key tmap "{" (lmb (shrink-window-horizontally 1)))
+       (define-key tmap "Ü" (lmb (shrink-window-horizontally 1))) ; german keyboard, here "U
+       (define-key tmap "}" (lmb (enlarge-window-horizontally 1)))
+       (define-key tmap "*" (lmb (enlarge-window-horizontally 1))) ; german keyboard
        tmap) 't)))
 #+END_SRC
 
@@ -285,14 +285,17 @@ space outside the frame and use the rest of screen".
 (defun toggle-maximize-frame ()
   "Toggle fullscreen and switch off menu bar and scroll bar."
   (interactive)
-  (let ((fullscreen (frame-parameter nil 'fullscreen)))
-    (cond
-     ((memq fullscreen '(fullscreen fullboth))
-      (menu-bar-right-scroll-bar)
-      (toggle-menu-bar-mode-from-frame 1))
-     (t
-      (menu-bar-no-scroll-bar)
-      (toggle-menu-bar-mode-from-frame 0))))
+  (labels ((set-scroll-bar (where) (customize-set-variable 'scroll-bar-mode where)))
+    (let ((fullscreen (frame-parameter nil 'fullscreen)))
+      (cond
+       ((memq fullscreen '(fullscreen fullboth))
+	(set-scroll-bar (frame-parameter nil 'scrollbar))
+	(set-frame-parameter nil 'scrollbar nil)
+	(toggle-menu-bar-mode-from-frame 1))
+       (t
+	(set-frame-parameter nil 'scrollbar scroll-bar-mode)
+	(menu-bar-no-scroll-bar)
+	(toggle-menu-bar-mode-from-frame 0)))))
   (toggle-frame-fullscreen))
 #+END_SRC
 
@@ -350,8 +353,13 @@ together with /Meta/ as replacement.
 enables scroll turbo; with /shift/, scale text.
 
 #+BEGIN_SRC emacs-lisp
-;; mac trackpad: select: mouse-1, copy/cut: mouse-3, yank: M-mouse-2
+;; mac trackpad: select: mouse-1, copy/cut: mouse-3, yank: M-mouse-3
+;; undo: C-M-mouse-3
+;; as a convenience, on mode line M-mouse-1 is also mouse-2
+;; (define-key key-translation-map (kbd "<M-mouse-3>") (kbd "<mouse-2>"))
+;; (global-set-key [C-M-mouse-3] 'undo)
 (define-key key-translation-map (kbd "<mode-line> <M-mouse-3>") (kbd "<mode-line> <mouse-2>"))
+(define-key key-translation-map (kbd "<mode-line> <M-mouse-1>") (kbd "<mode-line> <mouse-2>"))
 (global-set-key [M-mouse-3] 'mouse-yank-at-click)
 ;; mac mouse: select: mouse-1, copy/cut: mouse-3, yank: M-mouse-2,
 ;; undo: M-mouse-3
@@ -371,7 +379,7 @@ easier reach. This is done here for combinations otherwise unmapped.
   (global-set-key "\246" 'delete-indentation) ; M-^, here M-&
   (global-set-key "\C-x&" 'enlarge-window) ; C-x ^, here C-x &
   (global-set-key "\C-x*" 'enlarge-window-horizontally) ; C-x }
-  (global-set-key "\C-xÜ" 'shrink-window-horizontally) ; C-x {
+  (global-set-key "\C-xÜ" 'shrink-window-horizontally)) ; C-x {
 #+END_SRC
 
 *** Window handling
@@ -448,11 +456,9 @@ other window.
 ;; (setenv "PATH" (concat "/opt/local/bin:/opt/local/sbin:" (getenv "PATH")))
 
 ;; (load-file "~/.emacs.d/keyboard-pc.el")
-;; (setq split-width-threshold 999)
 
-(setq split-width-threshold 160
-      w32-apps-modifier 'meta)
 
+(setq w32-apps-modifier 'meta)
 (setenv "PYTHONUNBUFFERED" "x")  ;; needed for windows? running python in comint frame
 (setenv "SSH_ASKPASS" "git-gui--askpass")
 
@@ -460,6 +466,7 @@ other window.
 (load-library "realgud")
 (load-library "evil")
 (global-undo-tree-mode)
+(require 'wdired)
 (require 'helm-config)
 (require 'ox-rst)
 (global-set-key [remap dabbrev-expand] 'hippie-expand)
@@ -490,11 +497,6 @@ other window.
 ;; C-c C-z starts python interpreter in current project
 ;; for this, set python-shell-interpreter to path of buildout powerscript exe
 ;; and python-shell-interpreter-args to ""
-
-(tool-bar-mode 0)
-
-(setq c-basic-offset 2)
-(setq indent-tabs-mode nil)
 #+END_SRC
 
 ** Mode-specific customizations
@@ -521,7 +523,7 @@ This is also an example of defining an evil leader key and some adjacent keymaps
   (define-key evil-other-window-map "-" 'shrink-other-window-if-larger-than-buffer)
   (define-key evil-other-window-map "+" 'fit-other-window)
   (define-key evil-other-window-map "q" 'quit-restore-other-window)
-  (define-key evil-other-window-map "l" 'go-back-other-window)
+  (define-key evil-other-window-map "l" 'go-back-other-window))
 #+END_SRC
 
 **** Evil Emacs config
