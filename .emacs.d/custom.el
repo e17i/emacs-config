@@ -5,6 +5,7 @@
  ;; If there is more than one, they won't work right.
  '(blink-cursor-mode nil)
  '(buffers-menu-show-directories t)
+ '(c-basic-offset 2)
  '(column-number-mode t)
  '(comint-completion-autolist t)
  '(custom-file "~/.emacs.d/custom.el")
@@ -27,6 +28,7 @@
  '(fringe-mode 0 nil (fringe))
  '(hippie-expand-verbose nil)
  '(history-delete-duplicates t)
+ '(indent-tabs-mode nil)
  '(isearch-lazy-count t)
  '(magit-git-executable "/opt/local/bin/git")
  '(mouse-drag-copy-region t)
@@ -59,9 +61,11 @@
  '(show-paren-mode t)
  '(size-indication-mode t)
  '(sp-base-key-bindings 'sp)
+ '(split-height-threshold 90)
  '(sql-oracle-options (list oracle-startup-script))
  '(svn-status-hide-unmodified t)
- '(wdired-allow-to-change-permissions t))
+ '(tool-bar-mode nil)
+ '(wdired-allow-to-change-permissions 'advanced))
 (custom-set-faces
  ;; custom-set-faces was added by Custom.
  ;; If you edit it by hand, you could mess it up, so be careful.
