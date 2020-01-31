@@ -429,11 +429,8 @@ other window.
 (setenv "PATH" (concat "/opt/local/bin:/opt/local/sbin:" (getenv "PATH")))
 
 (load-file "~/.emacs.d/keyboard-pc.el")
-;; (setq split-width-threshold 999)
 
-;; (setq split-width-threshold 160
-;;       w32-apps-modifier 'meta)
-
+;; (setq w32-apps-modifier 'meta)
 ;; (setenv "PYTHONUNBUFFERED" "x")  ;; needed for windows? running python in comint frame
 ;; (setenv "SSH_ASKPASS" "git-gui--askpass")
 
@@ -441,6 +438,7 @@ other window.
 (load-library "realgud")
 (load-library "evil")
 (global-undo-tree-mode)
+(require 'wdired)
 (require 'helm-config)
 (require 'ox-rst)
 (global-set-key [remap dabbrev-expand] 'hippie-expand)
@@ -471,11 +469,6 @@ other window.
 ;; C-c C-z starts python interpreter in current project
 ;; for this, set python-shell-interpreter to path of buildout powerscript exe
 ;; and python-shell-interpreter-args to ""
-
-(tool-bar-mode 0)
-
-(setq c-basic-offset 2)
-(setq indent-tabs-mode nil)
 #+END_SRC
 
 ** Mode-specific customizations
