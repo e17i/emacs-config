@@ -506,22 +506,20 @@ This is also an example of defining an evil leader key and some adjacent keymaps
 **** Evil Emacs config
 
 When using evil-mode, set ~evil-exit-emacs-state~ to ~C-M-z~, as I'm used to
-~suspend-frame~. Additionally, always enter evil mode in emacs state. This
+~suspend-frame~. Additionally, always enter evil mode in emacs state (see custom). This
 way, without getting in the way it is always only a key press away.
 
 #+BEGIN_SRC emacs-lisp
 (define-key evil-emacs-state-map "\C-z" nil)
 (define-key evil-emacs-state-map "\C-\M-z" 'evil-exit-emacs-state)
 (define-key evil-normal-state-map "\C-\M-z" 'evil-emacs-state)
-(add-hook 'evil-mode-hook
-	  (lambda () (evil-emacs-state)))
 #+END_SRC
 
 Now, after Initializing evil, we may probably also activate it in all buffers.
 
 #+BEGIN_SRC emacs-lisp
 (evil-rc)
-;; (evil-mode)
+(evil-mode)
 #+END_SRC
 
 *** C++ mode customizations, in use for aeons now
@@ -632,3 +630,9 @@ tbd
 (put 'narrow-to-region 'disabled nil)
 (put 'narrow-to-page 'disabled nil)
 #+END_SRC
+
+** Todo
+
+ - complete keyboard switching
+ - complete mouse/trackpad handling/switching
+ - cleanup misc, move to mode specific sections

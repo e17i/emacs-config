@@ -12,6 +12,7 @@
  '(delete-selection-mode t)
  '(dired-recursive-deletes 'top)
  '(dynamic-completion-mode nil)
+ '(evil-default-state 'emacs)
  '(fill-column 78)
  '(frame-icon-title-format
    '(('buffer-name "%b")
