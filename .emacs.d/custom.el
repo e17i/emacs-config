@@ -13,6 +13,10 @@
  '(dired-recursive-deletes 'top)
  '(dynamic-completion-mode nil)
  '(evil-default-state 'emacs)
+ '(evil-insert-state-modes nil)
+ '(evil-motion-state-modes nil)
+ '(elpy-modules
+   '(elpy-module-company elpy-module-eldoc elpy-module-flymake elpy-module-folding elpy-module-pyvenv elpy-module-highlight-indentation elpy-module-yasnippet elpy-module-django elpy-module-sane-defaults))
  '(fill-column 78)
  '(frame-icon-title-format
    '(('buffer-name "%b")
@@ -53,7 +57,12 @@
  '(python-mode-hook
    '((lambda nil "Turn off Indent Tabs mode."
        (setq indent-tabs-mode nil))
-     set-python-mode-keys init-python-stuff) t)
+     (lambda nil "highlight current column"
+       (highlight-indentation-current-column-mode))
+     (lambda nil "Activate jedi"
+       (jedi:setup))
+     (lambda nil "use superword mode"
+       (superword-mode)))) t)
  '(savehist-mode t nil (savehist))
  '(scroll-bar-mode nil)
  '(select-enable-clipboard t)
@@ -72,4 +81,5 @@
  ;; If you edit it by hand, you could mess it up, so be careful.
  ;; Your init file should contain only one such instance.
  ;; If there is more than one, they won't work right.
- '(cursor ((t (:background "darkred" :foreground "white")))))
+ '(cursor ((t (:background "darkred" :foreground "white"))))
+ '(highlight-indentation-current-column-face ((t (:background "sienna")))))
