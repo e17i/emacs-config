@@ -17,6 +17,9 @@
  '(dired-recursive-deletes (quote top))
  '(display-time-mode nil)
  '(dynamic-completion-mode nil)
+ '(elpy-modules
+   (quote
+    (elpy-module-company elpy-module-eldoc elpy-module-flymake elpy-module-folding elpy-module-pyvenv elpy-module-highlight-indentation elpy-module-yasnippet elpy-module-django elpy-module-sane-defaults)))
  '(elpy-rpc-python-command "C:\\sdk\\win32\\tools\\Python27\\python.exe")
  '(elpy-syntax-check-command "c:\\sdk\\win32\\tools\\Python27\\Scripts\\flake8.exe")
  '(evil-default-state (quote emacs))
@@ -68,6 +71,8 @@
    (quote
     ((lambda nil "Turn off Indent Tabs mode."
        (setq indent-tabs-mode nil))
+     (lambda nil "highlight current column"
+       (highlight-indentation-current-column-mode))
      (lambda nil "Activate jedi"
        (jedi:setup))
      (lambda nil "use superword mode"
@@ -95,4 +100,5 @@
  ;; If you edit it by hand, you could mess it up, so be careful.
  ;; Your init file should contain only one such instance.
  ;; If there is more than one, they won't work right.
- '(cursor ((t (:background "darkred" :foreground "white")))))
+ '(cursor ((t (:background "darkred" :foreground "white"))))
+ '(highlight-indentation-current-column-face ((t (:background "sienna")))))
