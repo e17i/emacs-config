@@ -215,6 +215,11 @@ a kind of ~ansi-term~ replacement.
   (let ((shell-file-name "c:\\sdk\\win32\\1.1\\scripts\\sdk-shell-vs90.bat"))
     (shell "*sdk*")))
 
+(defun run-wsl ()
+  (interactive)
+  (let ((shell-file-name "c:\\Windows\\System32\\bash.exe"))
+    (shell "*wsl*")))
+
 (defun run-bash ()
   (interactive)
   (let ((shell-file-name "c:\\Program Files\\Git\\bin\\bash.exe"))

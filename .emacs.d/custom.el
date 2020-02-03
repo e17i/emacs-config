@@ -20,6 +20,8 @@
  '(elpy-rpc-python-command "C:\\sdk\\win32\\tools\\Python27\\python.exe")
  '(elpy-syntax-check-command "c:\\sdk\\win32\\tools\\Python27\\Scripts\\flake8.exe")
  '(evil-default-state (quote emacs))
+ '(evil-insert-state-modes nil)
+ '(evil-motion-state-modes nil)
  '(fill-column 78)
  '(flycheck-python-flake8-executable "c:\\sdk\\win32\\tools\\Python27\\Scripts\\flake8.exe")
  '(frame-icon-title-format
