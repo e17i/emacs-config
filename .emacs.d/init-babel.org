@@ -51,7 +51,7 @@ or navigating within help texts for example.
 
 Often I want to quickly navigate through a list of error messages or
 occurencies, jumping to the places the errors are indicating. There are
-different ways to archieve this. First of all, with ~C-x C-f~ you can activate
+different ways to archieve this. First of all, with =C-x C-f= you can activate
 ~error-follow-minor-mode~, allowing to move the mark through the error buffer,
 letting the referenced source buffers follow you. But if you want to have the
 source buffer active, you would need to jump to the error buffer for each next
@@ -59,8 +59,8 @@ step. As a remedy, the following functions are introduced. While they follow
 the previous scheme adding remote control functions for the other window, they
 also show a cool feature of setting a temporary keymap in place, allowing
 further navigation steps by using shortcuts. This way, the long key sequence
-of addressing the other window (~C-x 4~) and starting the goto sequence
-(~M-g~) needs to be casted only as an initiation. Afterwards, it gets really
+of addressing the other window (=C-x 4=) and starting the goto sequence
+(=M-g=) needs to be casted only as an initiation. Afterwards, it gets really
 easy. This is quite convenient in the most different applications.
 
 #+BEGIN_SRC emacs-lisp
@@ -307,7 +307,7 @@ modifier.
 
 *** Ace zapping
 
-Ace enables some more vi-style jumping and zapping (see ~M-z~ for the basic
+Ace enables some more vi-style jumping and zapping (see =M-z= for the basic
 ~zap-to-char~ function).
 
 #+BEGIN_SRC emacs-lisp
@@ -328,7 +328,8 @@ As on Mac middle button may be otherwise occupied, use mouse-3
 together with /Meta/ as replacement.
 
 ~mouse-wheel-mode~ also enables mouse wheel scrolling. With /Meta/,
-enables scroll turbo; with /shift/, scale text.
+enables scroll turbo; with /shift/, scale text (seems to work only on
+trackpad, as it is mapped to ~S-wheel-left~/~right~).
 
 #+BEGIN_SRC emacs-lisp
 ;; mac trackpad: select: mouse-1, copy/cut: mouse-3, yank: M-mouse-3
@@ -362,15 +363,15 @@ easier reach. This is done here for combinations otherwise unmapped.
 
 *** Window handling
 
-We overrule ~C-x ^~ to use our window resizing method.
+We overrule =C-x ^= to use our window resizing method.
 
 #+BEGIN_SRC emacs-lisp
 (global-set-key [remap enlarge-window] 'resize-window)
 #+END_SRC
 
-And upgrade fullscreen experience. Use ~Meta-f10~ to toggle between maximized
+And upgrade fullscreen experience. Use =M-F10= to toggle between maximized
 and a size comprised of almost full height and a width just below
-~split-width-threshold~; ~Meta-f11~ to toggle fullscreen including no window
+~split-width-threshold~; =M-F11= to toggle fullscreen including no window
 decorations.
 
 #+BEGIN_SRC emacs-lisp
@@ -381,7 +382,7 @@ decorations.
 
 *** Remote controlling other window
 
-As I got quite used to remote control the other window using ~C-x 4~ keys, 
+As I got quite used to remote control the other window using =C-x 4= keys, 
 I'm adding a few ones which I missed so far.
 
 #+BEGIN_SRC emacs-lisp
@@ -391,25 +392,25 @@ I'm adding a few ones which I missed so far.
 (global-set-key "\C-X4+" 'fit-other-window)
 #+END_SRC
 
-Note the window size changing keys, ~C-x ^~ to enlarge (also negative) and
-~C-x -~ to shrink if buffer is smaller than window are a little bit asymetric.
+Note the window size changing keys, =C-x ^= to enlarge (also negative) and
+=C-x -= to shrink if buffer is smaller than window are a little bit asymetric.
 While the enlargement key can be used to enlarge and shrink the current
 window, the shrink key works only in one direction. So here we define an
-adjacent key for the other window. For rescue, there is always ~C-x +~ to
+adjacent key for the other window. For rescue, there is always =C-x += to
 balance windows.
 
-We also want to jump to beginning/end in other window by ~C-M-<~ and ~C-M->~
-(cf. ~C-M-v~ and ~C-M-V~ to scroll pagewise in other window).
+We also want to jump to beginning/end in other window by =C-M-<= and =C-M->=
+(cf. =C-M-v= and =C-M-V= to scroll pagewise in other window).
 
 #+BEGIN_SRC emacs-lisp
 (global-set-key [201326652] (quote beginning-of-buffer-other-window))
 (global-set-key [201326654] (quote end-of-buffer-other-window))
 #+END_SRC
 
-How to get these codes? Call ~M-x global-set-key RET C-M-< beg~.. to manually
-define such a key, then call ~C-x ESC ESC~ and copy the resulting parametrized
+How to get these codes? Call =M-x global-set-key RET C-M-< beg=.. to manually
+define such a key, then call =C-x ESC ESC= and copy the resulting parametrized
 command from minibuffer.
-Alternatively, call ~M-: (read-key-sequence "> ")~.
+Alternatively, call =M-: (read-key-sequence "> ")=.
 
 Now come the key bindings for convenient error navigation, as promised above.
 
@@ -430,50 +431,39 @@ other window.
 
 ** Misc
 
+How emacs finds it's tools:
+
 #+BEGIN_SRC emacs-lisp
 (setenv "PATH" (concat "/opt/local/bin:/opt/local/sbin:" (getenv "PATH")))
+#+END_SRC
 
+This may evolve into real keyboard handling..
+
+#+BEGIN_SRC emacs-lisp
 (load-file "~/.emacs.d/keyboard-pc.el")
+#+END_SRC
 
-;; (setq w32-apps-modifier 'meta)
-;; (setenv "PYTHONUNBUFFERED" "x")  ;; needed for windows? running python in comint frame
-;; (setenv "SSH_ASKPASS" "git-gui--askpass")
+Load and enable different additional packages
 
+#+BEGIN_SRC emacs-lisp
 (setq org-element-use-cache nil)  ;; temporarily disable org element cache
 (load-library "realgud")
 (load-library "evil")
 (global-undo-tree-mode)
 (require 'wdired)
+(load "dired-x.el") ;; also enable C-x C-j
 (require 'helm-config)
 (require 'ox-rst)
-(global-set-key [remap dabbrev-expand] 'hippie-expand)
-(setq erc-autojoin-channels-alist '(("freenode.net" "#latex-de" "##latinitas" "#NetBSD" "##bash-de" "#git" "#vim" "#emacs" "#erc" "#oberon" "#macosx")))
-
 (global-magit-file-mode t)
-(load "dired-x.el") ;; also enable C-x C-j
 
-;; smartparens
+(setq erc-autojoin-channels-alist '(("freenode.net" "#latex-de" "##latinitas" "#NetBSD" "##bash-de" "#git" "#vim" "#emacs" "#erc" "#oberon" "#macosx")))
+#+END_SRC
+
+In emacs lisp, we want slurp and barf support via smartparens. to be continued..
+
+#+BEGIN_SRC emacs-lisp
 (require 'smartparens-config)
 (add-hook 'emacs-lisp-mode-hook #'smartparens-mode)
-
-;; python
-(elpy-enable)
-;; Enable Flycheck
-(when (require 'flycheck nil t)
-  (setq elpy-modules (delq 'elpy-module-flymake elpy-modules))
-  (add-hook 'elpy-mode-hook 'flycheck-mode))
-;; Enable autopep8
-(require 'py-autopep8)
-;;(add-hook 'elpy-mode-hook 'py-autopep8-enable-on-save)
-;;(global-linum-mode)    ;; show line numbers
-(global-hl-line-mode) ;; highlight current line of point
-
-(define-key elpy-mode-map [remap previous-error] 'flycheck-previous-error)
-(define-key elpy-mode-map [remap next-error] 'flycheck-next-error)
-
-;; C-c C-z starts python interpreter in current project
-;; for this, set python-shell-interpreter to path of buildout powerscript exe
-;; and python-shell-interpreter-args to ""
 #+END_SRC
 
 ** Mode-specific customizations
@@ -505,7 +495,7 @@ This is also an example of defining an evil leader key and some adjacent keymaps
 
 **** Evil Emacs config
 
-When using evil-mode, set ~evil-exit-emacs-state~ to ~C-M-z~, as I'm used to
+When using evil-mode, set ~evil-exit-emacs-state~ to =C-M-z=, as I'm used to
 ~suspend-frame~. Additionally, always enter evil mode in emacs state (see custom). This
 way, without getting in the way it is always only a key press away.
 
@@ -552,18 +542,63 @@ Now, after Initializing evil, we may probably also activate it in all buffers.
 
 *** python mode
 
-The untabify-function defined here is currently disabled.
+We use hippie-expand mapped to =M-/=
 
 #+BEGIN_SRC emacs-lisp
-(defun python-mode-untabify ()
-    (save-excursion
-      (goto-char (point-min))
-      (while (re-search-forward "[ \t]+$" nil t)
-        (delete-region (match-beginning 0) (match-end 0)))
-      (goto-char (point-min))
-      (if (search-forward "\t" nil t)
-          (untabify (1- (point)) (point-max))))
-    nil)
+(global-set-key [remap dabbrev-expand] 'hippie-expand)
+#+END_SRC
+
+~elpy-mode~ defines a bunch of useful support functions for navigating and
+indenting in python buffers. Notably =C-c C-d= documentation for item under
+point, =M-.= jump to definition of item under cursor, =M-*= pop back to where
+=M-.= was last invoked, =C-c C-o= show all python definitions of current
+buffer in occur view, =C-c C-z= switch to python shell.
+For this, set ~python-shell-interpreter~ to path of buildout powerscript exe and
+~python-shell-interpreter-args~ to "" (see custom).
+
+#+BEGIN_SRC emacs-lisp
+(elpy-enable)
+#+END_SRC
+
+Also use flycheck in python.
+
+#+BEGIN_SRC emacs-lisp
+(when (require 'flycheck nil t)
+  (setq elpy-modules (delq 'elpy-module-flymake elpy-modules))
+  (add-hook 'elpy-mode-hook 'flycheck-mode))
+#+END_SRC
+
+Enable autopep8, but don't activate it on save. However, use =M-g M-n= and
+=M-g M-p= for flycheck next and flycheck previous error, which also show pep8 errors.
+
+#+BEGIN_SRC emacs-lisp
+(require 'py-autopep8)
+;;(add-hook 'elpy-mode-hook 'py-autopep8-enable-on-save)
+(define-key elpy-mode-map [remap previous-error] 'flycheck-previous-error)
+(define-key elpy-mode-map [remap next-error] 'flycheck-next-error)
+#+END_SRC
+
+elpy makes indentation levels visible column wise, so we also highlight the
+current line of point (not only for python).
+
+#+BEGIN_SRC emacs-lisp
+(global-hl-line-mode)
+#+END_SRC
+
+The untabify-function defined here is disabled. Instead, we use custom
+variable ~indent-tabs-mode~. Nevertheless, this may serve as an example, so it
+stays here. custom python mode hook also activates jedi and superword mode.
+
+#+BEGIN_SRC emacs-lisp
+;; (defun python-mode-untabify ()
+;;     (save-excursion
+;;       (goto-char (point-min))
+;;       (while (re-search-forward "[ \t]+$" nil t)
+;;         (delete-region (match-beginning 0) (match-end 0)))
+;;       (goto-char (point-min))
+;;       (if (search-forward "\t" nil t)
+;;           (untabify (1- (point)) (point-max))))
+;;     nil)
 
 ;;(add-hook 'python-mode-hook
 ;;            '(lambda ()
