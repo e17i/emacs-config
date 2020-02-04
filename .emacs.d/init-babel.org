@@ -736,6 +736,7 @@ tbd
 
 ** Todo
 
- - complete keyboard switching
- - complete mouse/trackpad handling/switching
- - cleanup misc, move to mode specific sections
+*** TODO complete keyboard switching
+*** TODO complete mouse/trackpad handling/switching
+*** TODO cleanup misc, move to mode specific sections
+*** TODO think about movement/search placing point on beginning of adjacent object
