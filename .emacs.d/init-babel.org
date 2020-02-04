@@ -7,9 +7,18 @@ We want to set each frame to reasonable color defaults by defining an
 appropriate hook. We also call it for the current frame.
 
 #+BEGIN_SRC emacs-lisp
+(defgroup my-cust nil "my customizations")
+(defcustom frame-transparency 100
+  "transparency used for all display frames."
+  :type '(integer)
+  :group 'my-cust
+  :set (lambda (symb val)
+         (setq frame-transparency val)
+         (dolist (frame (frames-on-display-list))
+           (set-frame-parameter frame 'alpha `(,val . ,val)))))
 (add-hook 'after-make-frame-functions
 	  (lambda (frame)
-	    (set-frame-parameter nil 'alpha '(95 . 95))
+	    (set-frame-parameter frame 'alpha (cons frame-transparency frame-transparency))
 	    (with-selected-frame frame
 	      (set-background-color "Black")
 	      (set-foreground-color "Green")
@@ -242,7 +251,7 @@ Keys supported:
  0 balance all frames window sizes"
   (interactive)
   (macrolet ((msg ()
-		  '(message "resize window (-,+,[,],0)"))
+		  '(message "resize window (-,+,{,},0)"))
 	     (lmb (fnc)
 		  `(lambda () (interactive)
 		     (msg)
@@ -517,6 +526,23 @@ In emacs lisp, we want slurp and barf support via smartparens. to be continued..
 #+END_SRC
 
 ** Mode-specific customizations
+*** dired
+
+Now that ~ediff~ is configured for use in ~magit~, also use it in ~dired~.
+
+#+BEGIN_SRC emacs-lisp
+(define-key dired-mode-map "="
+  (lambda ()
+    "ediff file at mark and file at point."
+    (interactive)
+    (let ((file (dired-get-filename))
+          (prev (if mark-active 
+                    (save-excursion (goto-char (mark t))(dired-get-filename))
+                  nil)))
+      (if (and file prev)
+          (ediff-files prev file)))))
+#+END_SRC
+
 *** Evil mode
 
 **** Evil defines
@@ -756,4 +782,5 @@ tbd
 *** TODO complete keyboard switching
 *** TODO complete mouse/trackpad handling/switching
 *** TODO cleanup misc, move to mode specific sections
-*** TODO think about movement/search placing point on beginning of adjacent object
+*** DONE think about movement/search placing point on beginning of adjacent object
+    done at least for searching
