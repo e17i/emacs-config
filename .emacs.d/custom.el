@@ -17,6 +17,22 @@
  '(dired-recursive-deletes (quote top))
  '(display-time-mode nil)
  '(dynamic-completion-mode nil)
+ '(ediff-before-setup-hook
+   (quote
+    ((lambda nil
+       (window-configuration-to-register 101)))))
+ '(ediff-quit-hook
+   (quote
+    (ediff-cleanup-mess
+     (lambda nil
+       (jump-to-register 101)))))
+ '(ediff-split-window-function (quote split-window-horizontally))
+ '(ediff-suspend-hook
+   (quote
+    (ediff-default-suspend-function
+     (lambda nil
+       (jump-to-register 101)))))
+ '(ediff-window-setup-function (quote ediff-setup-windows-plain))
  '(elpy-modules
    (quote
     (elpy-module-company elpy-module-eldoc elpy-module-flymake elpy-module-folding elpy-module-pyvenv elpy-module-highlight-indentation elpy-module-yasnippet elpy-module-django elpy-module-sane-defaults)))
@@ -101,5 +117,13 @@
  ;; Your init file should contain only one such instance.
  ;; If there is more than one, they won't work right.
  '(cursor ((t (:background "darkred" :foreground "white"))))
+ '(ediff-even-diff-A ((t (:background "blue1"))))
+ '(ediff-even-diff-Ancestor ((t (:background "Blue2"))))
+ '(ediff-even-diff-B ((t (:background "Blue3"))))
+ '(ediff-even-diff-C ((t (:background "Blue4"))))
+ '(ediff-odd-diff-A ((t (:background "purple1"))))
+ '(ediff-odd-diff-Ancestor ((t (:background "purple2"))))
+ '(ediff-odd-diff-B ((t (:background "purple3"))))
+ '(ediff-odd-diff-C ((t (:background "purple4"))))
  '(highlight-indentation-current-column-face ((t (:background "sienna"))))
  '(highlight-indentation-face ((t (:background "dark slate gray")))))
