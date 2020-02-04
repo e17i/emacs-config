@@ -316,6 +316,22 @@ caution and check to not shadow future functionality here.
 (global-set-key "\C-x\C-f" 'find-file)
 #+END_SRC
 
+*** Convenience for searching
+
+Often you want to finish a search leaving the point on the first character of
+the string found. This enables using isearch as a convenient tool for
+positioning, selecting or killing to but not including a string. This is
+enabled here on =C-return=.
+
+#+BEGIN_SRC emacs-lisp
+(define-key isearch-mode-map (kbd "<C-return>")
+  (lambda () (interactive)
+    (isearch-repeat (if (eq isearch-forward nil)
+                        'forward
+                      'backward))
+    (isearch-exit)))
+#+END_SRC
+
 *** Scrolling
 
 Convenience keys for buffer scrolling. Enables up/down also with /Meta/
@@ -621,11 +637,12 @@ elpy. The =M-i= and =M-I= bindings first have to prove themselves.
 #+END_SRC
 
 The visibility toggling is on completely brain damaged keys, so we put at
-least the toggle at point function at =S-TAB=, being as convenient as in org
+least the toggle at point function at =S-tab=, being as convenient as in org
 mode.
 
 #+BEGIN_SRC emacs-lisp
-(define-key elpy-mode-map (kbd "<backtab>") 'elpy-folding-toggle-at-point)
+;; (w32-register-hot-key (kbd "<M-tab>")) ; example of hot key override, but not practical
+(define-key elpy-mode-map (kbd "<S-tab>") 'elpy-folding-toggle-at-point)
 #+END_SRC
 
 Also use flycheck in python.
