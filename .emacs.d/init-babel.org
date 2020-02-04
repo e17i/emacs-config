@@ -596,9 +596,36 @@ point, =M-.= jump to definition of item under cursor, =M-*= pop back to where
 buffer in occur view, =C-c C-z= switch to python shell.
 For this, set ~python-shell-interpreter~ to path of buildout powerscript exe and
 ~python-shell-interpreter-args~ to "" (see custom).
+Also worth to remember the company backend completion on =C-M-i=.
 
 #+BEGIN_SRC emacs-lisp
 (elpy-enable)
+#+END_SRC
+
+To navigate using more convenient keys, we put the block navigation moves
+(block in, block out, within block up and down) to =f=, =b=, =p= and =n=
+combined with =C-M=. Other useful functions already on convenient keys are
+=S-RET= open and indent line below, =C-S-RET= open and indent line above.
+Also the python indentation functions (=C-c <= and =C-c >=) are remapped to
+elpy. The =M-i= and =M-I= bindings first have to prove themselves.
+
+#+BEGIN_SRC emacs-lisp
+(define-key elpy-mode-map "\C-\M-p" 'elpy-nav-backward-block)
+(define-key elpy-mode-map "\C-\M-n" 'elpy-nav-forward-block)
+(define-key elpy-mode-map "\C-\M-f" 'elpy-nav-forward-indent)
+(define-key elpy-mode-map "\C-\M-b" 'elpy-nav-backward-indent)
+(define-key elpy-mode-map "\M-i" 'elpy-nav-indent-shift-right)
+(define-key elpy-mode-map "\M-I" 'elpy-nav-indent-shift-left)
+(define-key elpy-mode-map [remap python-indent-shift-right] 'elpy-nav-indent-shift-right)
+(define-key elpy-mode-map [remap python-indent-shift-left] 'elpy-nav-indent-shift-left)
+#+END_SRC
+
+The visibility toggling is on completely brain damaged keys, so we put at
+least the toggle at point function at =S-TAB=, being as convenient as in org
+mode.
+
+#+BEGIN_SRC emacs-lisp
+(define-key elpy-mode-map (kbd "<backtab>") 'elpy-folding-toggle-at-point)
 #+END_SRC
 
 Also use flycheck in python.
@@ -619,7 +646,7 @@ Enable autopep8, but don't activate it on save. However, use =M-g M-n= and
 (define-key elpy-mode-map [remap next-error] 'flycheck-next-error)
 #+END_SRC
 
-elpy makes indentation levels visible column wise, so we also highlight the
+elpy makes indentation levels visible columnwise, so we also highlight the
 current line of point (not only for python).
 
 #+BEGIN_SRC emacs-lisp
