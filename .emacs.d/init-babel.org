@@ -7,14 +7,22 @@ We want to set each frame to reasonable color defaults by defining an
 appropriate hook. We also call it for the current frame.
 
 #+BEGIN_SRC emacs-lisp
+(defgroup my-cust nil "my customizations")
+(defcustom my-frame-transparency 100
+  "transparency used for all display frames."
+  :type '(integer)
+  :group 'my-cust
+  :set (lambda (symb val)
+         (setq my-frame-transparency val)
+         (dolist (frame (frames-on-display-list))
+           (set-frame-parameter frame 'alpha `(,val . ,val)))))
 (add-hook 'after-make-frame-functions
-         (lambda (frame)
-           (set-frame-parameter nil 'alpha '(90 . 90))
-           (with-selected-frame frame
-             (set-background-color "Black")
-             (set-foreground-color "Green")
-           )))
-(run-hook-with-args 'after-make-frame-functions (selected-frame))
+	  (lambda (frame)
+	    (set-frame-parameter frame 'alpha (cons my-frame-transparency my-frame-transparency))
+	    (with-selected-frame frame
+	      (set-background-color "Black")
+	      (set-foreground-color "Green")
+	      )))
 #+END_SRC
 
 *** Handling of other window
@@ -215,7 +223,7 @@ Keys supported:
  0 balance all frames window sizes"
   (interactive)
   (macrolet ((msg ()
-		  '(message "resize window (-,+,[,],0)"))
+		  '(message "resize window (-,+,{,},0)"))
 	     (lmb (fnc)
 		  `(lambda () (interactive)
 		     (msg)
@@ -255,7 +263,7 @@ space outside the frame and use the rest of screen".
 	(set-frame-width nil (- split-width-threshold 1))
 	(set-frame-height nil (- lines 1))
 	(set-frame-position nil 0 8)))
-     ('t
+     ((eq maximized nil)
       (set-frame-parameter nil 'fullscreen 'maximized)))))
 #+END_SRC
 
@@ -269,12 +277,18 @@ space outside the frame and use the rest of screen".
        ((memq fullscreen '(fullscreen fullboth))
 	(set-scroll-bar (frame-parameter nil 'scrollbar))
 	(set-frame-parameter nil 'scrollbar nil)
-	(toggle-menu-bar-mode-from-frame 1))
-       (t
+        (apply (get 'my-frame-transparency 'custom-set) 'my-frame-transparency
+               (frame-parameter nil 'my-transparency) nil)
+        (set-frame-parameter nil 'my-transparency nil)
+	(toggle-menu-bar-mode-from-frame 1)
+        (toggle-frame-fullscreen))
+       ((eq fullscreen nil)
 	(set-frame-parameter nil 'scrollbar scroll-bar-mode)
 	(menu-bar-no-scroll-bar)
-	(toggle-menu-bar-mode-from-frame 0)))))
-  (toggle-frame-fullscreen))
+	(set-frame-parameter nil 'my-transparency my-frame-transparency)
+        (apply (get 'my-frame-transparency 'custom-set) 'my-frame-transparency 100 nil)
+	(toggle-menu-bar-mode-from-frame 0)
+        (toggle-frame-fullscreen))))))
 #+END_SRC
 
 ** Global key bindings
@@ -287,6 +301,22 @@ caution and check to not shadow future functionality here.
 (global-set-key "\C-x\C-b" 'bs-show)	;; this used to be electric-buffer-list
 (global-set-key "\C-c\C-v" 'find-file-at-point)
 (global-set-key "\C-x\C-f" 'find-file)
+#+END_SRC
+
+*** Convenience for searching
+
+Often you want to finish a search leaving the point on the first character of
+the string found. This enables using isearch as a convenient tool for
+positioning, selecting or killing to but not including a string. This is
+enabled here on =C-return=.
+
+#+BEGIN_SRC emacs-lisp
+(define-key isearch-mode-map (kbd "<C-return>")
+  (lambda () (interactive)
+    (isearch-repeat (if (eq isearch-forward nil)
+                        'forward
+                      'backward))
+    (isearch-exit)))
 #+END_SRC
 
 *** Scrolling
@@ -350,6 +380,7 @@ trackpad, as it is mapped to ~S-wheel-left~/~right~).
 
 On a german keyboard, we want some of the more obscure mappings to be within
 easier reach. This is done here for combinations otherwise unmapped.
+Probably to be put into a minor mode. Until then, activated unconditionally.
 
 #+BEGIN_SRC emacs-lisp
 (defun activate-german-keymap ()
@@ -359,6 +390,7 @@ easier reach. This is done here for combinations otherwise unmapped.
   (global-set-key "\C-x&" 'enlarge-window) ; C-x ^, here C-x &
   (global-set-key "\C-x*" 'enlarge-window-horizontally) ; C-x }
   (global-set-key "\C-x‹" 'shrink-window-horizontally)) ; C-x {
+(activate-german-keymap)
 #+END_SRC
 
 *** Window handling
@@ -459,14 +491,24 @@ Load and enable different additional packages
 (setq erc-autojoin-channels-alist '(("freenode.net" "#latex-de" "##latinitas" "#NetBSD" "##bash-de" "#git" "#vim" "#emacs" "#erc" "#oberon" "#macosx")))
 #+END_SRC
 
-In emacs lisp, we want slurp and barf support via smartparens. to be continued..
+** Mode-specific customizations
+*** dired
+
+Now that ~ediff~ is configured for use in ~magit~, also use it in ~dired~.
 
 #+BEGIN_SRC emacs-lisp
-(require 'smartparens-config)
-(add-hook 'emacs-lisp-mode-hook #'smartparens-mode)
+(define-key dired-mode-map "="
+  (lambda ()
+    "ediff file at mark and file at point."
+    (interactive)
+    (let ((file (dired-get-filename))
+          (prev (if mark-active 
+                    (save-excursion (goto-char (mark t))(dired-get-filename))
+                  nil)))
+      (if (and file prev)
+          (ediff-files prev file)))))
 #+END_SRC
 
-** Mode-specific customizations
 *** Evil mode
 
 **** Evil defines
@@ -548,6 +590,12 @@ We use hippie-expand mapped to =M-/=
 (global-set-key [remap dabbrev-expand] 'hippie-expand)
 #+END_SRC
 
+We want to use flycheck in python.
+
+#+BEGIN_SRC emacs-lisp
+(require 'flycheck)
+#+END_SRC
+
 ~elpy-mode~ defines a bunch of useful support functions for navigating and
 indenting in python buffers. Notably =C-c C-d= documentation for item under
 point, =M-.= jump to definition of item under cursor, =M-*= pop back to where
@@ -555,17 +603,37 @@ point, =M-.= jump to definition of item under cursor, =M-*= pop back to where
 buffer in occur view, =C-c C-z= switch to python shell.
 For this, set ~python-shell-interpreter~ to path of buildout powerscript exe and
 ~python-shell-interpreter-args~ to "" (see custom).
+Also worth to remember the company backend completion on =C-M-i=.
 
 #+BEGIN_SRC emacs-lisp
 (elpy-enable)
 #+END_SRC
 
-Also use flycheck in python.
+To navigate using more convenient keys, we put the block navigation moves
+(block in, block out, within block up and down) to =f=, =b=, =p= and =n=
+combined with =C-M=. Other useful functions already on convenient keys are
+=S-RET= open and indent line below, =C-S-RET= open and indent line above.
+Also the python indentation functions (=C-c <= and =C-c >=) are remapped to
+elpy. The =M-i= and =M-I= bindings first have to prove themselves.
 
 #+BEGIN_SRC emacs-lisp
-(when (require 'flycheck nil t)
-  (setq elpy-modules (delq 'elpy-module-flymake elpy-modules))
-  (add-hook 'elpy-mode-hook 'flycheck-mode))
+(define-key elpy-mode-map "\C-\M-p" 'elpy-nav-backward-block)
+(define-key elpy-mode-map "\C-\M-n" 'elpy-nav-forward-block)
+(define-key elpy-mode-map "\C-\M-f" 'elpy-nav-forward-indent)
+(define-key elpy-mode-map "\C-\M-b" 'elpy-nav-backward-indent)
+(define-key elpy-mode-map "\M-i" 'elpy-nav-indent-shift-right)
+(define-key elpy-mode-map "\M-I" 'elpy-nav-indent-shift-left)
+(define-key elpy-mode-map [remap python-indent-shift-right] 'elpy-nav-indent-shift-right)
+(define-key elpy-mode-map [remap python-indent-shift-left] 'elpy-nav-indent-shift-left)
+#+END_SRC
+
+The visibility toggling is on completely brain damaged keys, so we put at
+least the toggle at point function at =S-tab=, being as convenient as in org
+mode.
+
+#+BEGIN_SRC emacs-lisp
+;; (w32-register-hot-key (kbd "<M-tab>")) ; example of hot key override, but not practical
+(define-key elpy-mode-map (kbd "<S-tab>") 'elpy-folding-toggle-at-point)
 #+END_SRC
 
 Enable autopep8, but don't activate it on save. However, use =M-g M-n= and
@@ -578,11 +646,12 @@ Enable autopep8, but don't activate it on save. However, use =M-g M-n= and
 (define-key elpy-mode-map [remap next-error] 'flycheck-next-error)
 #+END_SRC
 
-elpy makes indentation levels visible column wise, so we also highlight the
-current line of point (not only for python).
+elpy makes indentation levels visible columnwise, so we also highlight the
+current line of point.
+As this is not only for python, currently enabled only in customize.
 
 #+BEGIN_SRC emacs-lisp
-(global-hl-line-mode)
+;; (global-hl-line-mode)
 #+END_SRC
 
 The untabify-function defined here is disabled. Instead, we use custom
@@ -649,6 +718,45 @@ Here we use ~hs-mode~, enabling tag view toggling and tag level hiding. Also
 
 tbd
 
+*** smartparens mode
+
+In emacs lisp, we want slurp and barf support via smartparens. As the default
+conflicts with my habits, we define our own mapping here.
+
+#+BEGIN_SRC emacs-lisp
+(require 'smartparens-config)
+(sp--populate-keymap
+ (let ((my-sp-bindings '(("C-M-f" . sp-forward-sexp) ;; navigation
+                         ("C-M-b" . sp-backward-sexp)
+                         ("C-M-u" . sp-backward-up-sexp)
+                         ("C-M-d" . sp-down-sexp)
+                         ("C-M-p" . sp-backward-parallel-sexp)
+                         ("C-M-n" . sp-forward-parallel-sexp)
+                         ("C-M-k" . sp-kill-sexp)
+                         ("C-M-w" . sp-copy-sexp)
+                         ("M-F" . sp-forward-symbol)
+                         ("M-B" . sp-backward-symbol)
+                         ("C-M-SPC" . sp-mark-sexp)
+                         ("M-s" . sp-splice-sexp) ;; depth-changing commands
+                         ("M-<up>" . sp-splice-sexp-killing-backward)
+                         ("M-<down>" . sp-splice-sexp-killing-forward)
+                         ("M-r" . sp-splice-sexp-killing-around)
+                         ("C-)" . sp-forward-slurp-sexp) ;; barf/slurp
+                                        ; ("C-<right>" . sp-forward-slurp-sexp)
+                         ("C-}" . sp-forward-barf-sexp)
+                                        ; ("C-<left>" . sp-forward-barf-sexp)
+                         ("C-(" . sp-backward-slurp-sexp)
+                                        ; ("C-M-<left>" . sp-backward-slurp-sexp)
+                         ("C-{" . sp-backward-barf-sexp)
+                                        ; ("C-M-<right>" . sp-backward-barf-sexp)
+                         ("M-S" . sp-split-sexp)
+                         ("C-]" . sp-select-next-thing-exchange)
+                         ("C-M-]" . sp-select-next-thing)
+                         )))
+   my-sp-bindings))
+(add-hook 'emacs-lisp-mode-hook #'smartparens-mode)
+#+END_SRC
+
 *** markdown mode
 
 #+BEGIN_SRC emacs-lisp
@@ -664,10 +772,13 @@ tbd
 #+BEGIN_SRC emacs-lisp
 (put 'narrow-to-region 'disabled nil)
 (put 'narrow-to-page 'disabled nil)
+(put 'set-goal-column 'disabled nil)
 #+END_SRC
 
 ** Todo
 
- - complete keyboard switching
- - complete mouse/trackpad handling/switching
- - cleanup misc, move to mode specific sections
+*** TODO complete keyboard switching
+*** TODO complete mouse/trackpad handling/switching
+*** TODO cleanup misc, move to mode specific sections
+*** DONE think about movement/search placing point on beginning of adjacent object
+    done at least for searching

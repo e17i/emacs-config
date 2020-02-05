@@ -12,6 +12,22 @@
  '(delete-selection-mode t)
  '(dired-recursive-deletes 'top)
  '(dynamic-completion-mode nil)
+ '(ediff-before-setup-hook
+   '((lambda nil
+       (window-configuration-to-register 101))))
+ '(ediff-quit-hook
+   '(ediff-cleanup-mess
+     (lambda nil
+       (jump-to-register 101))))
+ '(ediff-split-window-function 'split-window-horizontally)
+ '(ediff-suspend-hook
+   '(ediff-default-suspend-function
+     (lambda nil
+       (jump-to-register 101))))
+ '(ediff-window-setup-function 'ediff-setup-windows-plain)
+ '(elpy-mode-hook '(hl-line-mode flycheck-mode))
+ '(elpy-modules
+   '(elpy-module-company elpy-module-eldoc elpy-module-folding elpy-module-pyvenv elpy-module-highlight-indentation elpy-module-yasnippet elpy-module-django elpy-module-sane-defaults))
  '(evil-default-state 'emacs)
  '(evil-insert-state-modes nil)
  '(evil-motion-state-modes nil)
@@ -38,11 +54,13 @@
  '(magit-git-executable "/opt/local/bin/git")
  '(mouse-drag-copy-region t)
  '(mouse-wheel-scroll-amount '(1 ((meta) . 3) ((shift) . text-scale)))
+ '(my-frame-transparency 92)
  '(ns-alternate-modifier 'meta)
  '(ns-command-modifier 'super)
  '(ns-control-modifier 'control)
  '(ns-right-alternate-modifier 'none)
  '(ns-right-command-modifier 'meta)
+ '(nxml-sexp-element-flag t)
  '(org-agenda-files nil)
  '(org-babel-python-command "python2")
  '(org-goto-auto-isearch nil)
@@ -70,7 +88,7 @@
  '(server-mode t)
  '(show-paren-mode t)
  '(size-indication-mode t)
- '(sp-base-key-bindings 'sp)
+ '(sp-base-key-bindings nil)
  '(split-height-threshold 90)
  '(sql-oracle-options (list oracle-startup-script))
  '(svn-status-hide-unmodified t)
@@ -82,4 +100,13 @@
  ;; Your init file should contain only one such instance.
  ;; If there is more than one, they won't work right.
  '(cursor ((t (:background "darkred" :foreground "white"))))
- '(highlight-indentation-current-column-face ((t (:background "sienna")))))
+ '(ediff-even-diff-A ((t (:background "blue1"))))
+ '(ediff-even-diff-Ancestor ((t (:background "Blue2"))))
+ '(ediff-even-diff-B ((t (:background "Blue3"))))
+ '(ediff-even-diff-C ((t (:background "Blue4"))))
+ '(ediff-odd-diff-A ((t (:background "purple1"))))
+ '(ediff-odd-diff-Ancestor ((t (:background "purple2"))))
+ '(ediff-odd-diff-B ((t (:background "purple3"))))
+ '(ediff-odd-diff-C ((t (:background "purple4"))))
+ '(highlight-indentation-current-column-face ((t (:background "sienna"))))
+ '(highlight-indentation-face ((t (:background "dark slate gray")))))
