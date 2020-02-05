@@ -8,22 +8,21 @@ appropriate hook. We also call it for the current frame.
 
 #+BEGIN_SRC emacs-lisp
 (defgroup my-cust nil "my customizations")
-(defcustom frame-transparency 100
+(defcustom my-frame-transparency 100
   "transparency used for all display frames."
   :type '(integer)
   :group 'my-cust
   :set (lambda (symb val)
-         (setq frame-transparency val)
+         (setq my-frame-transparency val)
          (dolist (frame (frames-on-display-list))
            (set-frame-parameter frame 'alpha `(,val . ,val)))))
 (add-hook 'after-make-frame-functions
 	  (lambda (frame)
-	    (set-frame-parameter frame 'alpha (cons frame-transparency frame-transparency))
+	    (set-frame-parameter frame 'alpha (cons my-frame-transparency my-frame-transparency))
 	    (with-selected-frame frame
 	      (set-background-color "Black")
 	      (set-foreground-color "Green")
 	      )))
-(run-hook-with-args 'after-make-frame-functions (selected-frame))
 #+END_SRC
 
 *** Handling of other window
@@ -291,7 +290,7 @@ space outside the frame and use the rest of screen".
 	(set-frame-width nil (- split-width-threshold 1))
 	(set-frame-height nil (- lines 1))
 	(set-frame-position nil 0 8)))
-     ('t
+     ((eq maximized nil)
       (set-frame-parameter nil 'fullscreen 'maximized)))))
 #+END_SRC
 
@@ -305,12 +304,18 @@ space outside the frame and use the rest of screen".
        ((memq fullscreen '(fullscreen fullboth))
 	(set-scroll-bar (frame-parameter nil 'scrollbar))
 	(set-frame-parameter nil 'scrollbar nil)
-	(toggle-menu-bar-mode-from-frame 1))
-       (t
+        (apply (get 'my-frame-transparency 'custom-set) 'my-frame-transparency
+               (frame-parameter nil 'my-transparency) nil)
+        (set-frame-parameter nil 'my-transparency nil)
+	(toggle-menu-bar-mode-from-frame 1)
+        (toggle-frame-fullscreen))
+       ((eq fullscreen nil)
 	(set-frame-parameter nil 'scrollbar scroll-bar-mode)
 	(menu-bar-no-scroll-bar)
-	(toggle-menu-bar-mode-from-frame 0)))))
-  (toggle-frame-fullscreen))
+	(set-frame-parameter nil 'my-transparency my-frame-transparency)
+        (apply (get 'my-frame-transparency 'custom-set) 'my-frame-transparency 100 nil)
+	(toggle-menu-bar-mode-from-frame 0)
+        (toggle-frame-fullscreen))))))
 #+END_SRC
 
 ** Global key bindings
@@ -775,6 +780,7 @@ tbd
 #+BEGIN_SRC emacs-lisp
 (put 'narrow-to-region 'disabled nil)
 (put 'narrow-to-page 'disabled nil)
+(put 'set-goal-column 'disabled nil)
 #+END_SRC
 
 ** Todo

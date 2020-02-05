@@ -57,7 +57,7 @@
      " || " system-name " || "
      ((quote buffer-name)
       "%f"))) t)
- '(frame-transparency 95)
+ '(my-frame-transparency 92)
  '(fringe-mode (quote (5 . 5)) nil (fringe))
  '(hippie-expand-verbose nil)
  '(history-delete-duplicates t)
