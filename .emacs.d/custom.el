@@ -54,7 +54,7 @@
  '(magit-git-executable "/opt/local/bin/git")
  '(mouse-drag-copy-region t)
  '(mouse-wheel-scroll-amount '(1 ((meta) . 3) ((shift) . text-scale)))
- '(my-frame-transparency 92)
+ '(my-frame-transparency 90)
  '(ns-alternate-modifier 'meta)
  '(ns-command-modifier 'super)
  '(ns-control-modifier 'control)
