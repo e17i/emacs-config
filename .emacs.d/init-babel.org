@@ -407,6 +407,7 @@ trackpad, as it is mapped to ~S-wheel-left~/~right~).
 
 On a german keyboard, we want some of the more obscure mappings to be within
 easier reach. This is done here for combinations otherwise unmapped.
+Probably to be put into a minor mode. Until then, activated unconditionally.
 
 #+BEGIN_SRC emacs-lisp
 (defun activate-german-keymap ()
@@ -416,6 +417,7 @@ easier reach. This is done here for combinations otherwise unmapped.
   (global-set-key "\C-x&" 'enlarge-window) ; C-x ^, here C-x &
   (global-set-key "\C-x*" 'enlarge-window-horizontally) ; C-x }
   (global-set-key "\C-x‹" 'shrink-window-horizontally)) ; C-x {
+(activate-german-keymap)
 #+END_SRC
 
 *** Window handling
@@ -629,6 +631,12 @@ We use hippie-expand mapped to =M-/=
 (global-set-key [remap dabbrev-expand] 'hippie-expand)
 #+END_SRC
 
+We want to use flycheck in python.
+
+#+BEGIN_SRC emacs-lisp
+(require 'flycheck)
+#+END_SRC
+
 ~elpy-mode~ defines a bunch of useful support functions for navigating and
 indenting in python buffers. Notably =C-c C-d= documentation for item under
 point, =M-.= jump to definition of item under cursor, =M-*= pop back to where
@@ -669,14 +677,6 @@ mode.
 (define-key elpy-mode-map (kbd "<S-tab>") 'elpy-folding-toggle-at-point)
 #+END_SRC
 
-Also use flycheck in python.
-
-#+BEGIN_SRC emacs-lisp
-(when (require 'flycheck nil t)
-  (setq elpy-modules (delq 'elpy-module-flymake elpy-modules))
-  (add-hook 'elpy-mode-hook 'flycheck-mode))
-#+END_SRC
-
 Enable autopep8, but don't activate it on save. However, use =M-g M-n= and
 =M-g M-p= for flycheck next and flycheck previous error, which also show pep8 errors.
 
@@ -688,10 +688,11 @@ Enable autopep8, but don't activate it on save. However, use =M-g M-n= and
 #+END_SRC
 
 elpy makes indentation levels visible columnwise, so we also highlight the
-current line of point (not only for python).
+current line of point.
+As this is not only for python, currently enabled only in customize.
 
 #+BEGIN_SRC emacs-lisp
-(global-hl-line-mode)
+;; (global-hl-line-mode)
 #+END_SRC
 
 The untabify-function defined here is disabled. Instead, we use custom

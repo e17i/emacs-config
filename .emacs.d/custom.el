@@ -33,9 +33,10 @@
      (lambda nil
        (jump-to-register 101)))))
  '(ediff-window-setup-function (quote ediff-setup-windows-plain))
+ '(elpy-mode-hook (quote (hl-line-mode flycheck-mode)))
  '(elpy-modules
    (quote
-    (elpy-module-company elpy-module-eldoc elpy-module-flymake elpy-module-folding elpy-module-pyvenv elpy-module-highlight-indentation elpy-module-yasnippet elpy-module-django elpy-module-sane-defaults)))
+    (elpy-module-company elpy-module-eldoc elpy-module-folding elpy-module-pyvenv elpy-module-highlight-indentation elpy-module-yasnippet elpy-module-django elpy-module-sane-defaults)))
  '(elpy-rpc-python-command "C:\\sdk\\win32\\tools\\Python27\\python.exe")
  '(elpy-syntax-check-command "c:\\sdk\\win32\\tools\\Python27\\Scripts\\flake8.exe")
  '(evil-default-state (quote emacs))
