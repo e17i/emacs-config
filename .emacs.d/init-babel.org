@@ -355,9 +355,9 @@ enabled here on =C-return=.
 #+BEGIN_SRC emacs-lisp
 (define-key isearch-mode-map (kbd "<C-return>")
   (lambda () (interactive)
-    (isearch-repeat (if (eq isearch-forward nil)
-                        'forward
-                      'backward))
+    (isearch-repeat (if isearch-forward
+                        'backward
+                      'forward))
     (isearch-exit)))
 #+END_SRC
 
@@ -401,7 +401,7 @@ together with /Meta/ as replacement.
 
 ~mouse-wheel-mode~ also enables mouse wheel scrolling. With /Meta/,
 enables scroll turbo; with /shift/, scale text (seems to work only on
-trackpad, as it is mapped to ~S-wheel-left~/~right~).
+trackpad, as it is mapped to =S-wheel-left= / =right=).
 
 #+BEGIN_SRC emacs-lisp
 ;; mac trackpad: select: mouse-1, copy/cut: mouse-3, yank: M-mouse-3
