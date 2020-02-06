@@ -291,16 +291,58 @@ space outside the frame and use the rest of screen".
         (toggle-frame-fullscreen))))))
 #+END_SRC
 
+*** electric delimiter
+
+Often I want to put some text into delimiters after writing it, for example a
+string or an argument list. So the reverse of a splicing operation is needed.
+Here, you can define a region and delimit it using a character. In the special
+case of the character being an opening type of brace, automatically selects
+the corresponding closing brace. When called with prefix arg, the region is
+newly indented after delimiting.
+
+#+BEGIN_SRC emacs-lisp
+(defun my-delimit-region (&optional pre delim)
+  "Frame region with delimiters. If delim is an opening type of
+brace, automatically use the corresponding closing delimiter,
+otherwise use the same char for both sides. If called
+interactively, take next key press as opening delimiter. If
+called with prefix arg, the region is newly indented after
+delimiting."
+  (interactive "P")
+  (let* ((bd (if delim delim
+               (read-event "> ")))
+         (ed (case bd
+               ((?() ?))
+               ((?[) ?])
+               ((?{) ?})
+               ((?<) ?>)
+               (t bd))))
+    (let ((p1 (if (> (point) (mark)) (mark) (point)))
+          (p2 (if (> (point) (mark)) (point) (mark))))
+      (save-excursion
+        (goto-char p1)
+        (insert bd)
+        (goto-char (+ p2 1))
+        (insert ed))
+      (if pre (indent-region p1 p2)))))
+#+END_SRC
+
 ** Global key bindings
 *** Generic
 
-Some convenience keys for handling buffers, files and window sizes. Use
-caution and check to not shadow future functionality here.
+Some convenience keys for handling buffers and files. Use caution and check to
+not shadow future functionality here.
 
 #+BEGIN_SRC emacs-lisp
 (global-set-key "\C-x\C-b" 'bs-show)	;; this used to be electric-buffer-list
 (global-set-key "\C-c\C-v" 'find-file-at-point)
 (global-set-key "\C-x\C-f" 'find-file)
+#+END_SRC
+
+And my delimiting function:
+
+#+BEGIN_SRC emacs-lisp
+(global-set-key "\C-cF" 'my-delimit-region)
 #+END_SRC
 
 *** Convenience for searching
