@@ -422,6 +422,14 @@ trackpad, as it is mapped to =S-wheel-left= / =right=).
 
 *** Keyboard handling
 
+On a us keyboard, we also want to be able to use german umlauts. This is
+possible quite easily, courtesy of mule. =C-\= switches the default input
+method on and off, so zou can activate it on your finger tips. Additionally,
+select the default input method with =C-x RET C-\=. Practical are
+/german-postfix/ (ae), /german-prefix/ ("a) or /german/ - the latter
+activating a complete german keymapping, which is probably not too useful on a
+us keyboard. Input methods are described by =C-h I=.
+
 On a german keyboard, we want some of the more obscure mappings to be within
 easier reach. This is done here for combinations otherwise unmapped.
 Probably to be put into a minor mode. Until then, activated unconditionally.

@@ -9,6 +9,7 @@
  '(column-number-mode t)
  '(comint-completion-autolist t)
  '(custom-file "~/.emacs.d/custom.el")
+ '(default-input-method "german-postfix")
  '(delete-selection-mode t)
  '(dired-recursive-deletes 'top)
  '(dynamic-completion-mode nil)
