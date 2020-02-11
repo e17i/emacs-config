@@ -332,10 +332,12 @@ delimiting."
 
 Some convenience keys for handling buffers and files. Use caution and check to
 not shadow future functionality here.
+We replace =C-x C-f= with ~find-file~, as the ~-at-point~ function is then
+still reachable through =M-n=. The old mapping of =C-c C-f= to
+~find-file-at-point~ is removed, as it is now overlayed by org.
 
 #+BEGIN_SRC emacs-lisp
 (global-set-key "\C-x\C-b" 'bs-show)	;; this used to be electric-buffer-list
-(global-set-key "\C-c\C-v" 'find-file-at-point)
 (global-set-key "\C-x\C-f" 'find-file)
 #+END_SRC
 
