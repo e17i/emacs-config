@@ -327,15 +327,139 @@ delimiting."
       (if pre (indent-region p1 p2)))))
 #+END_SRC
 
+** Environment Minor Mode
+We want to easily be able to switch between different environments. For
+example, using a notebook in mobile or in docked mode may mean using mouse or
+trackpad, apple or pc keyboard. This is implemented in a global minor mode,
+binding a hot key as environment toggle. Each environment is designated by an
+id character shown in the mode line and a list of actions. Each action has
+enter and exit functions to setup and leave the corresponding action. This
+way, actions can be defined in terms of (lambda) functions. Also an action can
+be part of different environments.
+
+#+BEGIN_SRC emacs-lisp
+(defgroup my-environment nil "my environments")
+
+(defcustom my-env-actions nil
+  "list of actions. Each element has the form (symb enter-fnc
+exit-fnc), where symb is a symbol used to address this definition, enter-fnc
+and exit-fnc are functions to setup and leave the corresponding state."
+  :type '(repeat (list symbol function function))
+  :group 'my-environment)
+
+(defvar my-env-action nil) ; current env cell. car is the env, cdr the next cell..
+
+(defcustom my-env-definitions nil
+  "list of environments to toggle through. Each definition has the form (id
+  (list of symbols)), where id is a character shown in the mode
+  line describing the current environment. Then follows a list of
+  action symbols. Each of these actions is entered when
+  environment is toggled on and exited when another environment
+  is selected. If only one env is defined, toggles between this
+  only, so you should probably at least define a second env with
+  a default N id and no actions."
+  :type '(repeat (list character (repeat symbol)))
+  :group 'my-environment)
+
+(defun my-env-init-keymap ()
+  "setup a keymap for my-environment-mode, inserting the env toggle hot key.
+In enter functions, you may insert direct keys into my-environment-mode-map or
+C-c prefixed keys into my-env-map. "
+  (define-prefix-command 'my-env-map)
+  (let ((kmap (make-sparse-keymap)))
+    (define-key kmap "\C-c" my-env-map)
+    (define-key my-env-map "" #'toggle-my-environment)
+    kmap))
+
+(define-minor-mode my-environment-mode
+  "Minor mode supporting easy switching between different environments. For
+example, using a notebook in mobile or in docked mode may mean using mouse or
+trackpad, apple or pc keyboard.
+
+\\{my-environment-mode-map}"
+  nil
+  " [N]"
+  (my-env-init-keymap)
+  :group 'my-environment
+  :global 't)
+#+END_SRC
+
+You may add key definitions to the ~my-environment-mode-map~ in enter
+functions, or =C-c= prefixed keys into ~my-env-map~.
+To remove them on exit, use =my-env-reset-keymap=.
+
+#+BEGIN_SRC emacs-lisp
+(defun my-env-reset-keymap ()
+  "If your enter function added to the minor mode or my-env keymaps, your exit
+function should call this function to reset it."
+  (setq my-environment-mode-map (my-env-init-keymap)))
+#+END_SRC
+
+*** Internals
+
+#+BEGIN_SRC emacs-lisp
+(defun my-env-enter-action (action)
+  "calls the enter definition of given action if provided."
+  (let ((aclist (remove-if-not (lambda (elem)
+                                 (eq action (car elem)))
+                               my-env-actions)))
+    (if (and aclist (cadar aclist))
+        (funcall (cadar aclist)))))
+
+(defun my-env-exit-action (action)
+  "calls the exit definition of given action if provided."
+  (let ((aclist (remove-if-not (lambda (elem)
+                                 (eq action (car elem)))
+                               my-env-actions)))
+    (if (and aclist (caddar aclist))
+        (funcall (caddar aclist)))))
+
+(defun toggle-my-environment ()
+  "toggles activation of next environment. If only one env is defined, toggles
+between this only, so you should probably at least define a second env with a
+default N id and no actions."
+  (interactive)
+  (let ((current my-env-action)
+        (next
+         (if (not my-env-action)
+             my-env-definitions
+           (let ((next-first
+                  (cdr my-env-action)))
+             (if (not next-first)
+                 my-env-definitions
+               next-first)))))
+    (if current
+        (let ((env (car current)))
+          (dolist (action (cadr env))
+            (my-env-exit-action action))))
+    (if next
+        (let ((env (car next)))
+          (dolist (action (cadr env))
+            (my-env-enter-action action))
+          (my-env-update-lighter (format " [%c]" (car env)))))
+    (setq my-env-action next)))
+
+(defun my-env-update-lighter (lighter)
+  "update the lighter of minor mode to reflect the selected environment."
+  (setcar
+   (cdar (remove-if-not (lambda (elem)
+                          (eq (car elem) 'my-environment-mode))
+                        minor-mode-alist))
+   lighter)
+  (force-mode-line-update 't))
+#+END_SRC
+
 ** Global key bindings
 *** Generic
 
 Some convenience keys for handling buffers and files. Use caution and check to
 not shadow future functionality here.
+We replace =C-x C-f= with ~find-file~, as the ~-at-point~ function is then
+still reachable through =M-n=. The old mapping of =C-c C-f= to
+~find-file-at-point~ is removed, as it is now overlayed by org.
 
 #+BEGIN_SRC emacs-lisp
 (global-set-key "\C-x\C-b" 'bs-show)	;; this used to be electric-buffer-list
-(global-set-key "\C-c\C-v" 'find-file-at-point)
 (global-set-key "\C-x\C-f" 'find-file)
 #+END_SRC
 
@@ -420,19 +544,27 @@ trackpad, as it is mapped to =S-wheel-left= / =right=).
 
 *** Keyboard handling
 
+On a us keyboard, we also want to be able to use german umlauts. This is
+possible quite easily, courtesy of mule. =C-\= switches the default input
+method on and off, so zou can activate it on your finger tips. Additionally,
+select the default input method with =C-x RET C-\=. Practical are
+/german-postfix/ (ae), /german-prefix/ ("a) or /german/ - the latter
+activating a complete german keymapping, which is probably not too useful on a
+us keyboard. Input methods are described by =C-h I=.
+
 On a german keyboard, we want some of the more obscure mappings to be within
 easier reach. This is done here for combinations otherwise unmapped.
-Probably to be put into a minor mode. Until then, activated unconditionally.
+Should be activated by customizing into my-environment-mode.
+Augment as needed..
 
 #+BEGIN_SRC emacs-lisp
 (defun activate-german-keymap ()
   "activate some generic mappings to be reachable in usual places on german keyboard."
-  (global-set-key "\242" 'mark-word) ; M-@, here M-"
-  (global-set-key "\246" 'delete-indentation) ; M-^, here M-&
-  (global-set-key "\C-x&" 'enlarge-window) ; C-x ^, here C-x &
-  (global-set-key "\C-x*" 'enlarge-window-horizontally) ; C-x }
-  (global-set-key "\C-x‹" 'shrink-window-horizontally)) ; C-x {
-(activate-german-keymap)
+  (define-key my-environment-mode-map "\242" 'mark-word) ; M-@, here M-"
+  (define-key my-environment-mode-map "\246" 'delete-indentation) ; M-^, here M-&
+  (define-key my-environment-mode-map "\C-x&" 'enlarge-window) ; C-x ^, here C-x &
+  (define-key my-environment-mode-map "\C-x*" 'enlarge-window-horizontally) ; C-x }
+  (define-key my-environment-mode-map "\C-x‹" 'shrink-window-horizontally)) ; C-x {
 #+END_SRC
 
 *** Window handling
