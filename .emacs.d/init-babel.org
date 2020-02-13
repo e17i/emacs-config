@@ -312,8 +312,8 @@ delimiting."
   (let* ((bd (if delim delim
                (read-event "> ")))
          (ed (case bd
-               ((?() ?))
-               ((?[) ?])
+               ((?\() ?\))
+               ((?\[) ?\])
                ((?{) ?})
                ((?<) ?>)
                (t bd))))
