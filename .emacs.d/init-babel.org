@@ -982,14 +982,14 @@ Also use our delimiter for parens.
 
 ** Todo
 
-*** TODO env-mode: use make-composed-keymap, set-keymap-parent
+*** TODO complete keyboard switching
+*** TODO complete mouse/trackpad handling/switching
+*** TODO cleanup misc, move to mode specific sections
+*** DONE env-mode: use make-composed-keymap, set-keymap-parent
     this way, each action can define an own keymap indefinitely existing and
     just adding/removing it on enter/exit. Advantage is, rebind commands
     should also be effective on these existing keymaps.
     - also: call first toggle-my-environment on mode init. So if envs are
       defined, we are always in one of the valid states.
-*** TODO complete keyboard switching
-*** TODO complete mouse/trackpad handling/switching
-*** TODO cleanup misc, move to mode specific sections
 *** DONE think about movement/search placing point on beginning of adjacent object
     done at least for searching
