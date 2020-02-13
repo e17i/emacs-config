@@ -85,6 +85,7 @@
  '(select-enable-clipboard t)
  '(sentence-end-double-space nil)
  '(server-mode t)
+ '(sgml-xml-mode t)
  '(show-paren-mode t)
  '(size-indication-mode t)
  '(sp-base-key-bindings nil)
