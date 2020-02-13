@@ -71,6 +71,11 @@
  '(magit-process-find-password-functions (quote (magit-process-password-prompt ignore)))
  '(mouse-drag-copy-region t)
  '(mouse-wheel-scroll-amount (quote (1 ((meta) . 3) ((shift) . text-scale))))
+ '(my-env-actions
+   (quote ((mouse-wheel-zoom my-wheel-zoom my-env-reset-keymap)
+     (german-kbd activate-german-keymap my-env-reset-keymap))))
+ '(my-env-definitions (quote ((68 (mouse-wheel-zoom)) (77 (german-kbd)))))
+ '(my-environment-mode t)
  '(my-frame-transparency 92)
  '(nxml-sexp-element-flag t)
  '(org-agenda-files nil)
