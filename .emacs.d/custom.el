@@ -53,6 +53,11 @@
  '(magit-git-executable "/opt/local/bin/git")
  '(mouse-drag-copy-region t)
  '(mouse-wheel-scroll-amount '(1 ((meta) . 3) ((shift) . text-scale)))
+ '(my-env-actions
+   '((mouse-wheel-zoom my-wheel-zoom my-env-reset-keymap)
+     (german-kbd activate-german-keymap my-env-reset-keymap)))
+ '(my-env-definitions '((68 (mouse-wheel-zoom)) (77 (german-kbd))))
+ '(my-environment-mode t)
  '(my-frame-transparency 90)
  '(ns-alternate-modifier 'meta)
  '(ns-command-modifier 'super)
