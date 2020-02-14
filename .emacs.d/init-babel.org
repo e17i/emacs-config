@@ -786,11 +786,24 @@ Load and enable different additional packages
 
 (setq erc-autojoin-channels-alist '(("freenode.net" "#latex-de" "##latinitas" "#NetBSD" "##bash-de" "#git" "#vim" "#emacs" "#erc" "#oberon" "#macosx")))
 (define-key global-map [ns-drag-file] 'ns-find-file)
+
+;; sink for ancient commands
+;;(set-background-color "ARGBccffffff")
+;;(require 'ns-platform-support)
+;;(ns-extended-platform-support-mode)
+
+(global-set-key [(f1)] (lambda()(interactive)(manual-entry (current-word))))
 ;; (setq gc-cons-threshold 1000000)  ;; re-evaluate
 ;; re-evaluate bell handling
+;;(setq inhibit-startup-message t)
+;; visible bell workaround for el capitan
+;;(setq visible-bell t)
 (setq visible-bell nil) ;; The default
 (setq ring-bell-function 'ignore)
-(setq minibuffer-max-depth nil)  ;; what's this?
+;; end of workaround
+;;(standard-display-european 1)
+;;(require 'iso-syntax)
+;;(setq minibuffer-max-depth nil)  ;; what's this?
 #+END_SRC
 
 ** Mode-specific customizations
@@ -878,6 +891,11 @@ Now, after Initializing evil, we may probably also activate it in all buffers.
 *** C++ mode customizations, in use for aeons now
 
 #+BEGIN_SRC emacs-lisp
+;;(defun my-c++-hook () 
+;;  (outline-minor-mode)
+;;  (make-local-variable 'outline-regexp)
+;;  (setq outline-regexp "[ \t]*// -+ "))
+;;(add-hook 'c++-mode-hook 'my-c++-hook)
 (add-hook 'c-mode-common-hook
           (function
            (lambda ()
@@ -905,7 +923,7 @@ Now, after Initializing evil, we may probably also activate it in all buffers.
 *** compilation mode
 
 #+BEGIN_SRC emacs-lisp
-;; (global-set-key "\C-cc" 'compile)  ;; here probably use make better.. 
+;; (global-set-key "\C-cc" 'compile)
 ;; (global-set-key "\C-cn" 'next-error)  ;;  this is now M-g M-n
 ;; (global-set-key "\C-cl" 'goto-line)
 #+END_SRC
@@ -1140,7 +1158,7 @@ Also use our delimiter for parens.
 (put 'narrow-to-region 'disabled nil)
 (put 'narrow-to-page 'disabled nil)
 (put 'set-goal-column 'disabled nil)
-;; (put 'eval-expression 'disabled nil)  ;; needed?
+;; (put 'eval-expression 'disabled nil)  ;; not longer needed
 #+END_SRC
 
 ** Todo
