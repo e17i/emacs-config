@@ -745,7 +745,7 @@ Here we bind the temporary navigation mode to some useful keys for current and
 other window.
 
 #+BEGIN_SRC emacs-lisp
-(global-set-key "\C-x\C-v" (lambda () (interactive)(navigate-other-window 0))))
+(global-set-key "\C-x\C-v" (lambda () (interactive)(navigate-other-window 0)))
 (global-set-key "\C-x4v" #'navigate-other-window)
 #+END_SRC
 
