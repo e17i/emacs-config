@@ -67,8 +67,6 @@
      ("melpa-stable" . "https://stable.melpa.org/packages/")
      ("melpa" . "https://melpa.org/packages/")))
  '(package-selected-packages '(magit ace-jump-zap helm realgud evil org auctex))
- ;; '(package-selected-packages
- ;;   '(smartparens tagedit ob-restclient company-restclient restclient py-autopep8 flycheck elpy company-jedi json-mode jedi-direx jedi ox-rst magit zzz-to-char ace-jump-mode helm realgud evil markdown-mode cider web-mode org-plus-contrib js2-mode electric-spacing auctex))
  '(paren-match-face 'paren-face-match-light)
  '(paren-sexp-mode t)
  '(python-mode-hook
@@ -97,7 +95,6 @@
  ;; Your init file should contain only one such instance.
  ;; If there is more than one, they won't work right.
  '(cursor ((t (:background "grey50"))))
- '(fringe ((((class color) (background light)) (:background "grey50"))))
  '(ediff-even-diff-A ((t (:background "blue1"))))
  '(ediff-even-diff-Ancestor ((t (:background "Blue2"))))
  '(ediff-even-diff-B ((t (:background "Blue3"))))
@@ -106,5 +103,8 @@
  '(ediff-odd-diff-Ancestor ((t (:background "purple2"))))
  '(ediff-odd-diff-B ((t (:background "purple3"))))
  '(ediff-odd-diff-C ((t (:background "purple4"))))
+ '(fringe ((((class color) (background light)) (:background "grey50"))))
  '(highlight-indentation-current-column-face ((t (:background "sienna"))))
  '(highlight-indentation-face ((t (:background "dark slate gray")))))
+;; '(package-selected-packages
+;;   '(smartparens tagedit ob-restclient company-restclient restclient py-autopep8 flycheck elpy company-jedi json-mode jedi-direx jedi ox-rst magit zzz-to-char ace-jump-mode helm realgud evil markdown-mode cider web-mode org-plus-contrib js2-mode electric-spacing auctex))
