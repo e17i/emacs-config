@@ -16,6 +16,7 @@
  '(default-input-method "german-postfix")
  '(delete-selection-mode t)
  '(dired-recursive-deletes (quote top))
+ '(display-buffer-alist (quote (("" display-buffer-dedicated-window))))
  '(display-time-mode nil)
  '(dynamic-completion-mode nil)
  '(ediff-before-setup-hook
