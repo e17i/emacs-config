@@ -560,14 +560,14 @@ still reachable through =M-n=. The old mapping of =C-c C-f= to
 ~find-file-at-point~ is removed, as it is now overlayed by org.
 
 #+BEGIN_SRC emacs-lisp
-(global-set-key "\C-x\C-b" 'bs-show)	;; this used to be electric-buffer-list
-(global-set-key "\C-x\C-f" 'find-file)
+(global-set-key "\C-x\C-b" #'bs-show)	;; this used to be electric-buffer-list
+(global-set-key "\C-x\C-f" #'find-file)
 #+END_SRC
 
 And my delimiting function:
 
 #+BEGIN_SRC emacs-lisp
-(global-set-key "\C-cF" 'my-delimit-region)
+(global-set-key "\C-cF" #'my-delimit-region)
 #+END_SRC
 
 *** Convenience for searching
@@ -594,12 +594,12 @@ conveniently move the pointer and scroll by just adding/releasing the /Shift/
 modifier.
 
 #+BEGIN_SRC emacs-lisp
-(global-set-key "\M-p" 'previous-line)
-(global-set-key "\M-n" 'next-line)
-(global-set-key "\M-P" 'scroll-down-line)
-(global-set-key "\M-N" 'scroll-up-line)
-(global-set-key [end] 'move-end-of-line)
-(global-set-key [home] 'move-beginning-of-line)
+(global-set-key "\M-p" #'previous-line)
+(global-set-key "\M-n" #'next-line)
+(global-set-key "\M-P" #'scroll-down-line)
+(global-set-key "\M-N" #'scroll-up-line)
+(global-set-key [end] #'move-end-of-line)
+(global-set-key [home] #'move-beginning-of-line)
 #+END_SRC
 
 *** Ace zapping
@@ -608,9 +608,9 @@ Ace enables some more vi-style jumping and zapping (see =M-z= for the basic
 ~zap-to-char~ function).
 
 #+BEGIN_SRC emacs-lisp
-(global-set-key "\M-J" 'ace-jump-char-mode)
-;;;(global-set-key "\C-x\C-j" 'ace-jump-mode-pop-mark) ;; this is dired-jump
-(global-set-key "\C-x\C-z" 'zzz-up-to-char)
+(global-set-key "\M-J" #'ace-jump-char-mode)
+;;;(global-set-key "\C-x\C-j" #'ace-jump-mode-pop-mark) ;; this is dired-jump
+(global-set-key "\C-x\C-z" #'zzz-up-to-char)
 #+END_SRC
 
 *** Mouse handling
@@ -636,11 +636,11 @@ trackpad, as it is mapped to =S-wheel-left= / =right=).
 ;; (global-set-key [C-M-mouse-3] 'undo)
 (define-key key-translation-map (kbd "<mode-line> <M-mouse-3>") (kbd "<mode-line> <mouse-2>"))
 (define-key key-translation-map (kbd "<mode-line> <M-mouse-1>") (kbd "<mode-line> <mouse-2>"))
-(global-set-key [M-mouse-3] 'mouse-yank-at-click)
+(global-set-key [M-mouse-3] #'mouse-yank-at-click)
 ;; mac mouse: select: mouse-1, copy/cut: mouse-3, yank: M-mouse-2,
 ;; undo: M-mouse-3
-(global-set-key [M-mouse-2] 'mouse-yank-at-click)
-(global-set-key [M-mouse-3] 'undo)
+(global-set-key [M-mouse-2] #'mouse-yank-at-click)
+(global-set-key [M-mouse-3] #'undo)
 #+END_SRC
 
 When using a mouse wheel, we also want to use the text size zooming feature which
@@ -649,8 +649,8 @@ in wheel-mode apparently works only with trackpad.
 #+BEGIN_SRC emacs-lisp
 (defun my-wheel-zoom ()
   (let ((kmap (make-sparse-keymap)))
-    (define-key kmap (kbd "<S-wheel-down>") 'text-scale-increase)
-    (define-key kmap (kbd "<S-wheel-up>") 'text-scale-decrease)
+    (define-key kmap (kbd "<S-wheel-down>") #'text-scale-increase)
+    (define-key kmap (kbd "<S-wheel-up>") #'text-scale-decrease)
     (my-env-add-map kmap)))
 #+END_SRC
 
@@ -673,11 +673,11 @@ Augment as needed..
 (defun activate-german-keymap ()
   "activate some generic mappings to be reachable in usual places on german keyboard."
   (let ((kmap (make-sparse-keymap)))
-    (define-key kmap "\242" 'mark-word) ; M-@, here M-"
-    (define-key kmap "\246" 'delete-indentation) ; M-^, here M-&
-    (define-key kmap "\C-x&" 'enlarge-window) ; C-x ^, here C-x &
-    (define-key kmap "\C-x*" 'enlarge-window-horizontally) ; C-x }
-    (define-key kmap "\C-x‹" 'shrink-window-horizontally)  ; C-x {
+    (define-key kmap "\242" #'mark-word) ; M-@, here M-"
+    (define-key kmap "\246" #'delete-indentation) ; M-^, here M-&
+    (define-key kmap "\C-x&" #'enlarge-window) ; C-x ^, here C-x &
+    (define-key kmap "\C-x*" #'enlarge-window-horizontally) ; C-x }
+    (define-key kmap "\C-x‹" #'shrink-window-horizontally)  ; C-x {
     (my-env-add-map kmap)))
 #+END_SRC
 
@@ -686,7 +686,7 @@ Augment as needed..
 We overrule =C-x ^= to use our window resizing method.
 
 #+BEGIN_SRC emacs-lisp
-(global-set-key [remap enlarge-window] 'resize-window)
+(global-set-key [remap enlarge-window] #'resize-window)
 #+END_SRC
 
 And upgrade fullscreen experience. Use =M-F10= to toggle between maximized
@@ -695,9 +695,9 @@ and a size comprised of almost full height and a width just below
 decorations.
 
 #+BEGIN_SRC emacs-lisp
-(global-set-key [remap toggle-frame-fullscreen] 'toggle-maximize-frame)
-(global-set-key [remap toggle-frame-maximized] 'switch-frame)
-(global-set-key (kbd "<M-f11>") 'toggle-maximize-frame)
+(global-set-key [remap toggle-frame-fullscreen] #'toggle-maximize-frame)
+(global-set-key [remap toggle-frame-maximized] #'switch-frame)
+(global-set-key (kbd "<M-f11>") #'toggle-maximize-frame)
 #+END_SRC
 
 *** Remote controlling other window
@@ -819,16 +819,16 @@ This is also an example of defining an evil leader key and some adjacent keymaps
 
   (define-key evil-normal-state-map " " leader-map)
 
-  (define-key leader-map "b" 'list-buffers)
-  (define-key leader-map "#" 'bs-show)
-  (define-key leader-map "l" 'global-linum-mode)
+  (define-key leader-map "b" #'list-buffers)
+  (define-key leader-map "#" #'bs-show)
+  (define-key leader-map "l" #'global-linum-mode)
 
-  (define-prefix-command 'evil-other-window-map)
+  (define-prefix-command #'evil-other-window-map)
   (define-key leader-map "4" evil-other-window-map)
-  (define-key evil-other-window-map "-" 'shrink-other-window-if-larger-than-buffer)
-  (define-key evil-other-window-map "+" 'fit-other-window)
-  (define-key evil-other-window-map "q" 'quit-restore-other-window)
-  (define-key evil-other-window-map "l" 'go-back-other-window))
+  (define-key evil-other-window-map "-" #'shrink-other-window-if-larger-than-buffer)
+  (define-key evil-other-window-map "+" #'fit-other-window)
+  (define-key evil-other-window-map "q" #'quit-restore-other-window)
+  (define-key evil-other-window-map "l" #'go-back-other-window))
 #+END_SRC
 
 **** Evil Emacs config
@@ -839,8 +839,8 @@ way, without getting in the way it is always only a key press away.
 
 #+BEGIN_SRC emacs-lisp
 (define-key evil-emacs-state-map "\C-z" nil)
-(define-key evil-emacs-state-map "\C-\M-z" 'evil-exit-emacs-state)
-(define-key evil-normal-state-map "\C-\M-z" 'evil-emacs-state)
+(define-key evil-emacs-state-map "\C-\M-z" #'evil-exit-emacs-state)
+(define-key evil-normal-state-map "\C-\M-z" #'evil-emacs-state)
 #+END_SRC
 
 Now, after Initializing evil, we may probably also activate it in all buffers.
@@ -883,7 +883,7 @@ Now, after Initializing evil, we may probably also activate it in all buffers.
 We use hippie-expand mapped to =M-/=
 
 #+BEGIN_SRC emacs-lisp
-(global-set-key [remap dabbrev-expand] 'hippie-expand)
+(global-set-key [remap dabbrev-expand] #'hippie-expand)
 #+END_SRC
 
 We want to use flycheck in python.
@@ -913,14 +913,14 @@ Also the python indentation functions (=C-c <= and =C-c >=) are remapped to
 elpy. The =M-i= and =M-I= bindings first have to prove themselves.
 
 #+BEGIN_SRC emacs-lisp
-(define-key elpy-mode-map "\C-\M-p" 'elpy-nav-backward-block)
-(define-key elpy-mode-map "\C-\M-n" 'elpy-nav-forward-block)
-(define-key elpy-mode-map "\C-\M-f" 'elpy-nav-forward-indent)
-(define-key elpy-mode-map "\C-\M-b" 'elpy-nav-backward-indent)
-(define-key elpy-mode-map "\M-i" 'elpy-nav-indent-shift-right)
-(define-key elpy-mode-map "\M-I" 'elpy-nav-indent-shift-left)
-(define-key elpy-mode-map [remap python-indent-shift-right] 'elpy-nav-indent-shift-right)
-(define-key elpy-mode-map [remap python-indent-shift-left] 'elpy-nav-indent-shift-left)
+(define-key elpy-mode-map "\C-\M-p" #'elpy-nav-backward-block)
+(define-key elpy-mode-map "\C-\M-n" #'elpy-nav-forward-block)
+(define-key elpy-mode-map "\C-\M-f" #'elpy-nav-forward-indent)
+(define-key elpy-mode-map "\C-\M-b" #'elpy-nav-backward-indent)
+(define-key elpy-mode-map "\M-i" #'elpy-nav-indent-shift-right)
+(define-key elpy-mode-map "\M-I" #'elpy-nav-indent-shift-left)
+(define-key elpy-mode-map [remap python-indent-shift-right] #'elpy-nav-indent-shift-right)
+(define-key elpy-mode-map [remap python-indent-shift-left] #'elpy-nav-indent-shift-left)
 #+END_SRC
 
 The visibility toggling is on completely brain damaged keys, so we put at
@@ -929,7 +929,7 @@ mode.
 
 #+BEGIN_SRC emacs-lisp
 ;; (w32-register-hot-key (kbd "<M-tab>")) ; example of hot key override, but not practical
-(define-key elpy-mode-map (kbd "<S-tab>") 'elpy-folding-toggle-at-point)
+(define-key elpy-mode-map (kbd "<S-tab>") #'elpy-folding-toggle-at-point)
 #+END_SRC
 
 Enable autopep8, but don't activate it on save. However, use =M-g M-n= and
@@ -938,8 +938,8 @@ Enable autopep8, but don't activate it on save. However, use =M-g M-n= and
 #+BEGIN_SRC emacs-lisp
 (require 'py-autopep8)
 ;;(add-hook 'elpy-mode-hook 'py-autopep8-enable-on-save)
-(define-key elpy-mode-map [remap previous-error] 'flycheck-previous-error)
-(define-key elpy-mode-map [remap next-error] 'flycheck-next-error)
+(define-key elpy-mode-map [remap previous-error] #'flycheck-previous-error)
+(define-key elpy-mode-map [remap next-error] #'flycheck-next-error)
 #+END_SRC
 
 elpy makes indentation levels visible columnwise, so we also highlight the
