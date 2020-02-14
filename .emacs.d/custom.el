@@ -12,14 +12,10 @@
  '(default-input-method "german-postfix")
  '(delete-selection-mode t)
  '(dired-recursive-deletes 'top)
+ '(display-buffer-alist '(("" display-buffer-dedicated-window)))
  '(dynamic-completion-mode nil)
- '(ediff-before-setup-hook
-   '((lambda nil
-       (window-configuration-to-register 101))))
- '(ediff-quit-hook
-   '(ediff-cleanup-mess
-     (lambda nil
-       (jump-to-register 101))))
+ '(ediff-before-setup-hook '((lambda nil (window-configuration-to-register 101))))
+ '(ediff-quit-hook '(ediff-cleanup-mess (lambda nil (jump-to-register 101))))
  '(ediff-split-window-function 'split-window-horizontally)
  '(ediff-suspend-hook
    '(ediff-default-suspend-function
@@ -77,7 +73,8 @@
      (lambda nil "Activate jedi"
        (jedi:setup))
      (lambda nil "use superword mode"
-       (superword-mode))))
+       (superword-mode))) t)
+ '(savehist-mode t nil (savehist))
  '(scroll-bar-mode nil)
  '(select-enable-clipboard t)
  '(sentence-end-double-space nil)

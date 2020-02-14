@@ -27,32 +27,104 @@ appropriate hook. We also call it for the current frame.
 
 *** Handling of other window
 
-I'm adding some useful functions for handling the other window after calling
-or navigating within help texts for example.
+First of all, a topic of long and outstanding troubles has been the question
+of seemingly eratically selecting the other window. As it seems, this is
+actually a quite deterministic operation. Its frontend is ~pop-to-buffer~, the
+implementation and documentation is in ~display-buffer~. There, a range of
+~display-buffer-functions~ can be selected and combined at will, generating
+this behaviour. Now, often you may want to craft a window configuration into
+your frame, so you dont want any of this to be misused. Here, the following
+functions come in handy. Use them to define your dedicated 'other' window.
+
+Activate by customizing ~display-buffer-alist~, inserting
+~display-buffer-dedicated-window~. Also interesting are functions like
+~display-buffer-pop-up-frame~.
 
 #+BEGIN_SRC emacs-lisp
-(defun go-back-other-window ()
-  "Go back to previous help topic in other window."
-  (interactive)
-  (with-current-buffer (window-buffer (next-window))
-    (help-go-back)))
+(defvar dedicated-other-window nil)
 
-(defun quit-restore-other-window ()
+(defun dedicate-window (arg)
+  "Dedicate the currently selected window as 'other' window. When
+called with a =C-u= prefix arg, releases the previously set window
+and reverts to the default window selection behaviour."
+  (interactive "p")
+  (setq dedicated-other-window
+        (if (eq arg 4)
+            nil
+          (selected-window)))
+  (if dedicated-other-window
+      (message "window dedicated")
+    (message "dedication removed")))
+
+(defun display-buffer-dedicated-window (buffer alist)
+  "Always display pop-up-buffer in the dedicated other window, if selected. If
+none is selected, revert to the default behaviour."
+  (if (and dedicated-other-window (window-live-p dedicated-other-window))
+      (with-selected-window dedicated-other-window
+        (switch-to-buffer buffer))
+    nil))
+
+#+END_SRC
+
+This sorted out, I'm adding some useful functions for handling the other
+window. This can be handy after calling or navigating within help texts for
+example.
+
+First, a macro defining such functions. Default is to address the next window,
+but you can specify one with a prefix arg.
+
+#+BEGIN_SRC emacs-lisp
+(defmacro nth-window (fname docstring &rest body)
+  "Defines an interactive function performing the forms in BODY
+ in other window or window specified by prefix arg. Uses FNAME as
+ function name and describes it with DOCSTRING."
+  `(defun ,fname (arg)
+     ,docstring
+     (interactive "p")
+     (save-selected-window
+       (other-window arg)
+       ,@body)))
+#+END_SRC
+
+The same for frames might also come in handy.
+
+#+BEGIN_SRC emacs-lisp
+(defmacro nth-frame (fname docstring &rest body)
+  "Defines an interactive function performing the forms in BODY
+ in other frame or frame specified by prefix arg. Uses FNAME as
+ function name and describes it with DOCSTRING."
+  `(defun ,fname (arg)
+     ,docstring
+     (interactive "p")
+     (let ((current (selected-frame)))
+       (other-frame arg)
+       ,@body
+       (select-frame-set-input-focus current))))
+#+END_SRC
+
+And now some other-window-functions.
+
+#+BEGIN_SRC emacs-lisp
+(nth-window go-back-other-window
+  "Go back to previous help topic in other window."
+  (help-go-back))
+
+(nth-window quit-restore-other-window
   "Quit other window and deal with its buffer, possibly restoring
       the buffer previously displayed in other window."
-  (interactive)
-  (quit-restore-window (next-window)))
+  (quit-restore-window (selected-window)))
 
-(defun shrink-other-window-if-larger-than-buffer ()
+(nth-window shrink-other-window-if-larger-than-buffer
   "Shrink height of other window if its buffer doesn't need so many lines."
-  (interactive)
-  (shrink-window-if-larger-than-buffer (next-window)))
+  (shrink-window-if-larger-than-buffer))
 
-(defun fit-other-window ()
-  "balance or shrink other window giving it an appropriate space."
-  (interactive)
-  (balance-windows)
-  (shrink-window-if-larger-than-buffer (next-window)))
+(nth-window beginning-of-other-window
+  "Like `beginning-of-buffer-other-window', but use prefix arg to select window."
+  (beginning-of-buffer))
+
+(nth-window end-of-other-window
+  "Like `end-of-buffer-other-window', but use prefix arg to select window."
+  (end-of-buffer))
 #+END_SRC
 
 *** Convenient error stepping
@@ -90,14 +162,14 @@ easy. This is quite convenient in the most different applications.
        map) 't)))
 
 (defun next-error-other-window (&optional arg)
-  "Visit next error message displayed in other window's buffer."
+  "Visit next error message displayed in other window's buffer. With prefix arg, jump to nth error."
   (interactive "P")
   (with-current-buffer (window-buffer (next-window))
     (next-error arg)
     (error-step)))
 
 (defun previous-error-other-window (&optional arg)
-  "Visit previous error message displayed in other window's buffer."
+  "Visit previous error message displayed in other window's buffer. With prefix arg, jump to nth error."
   (interactive "P")
   (with-current-buffer (window-buffer (next-window))
     (previous-error arg)
@@ -174,9 +246,9 @@ allowing to specify a remote window to be controlled."
 	   (define-key map "V" (with-window (scroll-down-command (get-arg-acc))))
 	 map) 't)))))
 
-(defun navigate-window (&optional arg)
+(nth-window navigate-other-window
   "Enter a temporary buffer navigation mode, allowing some window to be
-controlled remotely. Default is the selected window. Optional argument
+controlled remotely. Default is the other window. Optional argument
 selects the nth window. This allows moving around some window without
 de-selecting the current window, enabling a very convenient means of
 temporarily moving around. 
@@ -192,19 +264,7 @@ Keys are:
   [, ]: move point forward/backward in paragraphs
   N, P: scroll up/down
   v, V: pagewise scroll up/down"
-  (interactive "p")
-  (navigate-buffer
-   (let ((wnd (selected-window))
-	 (cnt (if arg arg 0)))
-     (while (> cnt 1)
-       (setq wnd (next-window wnd) cnt (- cnt 1)))
-     wnd)))
-
-(defun navigate-other-window ()
-  "Enter a temporary remote buffer navigation mode for next or other window.
-For details, see `navigate-window'."
-  (interactive)
-  (navigate-buffer (next-window)))
+  (navigate-buffer))
 #+END_SRC
 
 *** Frame and window size
@@ -325,6 +385,27 @@ delimiting."
         (goto-char (+ p2 1))
         (insert ed))
       (if pre (indent-region p1 p2)))))
+#+END_SRC
+
+*** Push buffer to frame
+
+Sometimes, auxiliary buffers to be displayed in the 'other' window are
+eratically pushed into some well arranged window. While this can be configured
+through action variables used by ~display-buffer~, this is a complex and
+error-prone configuration. To mitigate, use this function to push it into its
+own frame and revert the previously crafted window arrangement.
+
+This also calls a little bit for some further 'remote control other frame'
+functions..
+
+#+BEGIN_SRC emacs-lisp
+(defun push-buffer-to-frame ()
+  "push current window buffer to own frame and revert current window to previous frame."
+  (interactive)
+  (let ((current (current-buffer))
+        (selected (selected-window)))
+    (display-buffer-other-frame current)
+    (quit-restore-window selected)))
 #+END_SRC
 
 ** Environment Minor Mode
@@ -479,14 +560,14 @@ still reachable through =M-n=. The old mapping of =C-c C-f= to
 ~find-file-at-point~ is removed, as it is now overlayed by org.
 
 #+BEGIN_SRC emacs-lisp
-(global-set-key "\C-x\C-b" 'bs-show)	;; this used to be electric-buffer-list
-(global-set-key "\C-x\C-f" 'find-file)
+(global-set-key "\C-x\C-b" #'bs-show)	;; this used to be electric-buffer-list
+(global-set-key "\C-x\C-f" #'find-file)
 #+END_SRC
 
 And my delimiting function:
 
 #+BEGIN_SRC emacs-lisp
-(global-set-key "\C-cF" 'my-delimit-region)
+(global-set-key "\C-cF" #'my-delimit-region)
 #+END_SRC
 
 *** Convenience for searching
@@ -513,12 +594,12 @@ conveniently move the pointer and scroll by just adding/releasing the /Shift/
 modifier.
 
 #+BEGIN_SRC emacs-lisp
-(global-set-key "\M-p" 'previous-line)
-(global-set-key "\M-n" 'next-line)
-(global-set-key "\M-P" 'scroll-down-line)
-(global-set-key "\M-N" 'scroll-up-line)
-(global-set-key [end] 'move-end-of-line)
-(global-set-key [home] 'move-beginning-of-line)
+(global-set-key "\M-p" #'previous-line)
+(global-set-key "\M-n" #'next-line)
+(global-set-key "\M-P" #'scroll-down-line)
+(global-set-key "\M-N" #'scroll-up-line)
+(global-set-key [end] #'move-end-of-line)
+(global-set-key [home] #'move-beginning-of-line)
 #+END_SRC
 
 *** Ace zapping
@@ -527,9 +608,9 @@ Ace enables some more vi-style jumping and zapping (see =M-z= for the basic
 ~zap-to-char~ function).
 
 #+BEGIN_SRC emacs-lisp
-(global-set-key "\M-J" 'ace-jump-char-mode)
-;;;(global-set-key "\C-x\C-j" 'ace-jump-mode-pop-mark) ;; this is dired-jump
-(global-set-key "\C-x\C-z" 'zzz-up-to-char)
+(global-set-key "\M-J" #'ace-jump-char-mode)
+;;;(global-set-key "\C-x\C-j" #'ace-jump-mode-pop-mark) ;; this is dired-jump
+(global-set-key "\C-x\C-z" #'zzz-up-to-char)
 #+END_SRC
 
 *** Mouse handling
@@ -548,18 +629,18 @@ enables scroll turbo; with /shift/, scale text (seems to work only on
 trackpad, as it is mapped to =S-wheel-left= / =right=).
 
 #+BEGIN_SRC emacs-lisp
-;; mac trackpad: select: mouse-1, copy/cut: mouse-3, yank: M-mouse-3
-;; undo: C-M-mouse-3
-;; as a convenience, on mode line M-mouse-1 is also mouse-2
-;; (define-key key-translation-map (kbd "<M-mouse-3>") (kbd "<mouse-2>"))
-;; (global-set-key [C-M-mouse-3] 'undo)
-(define-key key-translation-map (kbd "<mode-line> <M-mouse-3>") (kbd "<mode-line> <mouse-2>"))
-(define-key key-translation-map (kbd "<mode-line> <M-mouse-1>") (kbd "<mode-line> <mouse-2>"))
-(global-set-key [M-mouse-3] 'mouse-yank-at-click)
-;; mac mouse: select: mouse-1, copy/cut: mouse-3, yank: M-mouse-2,
-;; undo: M-mouse-3
-;; (global-set-key [M-mouse-2] 'mouse-yank-at-click)
-;; (global-set-key [M-mouse-3] 'undo)
+  ;; mac trackpad: select: mouse-1, copy/cut: mouse-3, yank: M-mouse-3
+  ;; undo: C-M-mouse-3
+  ;; as a convenience, on mode line M-mouse-1 is also mouse-2
+  ;; (define-key key-translation-map (kbd "<M-mouse-3>") (kbd "<mouse-2>"))
+  ;; (global-set-key [C-M-mouse-3] 'undo)
+  (define-key key-translation-map (kbd "<mode-line> <M-mouse-3>") (kbd "<mode-line> <mouse-2>"))
+  (define-key key-translation-map (kbd "<mode-line> <M-mouse-1>") (kbd "<mode-line> <mouse-2>"))
+  (global-set-key [M-mouse-3] #'mouse-yank-at-click)
+  ;; mac mouse: select: mouse-1, copy/cut: mouse-3, yank: M-mouse-2,
+  ;; undo: M-mouse-3
+  ;; (global-set-key [M-mouse-2] #'mouse-yank-at-click)
+  ;; (global-set-key [M-mouse-3] #'undo)
 #+END_SRC
 
 When using a mouse wheel, we also want to use the text size zooming feature which
@@ -568,8 +649,8 @@ in wheel-mode apparently works only with trackpad.
 #+BEGIN_SRC emacs-lisp
 (defun my-wheel-zoom ()
   (let ((kmap (make-sparse-keymap)))
-    (define-key kmap (kbd "<S-wheel-down>") 'text-scale-increase)
-    (define-key kmap (kbd "<S-wheel-up>") 'text-scale-decrease)
+    (define-key kmap (kbd "<S-wheel-down>") #'text-scale-increase)
+    (define-key kmap (kbd "<S-wheel-up>") #'text-scale-decrease)
     (my-env-add-map kmap)))
 #+END_SRC
 
@@ -592,11 +673,11 @@ Augment as needed..
 (defun activate-german-keymap ()
   "activate some generic mappings to be reachable in usual places on german keyboard."
   (let ((kmap (make-sparse-keymap)))
-    (define-key kmap "\242" 'mark-word) ; M-@, here M-"
-    (define-key kmap "\246" 'delete-indentation) ; M-^, here M-&
-    (define-key kmap "\C-x&" 'enlarge-window) ; C-x ^, here C-x &
-    (define-key kmap "\C-x*" 'enlarge-window-horizontally) ; C-x }
-    (define-key kmap "\C-x‹" 'shrink-window-horizontally)  ; C-x {
+    (define-key kmap "\242" #'mark-word) ; M-@, here M-"
+    (define-key kmap "\246" #'delete-indentation) ; M-^, here M-&
+    (define-key kmap "\C-x&" #'enlarge-window) ; C-x ^, here C-x &
+    (define-key kmap "\C-x*" #'enlarge-window-horizontally) ; C-x }
+    (define-key kmap "\C-x‹" #'shrink-window-horizontally)  ; C-x {
     (my-env-add-map kmap)))
 #+END_SRC
 
@@ -605,7 +686,7 @@ Augment as needed..
 We overrule =C-x ^= to use our window resizing method.
 
 #+BEGIN_SRC emacs-lisp
-(global-set-key [remap enlarge-window] 'resize-window)
+(global-set-key [remap enlarge-window] #'resize-window)
 #+END_SRC
 
 And upgrade fullscreen experience. Use =M-F10= to toggle between maximized
@@ -614,9 +695,9 @@ and a size comprised of almost full height and a width just below
 decorations.
 
 #+BEGIN_SRC emacs-lisp
-(global-set-key [remap toggle-frame-fullscreen] 'toggle-maximize-frame)
-(global-set-key [remap toggle-frame-maximized] 'switch-frame)
-(global-set-key (kbd "<M-f11>") 'toggle-maximize-frame)
+(global-set-key [remap toggle-frame-fullscreen] #'toggle-maximize-frame)
+(global-set-key [remap toggle-frame-maximized] #'switch-frame)
+(global-set-key (kbd "<M-f11>") #'toggle-maximize-frame)
 #+END_SRC
 
 *** Remote controlling other window
@@ -625,10 +706,10 @@ As I got quite used to remote control the other window using =C-x 4= keys,
 I'm adding a few ones which I missed so far.
 
 #+BEGIN_SRC emacs-lisp
-(global-set-key "\C-x4q" 'quit-restore-other-window)
-(global-set-key "\C-x4l" 'go-back-other-window)
-(global-set-key "\C-x4-" 'shrink-other-window-if-larger-than-buffer)
-(global-set-key "\C-X4+" 'fit-other-window)
+(global-set-key "\C-x4q" #'quit-restore-other-window)
+(global-set-key "\C-x4l" #'go-back-other-window)
+(global-set-key "\C-x4-" #'shrink-other-window-if-larger-than-buffer)
+(global-set-key "\C-x4s" #'dedicate-window)
 #+END_SRC
 
 Note the window size changing keys, =C-x ^= to enlarge (also negative) and
@@ -642,8 +723,8 @@ We also want to jump to beginning/end in other window by =C-M-<= and =C-M->=
 (cf. =C-M-v= and =C-M-V= to scroll pagewise in other window).
 
 #+BEGIN_SRC emacs-lisp
-(global-set-key [201326652] (quote beginning-of-buffer-other-window))
-(global-set-key [201326654] (quote end-of-buffer-other-window))
+(global-set-key [201326652] #'beginning-of-other-window)
+(global-set-key [201326654] #'end-of-other-window)
 #+END_SRC
 
 How to get these codes? Call =M-x global-set-key RET C-M-< beg=.. to manually
@@ -656,21 +737,29 @@ Now come the key bindings for convenient error navigation, as promised above.
 #+BEGIN_SRC emacs-lisp
 (define-prefix-command 'other-goto-map)
 (global-set-key "\C-x4\M-g" 'other-goto-map)
-(define-key other-goto-map "\M-n" 'next-error-other-window)
-(define-key other-goto-map "\M-p" 'previous-error-other-window)
+(define-key other-goto-map "\M-n" #'next-error-other-window)
+(define-key other-goto-map "\M-p" #'previous-error-other-window)
 #+END_SRC
 
 Here we bind the temporary navigation mode to some useful keys for current and
 other window.
 
 #+BEGIN_SRC emacs-lisp
-(global-set-key "\C-x\C-v" 'navigate-window)
-(global-set-key "\C-x4v" 'navigate-other-window)
+(global-set-key "\C-x\C-v" (lambda () (interactive)(navigate-other-window 0)))
+(global-set-key "\C-x4v" #'navigate-other-window)
+#+END_SRC
+
+*** Remote controlling other frame
+
+Push current window buffer to own frame and revert current window to previous frame.
+
+#+BEGIN_SRC emacs-lisp
+(global-set-key "\C-x5p" #'push-buffer-to-frame)
 #+END_SRC
 
 ** Misc
 
-How emacs finds it's tools:
+How emacs finds its tools:
 
 #+BEGIN_SRC emacs-lisp
 (setenv "PATH" (concat "/opt/local/bin:/opt/local/sbin:" (getenv "PATH")))
@@ -736,16 +825,16 @@ This is also an example of defining an evil leader key and some adjacent keymaps
 
   (define-key evil-normal-state-map " " leader-map)
 
-  (define-key leader-map "b" 'list-buffers)
-  (define-key leader-map "#" 'bs-show)
-  (define-key leader-map "l" 'global-linum-mode)
+  (define-key leader-map "b" #'list-buffers)
+  (define-key leader-map "#" #'bs-show)
+  (define-key leader-map "l" #'global-linum-mode)
 
-  (define-prefix-command 'evil-other-window-map)
+  (define-prefix-command #'evil-other-window-map)
   (define-key leader-map "4" evil-other-window-map)
-  (define-key evil-other-window-map "-" 'shrink-other-window-if-larger-than-buffer)
-  (define-key evil-other-window-map "+" 'fit-other-window)
-  (define-key evil-other-window-map "q" 'quit-restore-other-window)
-  (define-key evil-other-window-map "l" 'go-back-other-window))
+  (define-key evil-other-window-map "-" #'shrink-other-window-if-larger-than-buffer)
+  (define-key evil-other-window-map "+" #'fit-other-window)
+  (define-key evil-other-window-map "q" #'quit-restore-other-window)
+  (define-key evil-other-window-map "l" #'go-back-other-window))
 #+END_SRC
 
 **** Evil Emacs config
@@ -756,8 +845,8 @@ way, without getting in the way it is always only a key press away.
 
 #+BEGIN_SRC emacs-lisp
 (define-key evil-emacs-state-map "\C-z" nil)
-(define-key evil-emacs-state-map "\C-\M-z" 'evil-exit-emacs-state)
-(define-key evil-normal-state-map "\C-\M-z" 'evil-emacs-state)
+(define-key evil-emacs-state-map "\C-\M-z" #'evil-exit-emacs-state)
+(define-key evil-normal-state-map "\C-\M-z" #'evil-emacs-state)
 #+END_SRC
 
 Now, after Initializing evil, we may probably also activate it in all buffers.
@@ -837,7 +926,7 @@ Now, after Initializing evil, we may probably also activate it in all buffers.
 We use hippie-expand mapped to =M-/=
 
 #+BEGIN_SRC emacs-lisp
-(global-set-key [remap dabbrev-expand] 'hippie-expand)
+(global-set-key [remap dabbrev-expand] #'hippie-expand)
 #+END_SRC
 
 We want to use flycheck in python.
@@ -867,14 +956,14 @@ Also the python indentation functions (=C-c <= and =C-c >=) are remapped to
 elpy. The =M-i= and =M-I= bindings first have to prove themselves.
 
 #+BEGIN_SRC emacs-lisp
-(define-key elpy-mode-map "\C-\M-p" 'elpy-nav-backward-block)
-(define-key elpy-mode-map "\C-\M-n" 'elpy-nav-forward-block)
-(define-key elpy-mode-map "\C-\M-f" 'elpy-nav-forward-indent)
-(define-key elpy-mode-map "\C-\M-b" 'elpy-nav-backward-indent)
-(define-key elpy-mode-map "\M-i" 'elpy-nav-indent-shift-right)
-(define-key elpy-mode-map "\M-I" 'elpy-nav-indent-shift-left)
-(define-key elpy-mode-map [remap python-indent-shift-right] 'elpy-nav-indent-shift-right)
-(define-key elpy-mode-map [remap python-indent-shift-left] 'elpy-nav-indent-shift-left)
+(define-key elpy-mode-map "\C-\M-p" #'elpy-nav-backward-block)
+(define-key elpy-mode-map "\C-\M-n" #'elpy-nav-forward-block)
+(define-key elpy-mode-map "\C-\M-f" #'elpy-nav-forward-indent)
+(define-key elpy-mode-map "\C-\M-b" #'elpy-nav-backward-indent)
+(define-key elpy-mode-map "\M-i" #'elpy-nav-indent-shift-right)
+(define-key elpy-mode-map "\M-I" #'elpy-nav-indent-shift-left)
+(define-key elpy-mode-map [remap python-indent-shift-right] #'elpy-nav-indent-shift-right)
+(define-key elpy-mode-map [remap python-indent-shift-left] #'elpy-nav-indent-shift-left)
 #+END_SRC
 
 The visibility toggling is on completely brain damaged keys, so we put at
@@ -883,7 +972,7 @@ mode.
 
 #+BEGIN_SRC emacs-lisp
 ;; (w32-register-hot-key (kbd "<M-tab>")) ; example of hot key override, but not practical
-(define-key elpy-mode-map (kbd "<S-tab>") 'elpy-folding-toggle-at-point)
+(define-key elpy-mode-map (kbd "<S-tab>") #'elpy-folding-toggle-at-point)
 #+END_SRC
 
 Enable autopep8, but don't activate it on save. However, use =M-g M-n= and
@@ -892,8 +981,8 @@ Enable autopep8, but don't activate it on save. However, use =M-g M-n= and
 #+BEGIN_SRC emacs-lisp
 (require 'py-autopep8)
 ;;(add-hook 'elpy-mode-hook 'py-autopep8-enable-on-save)
-(define-key elpy-mode-map [remap previous-error] 'flycheck-previous-error)
-(define-key elpy-mode-map [remap next-error] 'flycheck-next-error)
+(define-key elpy-mode-map [remap previous-error] #'flycheck-previous-error)
+(define-key elpy-mode-map [remap next-error] #'flycheck-next-error)
 #+END_SRC
 
 elpy makes indentation levels visible columnwise, so we also highlight the
