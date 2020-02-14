@@ -470,7 +470,7 @@ trackpad, apple or pc keyboard.
   (my-env-init-keymap)
   :group 'my-environment
   :global 't
-  (toggle-my-environment))
+  :after-hook (toggle-my-environment))
 #+END_SRC
 
 You may add key definitions in enter action
@@ -562,6 +562,7 @@ still reachable through =M-n=. The old mapping of =C-c C-f= to
 #+BEGIN_SRC emacs-lisp
 (global-set-key "\C-x\C-b" #'bs-show)	;; this used to be electric-buffer-list
 (global-set-key "\C-x\C-f" #'find-file)
+(global-set-key [3 67108919] #'toggle-my-environment)  ;; make global to enable env switch on german kbd
 #+END_SRC
 
 And my delimiting function:
@@ -678,7 +679,43 @@ Augment as needed..
     (define-key kmap "\C-x&" #'enlarge-window) ; C-x ^, here C-x &
     (define-key kmap "\C-x*" #'enlarge-window-horizontally) ; C-x }
     (define-key kmap "\C-x‹" #'shrink-window-horizontally)  ; C-x {
+    (define-key kmap [3 67108919] #'toggle-my-environment)
     (my-env-add-map kmap)))
+#+END_SRC
+
+**** Modifiers
+
+The /Meta/ key should always be directly left and right of the space
+bar. At least on the right side, there should be an /Alt/ key.
+/Control/ should be also on the shift lock (defined on os level).
+Additional keys may be mapped to /super/. Uses of /super/ and /hyper/
+are to be explored.
+
+On an Apple keyboard, we want to use the command keys as /Meta/, the
+right alt as option, control as such and probably the left alt as
+/super/. Btw, note you can get the /tilde/ with =S-A-8=.
+
+#+BEGIN_SRC emacs-lisp
+(defun on-apple-keyboard ()
+  (custom-set-variables
+   '(ns-control-modifier 'control)
+   '(ns-alternate-modifier 'super)
+   '(ns-right-alternate-modifier 'alternate)
+   '(ns-command-modifier 'meta)
+   '(ns-right-command-modifier 'meta)))
+#+END_SRC
+
+Similarly, on a PC keyboard, the left alt is /Meta/, the right als
+used as /AltGr/.
+
+#+BEGIN_SRC emacs-lisp
+(defun on-pc-keyboard ()
+  (custom-set-variables
+   '(ns-control-modifier 'control)
+   '(ns-alternate-modifier 'meta)
+   '(ns-right-alternate-modifier 'alternate)
+   '(ns-command-modifier 'super)
+   '(ns-right-command-modifier 'meta)))
 #+END_SRC
 
 *** Window handling
