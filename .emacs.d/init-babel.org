@@ -683,6 +683,41 @@ Augment as needed..
     (my-env-add-map kmap)))
 #+END_SRC
 
+**** Modifiers
+
+The /Meta/ key should always be directly left and right of the space
+bar. At least on the right side, there should be an /Alt/ key.
+/Control/ should be also on the shift lock (defined on os level).
+Additional keys may be mapped to /super/. Uses of /super/ and /hyper/
+are to be explored.
+
+On an Apple keyboard, we want to use the command keys as /Meta/, the
+right alt as option, control as such and probably the left alt as
+/super/. Btw, note you can get the /tilde/ with =S-A-8=.
+
+#+BEGIN_SRC emacs-lisp
+(defun on-apple-keyboard ()
+  (custom-set-variables
+   '(ns-control-modifier 'control)
+   '(ns-alternate-modifier 'super)
+   '(ns-right-alternate-modifier 'alternate)
+   '(ns-command-modifier 'meta)
+   '(ns-right-command-modifier 'meta)))
+#+END_SRC
+
+Similarly, on a PC keyboard, the left alt is /Meta/, the right als
+used as /AltGr/.
+
+#+BEGIN_SRC emacs-lisp
+(defun on-pc-keyboard ()
+  (custom-set-variables
+   '(ns-control-modifier 'control)
+   '(ns-alternate-modifier 'meta)
+   '(ns-right-alternate-modifier 'alternate)
+   '(ns-command-modifier 'super)
+   '(ns-right-command-modifier 'meta)))
+#+END_SRC
+
 *** Window handling
 
 We overrule =C-x ^= to use our window resizing method.

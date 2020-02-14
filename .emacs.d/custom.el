@@ -51,8 +51,14 @@
  '(mouse-wheel-scroll-amount '(1 ((meta) . 3) ((shift) . text-scale)))
  '(my-env-actions
    '((mouse-wheel-zoom my-wheel-zoom my-env-reset-keymap)
-     (german-kbd activate-german-keymap my-env-reset-keymap)))
- '(my-env-definitions '((68 (mouse-wheel-zoom)) (77 (german-kbd))))
+     (german-kbd activate-german-keymap my-env-reset-keymap)
+     (apple-kbd on-apple-keyboard ignore)
+     (pc-kbd on-pc-keyboard ignore)))
+ '(my-env-definitions
+   '((68
+      (mouse-wheel-zoom pc-kbd))
+     (77
+      (german-kbd apple-kbd))))
  '(my-environment-mode t)
  '(my-frame-transparency 92)
  '(ns-alternate-modifier 'meta)
