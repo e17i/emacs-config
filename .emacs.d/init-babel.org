@@ -781,7 +781,7 @@ Load and enable different additional packages
 (require 'wdired)
 (load "dired-x.el") ;; also enable C-x C-j
 (require 'helm-config)
-(require 'ox-rst)
+;; (require 'ox-rst) ; not yet installed
 (global-magit-file-mode t)
 
 (setq erc-autojoin-channels-alist '(("freenode.net" "#latex-de" "##latinitas" "#NetBSD" "##bash-de" "#git" "#vim" "#emacs" "#erc" "#oberon" "#macosx")))
@@ -950,7 +950,7 @@ We use hippie-expand mapped to =M-/=
 We want to use flycheck in python.
 
 #+BEGIN_SRC emacs-lisp
-(require 'flycheck)
+;; (require 'flycheck) ; not yet installed
 #+END_SRC
 
 ~elpy-mode~ defines a bunch of useful support functions for navigating and
@@ -963,7 +963,7 @@ For this, set ~python-shell-interpreter~ to path of buildout powerscript exe and
 Also worth to remember the company backend completion on =C-M-i=.
 
 #+BEGIN_SRC emacs-lisp
-(elpy-enable)
+;; (elpy-enable) ; not yet installed
 #+END_SRC
 
 To navigate using more convenient keys, we put the block navigation moves
@@ -974,14 +974,14 @@ Also the python indentation functions (=C-c <= and =C-c >=) are remapped to
 elpy. The =M-i= and =M-I= bindings first have to prove themselves.
 
 #+BEGIN_SRC emacs-lisp
-(define-key elpy-mode-map "\C-\M-p" #'elpy-nav-backward-block)
-(define-key elpy-mode-map "\C-\M-n" #'elpy-nav-forward-block)
-(define-key elpy-mode-map "\C-\M-f" #'elpy-nav-forward-indent)
-(define-key elpy-mode-map "\C-\M-b" #'elpy-nav-backward-indent)
-(define-key elpy-mode-map "\M-i" #'elpy-nav-indent-shift-right)
-(define-key elpy-mode-map "\M-I" #'elpy-nav-indent-shift-left)
-(define-key elpy-mode-map [remap python-indent-shift-right] #'elpy-nav-indent-shift-right)
-(define-key elpy-mode-map [remap python-indent-shift-left] #'elpy-nav-indent-shift-left)
+;; (define-key elpy-mode-map "\C-\M-p" #'elpy-nav-backward-block) ; not yet installed
+;; (define-key elpy-mode-map "\C-\M-n" #'elpy-nav-forward-block)
+;; (define-key elpy-mode-map "\C-\M-f" #'elpy-nav-forward-indent)
+;; (define-key elpy-mode-map "\C-\M-b" #'elpy-nav-backward-indent)
+;; (define-key elpy-mode-map "\M-i" #'elpy-nav-indent-shift-right)
+;; (define-key elpy-mode-map "\M-I" #'elpy-nav-indent-shift-left)
+;; (define-key elpy-mode-map [remap python-indent-shift-right] #'elpy-nav-indent-shift-right)
+;; (define-key elpy-mode-map [remap python-indent-shift-left] #'elpy-nav-indent-shift-left)
 #+END_SRC
 
 The visibility toggling is on completely brain damaged keys, so we put at
@@ -990,17 +990,17 @@ mode.
 
 #+BEGIN_SRC emacs-lisp
 ;; (w32-register-hot-key (kbd "<M-tab>")) ; example of hot key override, but not practical
-(define-key elpy-mode-map (kbd "<S-tab>") #'elpy-folding-toggle-at-point)
+; (define-key elpy-mode-map (kbd "<S-tab>") #'elpy-folding-toggle-at-point) ; not yet installed
 #+END_SRC
 
 Enable autopep8, but don't activate it on save. However, use =M-g M-n= and
 =M-g M-p= for flycheck next and flycheck previous error, which also show pep8 errors.
 
 #+BEGIN_SRC emacs-lisp
-(require 'py-autopep8)
+; (require 'py-autopep8) ; not yet installed
 ;;(add-hook 'elpy-mode-hook 'py-autopep8-enable-on-save)
-(define-key elpy-mode-map [remap previous-error] #'flycheck-previous-error)
-(define-key elpy-mode-map [remap next-error] #'flycheck-next-error)
+;; (define-key elpy-mode-map [remap previous-error] #'flycheck-previous-error) ; not yet installed
+;; (define-key elpy-mode-map [remap next-error] #'flycheck-next-error)
 #+END_SRC
 
 elpy makes indentation levels visible columnwise, so we also highlight the
@@ -1082,34 +1082,34 @@ conflicts with my habits, we define our own mapping here.
 Also use our delimiter for parens.
 
 #+BEGIN_SRC emacs-lisp
-(require 'smartparens-config)
-(sp--populate-keymap
- (let ((my-sp-bindings '(("C-M-f" . sp-forward-sexp) ;; navigation
-                         ("C-M-b" . sp-backward-sexp)
-                         ("C-M-u" . sp-backward-up-sexp)
-                         ("C-M-d" . sp-down-sexp)
-                         ("C-M-p" . sp-backward-parallel-sexp)
-                         ("C-M-n" . sp-forward-parallel-sexp)
-                         ("C-M-k" . sp-kill-sexp)
-                         ("C-M-w" . sp-copy-sexp)
-                         ("M-F" . sp-forward-symbol)
-                         ("M-B" . sp-backward-symbol)
-                         ("C-M-SPC" . sp-mark-sexp)
-                         ("C-c s" . sp-splice-sexp) ;; depth-changing commands
-                         ("C-c S" . (lambda (&optional arg) (interactive "P") (my-delimit-region arg ?\()))
-                         ("C-c b" . sp-splice-sexp-killing-backward)
-                         ("C-c f" . sp-splice-sexp-killing-forward)
-                         ("C-c k" . sp-splice-sexp-killing-around)
-                         ("C-c )" . sp-forward-slurp-sexp) ;; barf/slurp
-                         ("C-c }" . sp-forward-barf-sexp)
-                         ("C-c (" . sp-backward-slurp-sexp)
-                         ("C-c {" . sp-backward-barf-sexp)
-                         ("C-c C-s" . sp-split-sexp)
-                         ("C-c C-]" . sp-select-next-thing-exchange)
-                         ("C-c ]" . sp-select-next-thing)
-                         )))
-   my-sp-bindings))
-(add-hook 'emacs-lisp-mode-hook #'smartparens-mode)
+; (require 'smartparens-config) ;not yet installed
+;; (sp--populate-keymap
+;;  (let ((my-sp-bindings '(("C-M-f" . sp-forward-sexp) ;; navigation
+;;                          ("C-M-b" . sp-backward-sexp)
+;;                          ("C-M-u" . sp-backward-up-sexp)
+;;                          ("C-M-d" . sp-down-sexp)
+;;                          ("C-M-p" . sp-backward-parallel-sexp)
+;;                          ("C-M-n" . sp-forward-parallel-sexp)
+;;                          ("C-M-k" . sp-kill-sexp)
+;;                          ("C-M-w" . sp-copy-sexp)
+;;                          ("M-F" . sp-forward-symbol)
+;;                          ("M-B" . sp-backward-symbol)
+;;                          ("C-M-SPC" . sp-mark-sexp)
+;;                          ("C-c s" . sp-splice-sexp) ;; depth-changing commands
+;;                          ("C-c S" . (lambda (&optional arg) (interactive "P") (my-delimit-region arg ?\()))
+;;                          ("C-c b" . sp-splice-sexp-killing-backward)
+;;                          ("C-c f" . sp-splice-sexp-killing-forward)
+;;                          ("C-c k" . sp-splice-sexp-killing-around)
+;;                          ("C-c )" . sp-forward-slurp-sexp) ;; barf/slurp
+;;                          ("C-c }" . sp-forward-barf-sexp)
+;;                          ("C-c (" . sp-backward-slurp-sexp)
+;;                          ("C-c {" . sp-backward-barf-sexp)
+;;                          ("C-c C-s" . sp-split-sexp)
+;;                          ("C-c C-]" . sp-select-next-thing-exchange)
+;;                          ("C-c ]" . sp-select-next-thing)
+;;                          )))
+;;    my-sp-bindings))
+;; (add-hook 'emacs-lisp-mode-hook #'smartparens-mode)
 #+END_SRC
 
 *** markdown mode
