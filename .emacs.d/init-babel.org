@@ -1119,34 +1119,34 @@ conflicts with my habits, we define our own mapping here.
 Also use our delimiter for parens.
 
 #+BEGIN_SRC emacs-lisp
-; (require 'smartparens-config) ;not yet installed
-;; (sp--populate-keymap
-;;  (let ((my-sp-bindings '(("C-M-f" . sp-forward-sexp) ;; navigation
-;;                          ("C-M-b" . sp-backward-sexp)
-;;                          ("C-M-u" . sp-backward-up-sexp)
-;;                          ("C-M-d" . sp-down-sexp)
-;;                          ("C-M-p" . sp-backward-parallel-sexp)
-;;                          ("C-M-n" . sp-forward-parallel-sexp)
-;;                          ("C-M-k" . sp-kill-sexp)
-;;                          ("C-M-w" . sp-copy-sexp)
-;;                          ("M-F" . sp-forward-symbol)
-;;                          ("M-B" . sp-backward-symbol)
-;;                          ("C-M-SPC" . sp-mark-sexp)
-;;                          ("C-c s" . sp-splice-sexp) ;; depth-changing commands
-;;                          ("C-c S" . (lambda (&optional arg) (interactive "P") (my-delimit-region arg ?\()))
-;;                          ("C-c b" . sp-splice-sexp-killing-backward)
-;;                          ("C-c f" . sp-splice-sexp-killing-forward)
-;;                          ("C-c k" . sp-splice-sexp-killing-around)
-;;                          ("C-c )" . sp-forward-slurp-sexp) ;; barf/slurp
-;;                          ("C-c }" . sp-forward-barf-sexp)
-;;                          ("C-c (" . sp-backward-slurp-sexp)
-;;                          ("C-c {" . sp-backward-barf-sexp)
-;;                          ("C-c C-s" . sp-split-sexp)
-;;                          ("C-c C-]" . sp-select-next-thing-exchange)
-;;                          ("C-c ]" . sp-select-next-thing)
-;;                          )))
-;;    my-sp-bindings))
-;; (add-hook 'emacs-lisp-mode-hook #'smartparens-mode)
+(require 'smartparens-config)
+(sp--populate-keymap
+ (let ((my-sp-bindings '(("C-M-f" . sp-forward-sexp) ;; navigation
+                         ("C-M-b" . sp-backward-sexp)
+                         ("C-M-u" . sp-backward-up-sexp)
+                         ("C-M-d" . sp-down-sexp)
+                         ("C-M-p" . sp-backward-parallel-sexp)
+                         ("C-M-n" . sp-forward-parallel-sexp)
+                         ("C-M-k" . sp-kill-sexp)
+                         ("C-M-w" . sp-copy-sexp)
+                         ("M-F" . sp-forward-symbol)
+                         ("M-B" . sp-backward-symbol)
+                         ("C-M-SPC" . sp-mark-sexp)
+                         ("C-c s" . sp-splice-sexp) ;; depth-changing commands
+                         ("C-c S" . (lambda (&optional arg) (interactive "P") (my-delimit-region arg ?\()))
+                         ("C-c b" . sp-splice-sexp-killing-backward)
+                         ("C-c f" . sp-splice-sexp-killing-forward)
+                         ("C-c k" . sp-splice-sexp-killing-around)
+                         ("C-c )" . sp-forward-slurp-sexp) ;; barf/slurp
+                         ("C-c }" . sp-forward-barf-sexp)
+                         ("C-c (" . sp-backward-slurp-sexp)
+                         ("C-c {" . sp-backward-barf-sexp)
+                         ("C-c C-s" . sp-split-sexp)
+                         ("C-c C-]" . sp-select-next-thing-exchange)
+                         ("C-c ]" . sp-select-next-thing)
+                         )))
+   my-sp-bindings))
+(add-hook 'emacs-lisp-mode-hook #'smartparens-mode)
 #+END_SRC
 
 *** markdown mode
