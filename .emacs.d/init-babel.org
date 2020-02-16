@@ -63,7 +63,9 @@ and reverts to the default window selection behaviour."
 (defun display-buffer-dedicated-window (buffer alist)
   "Always display pop-up-buffer in the dedicated other window, if selected. If
 none is selected, revert to the default behaviour."
-  (if (and dedicated-other-window (window-live-p dedicated-other-window))
+  (if (and (not alist)
+           dedicated-other-window
+           (window-live-p dedicated-other-window))
       (with-selected-window dedicated-other-window
         (switch-to-buffer buffer))
     nil))
@@ -1114,8 +1116,9 @@ Also use our delimiter for parens.
     - assign function name
     - where-is-internal - find key bindings for function
     - key-binding - find function for key binding
-*** TODO finetune nth-window and other window handling
+*** finetune nth-window and other window handling
     - s f. other-window-for-scrolling and v. other-window-scroll-buffer
+    - works now if no 1 prefix arg given
 *** TODO complete keyboard switching
 *** TODO complete mouse/trackpad handling/switching
 *** TODO cleanup misc, move to mode specific sections
