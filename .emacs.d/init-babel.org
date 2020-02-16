@@ -412,8 +412,8 @@ functions..
   (interactive)
   (let ((current (current-buffer))
         (selected (selected-window)))
-    (display-buffer-other-frame current)
-    (quit-restore-window selected)))
+    (if (display-buffer-other-frame current)
+        (quit-restore-window selected))))
 #+END_SRC
 
 ** Environment Minor Mode
