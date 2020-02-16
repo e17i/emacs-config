@@ -314,28 +314,65 @@ Keys supported:
        tmap) 't)))
 #+END_SRC
 
-This used to be a frame maximize function for Mac, which is not longer neeeded
-here. Nevertheless, this may work as foundation for functions realizing some
-visually attractive full screen mode and reverting to the previous frame size.
-"Visually attractive" would then be something like "leave a small configurable
-space outside the frame and use the rest of screen".
+This used to be a frame maximize function for Mac, which is not longer
+needed here. Instead we build a configurable solution toggling through
+normal, maximized and visually attractive. "Visually attractive" would
+then be something like "leave a small configurable space outside the
+frame and use the rest of screen". For this, we use a customizable
+variable constructing a list of frame styling functions. The functions
+receive an argument list of (FRAME MAX-LINES MAX-COLS).
 
 #+BEGIN_SRC emacs-lisp
+(defcustom my-frame-stylings nil
+  "styling functions used when toggling display frame size."
+  :type '(repeat function)
+  :group 'my-cust)
+
 (defun switch-frame ()
   "Set frame to reasonable position and size based on some heuristics.
   Alternatively, toggles size to maximized."
   (interactive)
-  (let ((maximized (frame-parameter nil 'fullscreen)))
+  (let ((maximized (frame-parameter nil 'fullscreen))
+        (confectioned (frame-parameter nil 'my-confectioned)))
     (cond
+     ((eq confectioned 't)
+      (let ((geom (frame-parameter nil 'my-geometry)))
+        (set-frame-parameter nil 'my-confectioned nil)
+        (set-frame-width nil (cadr geom))
+        (set-frame-height nil (caddr geom))
+        (set-frame-position nil (caar geom) (cdar geom))))
      ((eq maximized 'maximized)
-      (let ((lines (frame-parameter nil 'height)))
+      (let ((max-lines (frame-parameter nil 'height))
+            (max-cols (frame-parameter nil 'width)))
 	(set-frame-parameter nil 'fullscreen nil)
-	(set-frame-width nil (- split-width-threshold 1))
-	(set-frame-height nil (- lines 1))
-	(set-frame-position nil 0 8)))
+        (set-frame-parameter nil 'my-confectioned 't)
+        (dolist (fnc my-frame-stylings)
+                (funcall fnc (selected-frame) max-lines max-cols))))
      ((eq maximized nil)
+      (set-frame-parameter nil 'my-geometry
+                           (list (frame-position)
+                                 (frame-width)
+                                 (frame-height)))
       (set-frame-parameter nil 'fullscreen 'maximized)))))
+
+(defun frame-width-below-threshold (frame lines cols)
+  (set-frame-width frame (- split-width-threshold 1)))
+
+(defun frame-height-dec (frame lines cols)
+  (set-frame-height frame (- lines 1)))
+
+(defun frame-to-left (frame lines cols)
+  (set-frame-position frame 0
+                      (cdr (frame-position frame))))
+
+(defun frame-to-top (frame lines cols)
+  (set-frame-position frame
+                      (car (frame-position frame))
+                      0))
 #+END_SRC
+
+Here we toggle fullscreen, removing all frame decorations and
+transparency.
 
 #+BEGIN_SRC emacs-lisp
 (defun toggle-maximize-frame ()
