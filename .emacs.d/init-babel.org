@@ -802,12 +802,6 @@ How emacs finds its tools:
 (setenv "PATH" (concat "/opt/local/bin:/opt/local/sbin:" (getenv "PATH")))
 #+END_SRC
 
-This may evolve into real keyboard handling..
-
-#+BEGIN_SRC emacs-lisp
-(load-file "~/.emacs.d/keyboard-pc.el")
-#+END_SRC
-
 Load and enable different additional packages
 
 #+BEGIN_SRC emacs-lisp
@@ -1107,7 +1101,13 @@ Also use our delimiter for parens.
 #+END_SRC
 
 ** Todo
-
+*** TODO macro for command composition
+    - compose key 1 and key 2
+    - assign function name
+    - where-is-internal - find key bindings for function
+    - key-binding - find function for key binding
+*** TODO finetune nth-window and other window handling
+    - s f. other-window-for-scrolling and v. other-window-scroll-buffer
 *** TODO complete keyboard switching
 *** TODO complete mouse/trackpad handling/switching
 *** TODO cleanup misc, move to mode specific sections
