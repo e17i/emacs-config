@@ -53,7 +53,11 @@ and reverts to the default window selection behaviour."
             nil
           (selected-window)))
   (if dedicated-other-window
-      (message "window dedicated")
+      (progn
+        (setq other-window-scroll-buffer
+              (with-selected-window dedicated-other-window
+                (current-buffer)))
+        (message "window dedicated"))
     (message "dedication removed")))
 
 (defun display-buffer-dedicated-window (buffer alist)
@@ -63,7 +67,6 @@ none is selected, revert to the default behaviour."
       (with-selected-window dedicated-other-window
         (switch-to-buffer buffer))
     nil))
-
 #+END_SRC
 
 This sorted out, I'm adding some useful functions for handling the other
@@ -81,9 +84,14 @@ but you can specify one with a prefix arg.
   `(defun ,fname (arg)
      ,docstring
      (interactive "p")
-     (save-selected-window
-       (other-window arg)
-       ,@body)))
+     (let ((scroll-window (get-buffer-window other-window-scroll-buffer)))
+       (save-selected-window
+         (if (and (eq arg 1)  ; no prefix arg
+                  (buffer-live-p other-window-scroll-buffer)
+                  (window-live-p scroll-window))
+             (select-window scroll-window)
+           (other-window arg))
+         ,@body))))
 #+END_SRC
 
 The same for frames might also come in handy.
