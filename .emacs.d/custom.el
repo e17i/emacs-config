@@ -60,6 +60,8 @@
      (77
       (german-kbd apple-kbd))))
  '(my-environment-mode t)
+ '(my-frame-stylings
+   '(frame-width-below-threshold frame-height-dec frame-to-top))
  '(my-frame-transparency 92)
  '(ns-alternate-modifier 'meta)
  '(ns-command-modifier 'super)
