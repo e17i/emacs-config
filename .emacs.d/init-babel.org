@@ -867,6 +867,12 @@ Load and enable different additional packages
 (setq erc-autojoin-channels-alist '(("freenode.net" "#latex-de" "##latinitas" "#NetBSD" "##bash-de" "#git" "#vim" "#emacs" "#erc" "#oberon" "#macosx")))
 #+END_SRC
 
+Accept simplified answers.
+
+#+BEGIN_SRC emacs-lisp
+(fset 'yes-or-no-p 'y-or-n-p)
+#+END_SRC
+
 ** Mode-specific customizations
 *** dired
 
