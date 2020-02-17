@@ -23,6 +23,9 @@
    (quote
     ((lambda nil
        (window-configuration-to-register 101)))))
+ '(ediff-custom-diff-program "C:\\\\ProgramData\\\\chocolatey\\\\bin\\\\diff.exe")
+ '(ediff-diff-program "C:\\\\ProgramData\\\\chocolatey\\\\bin\\\\diff.exe")
+ '(ediff-diff3-program "C:\\\\ProgramData\\\\chocolatey\\\\bin\\\\diff3")
  '(ediff-quit-hook
    (quote
     (ediff-cleanup-mess
@@ -73,14 +76,21 @@
  '(mouse-drag-copy-region t)
  '(mouse-wheel-scroll-amount (quote (1 ((meta) . 3) ((shift) . text-scale))))
  '(my-env-actions
-   (quote ((mouse-wheel-zoom my-wheel-zoom my-env-reset-keymap)
-           (german-kbd activate-german-keymap my-env-reset-keymap)
-           (apple-kbd on-apple-keyboard ignore)
-           (pc-kbd on-pc-keyboard ignore))))
- '(my-env-definitions (quote ((68 (mouse-wheel-zoom pc-kbd)) (77 (german-kbd apple-kbd)))))
+   (quote
+    ((mouse-wheel-zoom my-wheel-zoom my-env-reset-keymap)
+     (german-kbd activate-german-keymap my-env-reset-keymap)
+     (apple-kbd on-apple-keyboard ignore)
+     (pc-kbd on-pc-keyboard ignore))))
+ '(my-env-definitions
+   (quote
+    ((68
+      (mouse-wheel-zoom pc-kbd))
+     (77
+      (german-kbd apple-kbd)))))
  '(my-environment-mode t)
  '(my-frame-stylings
-   '(frame-width-below-threshold frame-height-dec frame-to-left frame-to-top))
+   (quote
+    (frame-width-below-threshold frame-height-dec frame-to-left frame-to-top)))
  '(my-frame-transparency 92)
  '(nxml-sexp-element-flag t)
  '(org-agenda-files nil)
