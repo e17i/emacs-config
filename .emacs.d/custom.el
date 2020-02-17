@@ -74,9 +74,13 @@
  '(mouse-wheel-scroll-amount (quote (1 ((meta) . 3) ((shift) . text-scale))))
  '(my-env-actions
    (quote ((mouse-wheel-zoom my-wheel-zoom my-env-reset-keymap)
-     (german-kbd activate-german-keymap my-env-reset-keymap))))
- '(my-env-definitions (quote ((68 (mouse-wheel-zoom)) (77 (german-kbd)))))
+           (german-kbd activate-german-keymap my-env-reset-keymap)
+           (apple-kbd on-apple-keyboard ignore)
+           (pc-kbd on-pc-keyboard ignore))))
+ '(my-env-definitions (quote ((68 (mouse-wheel-zoom pc-kbd)) (77 (german-kbd apple-kbd)))))
  '(my-environment-mode t)
+ '(my-frame-stylings
+   '(frame-width-below-threshold frame-height-dec frame-to-left frame-to-top))
  '(my-frame-transparency 92)
  '(nxml-sexp-element-flag t)
  '(org-agenda-files nil)
