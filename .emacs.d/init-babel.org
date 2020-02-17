@@ -397,7 +397,7 @@ receive an argument list of (FRAME MAX-LINES MAX-COLS).
 (defun frame-to-top (frame lines cols)
   (set-frame-position frame
                       (car (frame-position frame))
-                      0))
+                      8))
 #+END_SRC
 
 Here we toggle fullscreen, removing all frame decorations and
