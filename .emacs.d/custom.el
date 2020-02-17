@@ -18,6 +18,7 @@
  '(dired-recursive-deletes (quote top))
  '(display-buffer-alist (quote (("" display-buffer-dedicated-window))))
  '(display-time-mode nil)
+ '(doc-view-ghostscript-program "C:\\Program Files\\gs\\gs9.50\\bin\\gswin64.exe")
  '(dynamic-completion-mode nil)
  '(ediff-before-setup-hook
    (quote
@@ -95,6 +96,12 @@
  '(nxml-sexp-element-flag t)
  '(org-agenda-files nil)
  '(org-babel-python-command "python2")
+ '(org-file-apps
+   (quote
+    ((auto-mode . emacs)
+     ("\\.mm\\'" . default)
+     ("\\.x?html?\\'" . default)
+     ("\\.pdf\\'" . emacs))))
  '(org-goto-auto-isearch nil)
  '(org-src-preserve-indentation t)
  '(package-archives
