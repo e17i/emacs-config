@@ -18,7 +18,7 @@
  '(dired-recursive-deletes (quote top))
  '(display-buffer-alist (quote (("" display-buffer-dedicated-window))))
  '(display-time-mode nil)
- '(doc-view-ghostscript-program "C:\\Program Files\\gs\\gs9.50\\bin\\gswin64.exe")
+ '(doc-view-ghostscript-program "c:/Program Files/gs/gs9.50/bin/gswin64c.exe")
  '(dynamic-completion-mode nil)
  '(ediff-before-setup-hook
    (quote
