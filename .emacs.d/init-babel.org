@@ -987,6 +987,10 @@ For this, set ~python-shell-interpreter~ to path of buildout powerscript exe and
 ~python-shell-interpreter-args~ to "" (see custom).
 Also worth to remember the company backend completion on =C-M-i=.
 
+Note: ~elpy-enable~ adds to ~python-mode-hook~ only on first call. So if you
+re-evaluate ~custom.el~, remember to afterwards ~(setq elpy-enabled-p nil)~
+and ~(elpy-enable)~.
+
 #+BEGIN_SRC emacs-lisp
 (elpy-enable)
 #+END_SRC
