@@ -79,15 +79,8 @@
  '(my-env-actions
    (quote
     ((mouse-wheel-zoom my-wheel-zoom my-env-reset-keymap)
-     (german-kbd activate-german-keymap my-env-reset-keymap)
-     (apple-kbd on-apple-keyboard ignore)
-     (pc-kbd on-pc-keyboard ignore))))
- '(my-env-definitions
-   (quote
-    ((68
-      (mouse-wheel-zoom pc-kbd))
-     (77
-      (german-kbd apple-kbd)))))
+     (german-kbd activate-german-keymap my-env-reset-keymap))))
+ '(my-env-definitions (quote ((68 (mouse-wheel-zoom)) (77 (german-kbd)))))
  '(my-environment-mode t)
  '(my-frame-stylings
    (quote

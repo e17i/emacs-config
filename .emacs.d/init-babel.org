@@ -778,13 +778,15 @@ right alt as option, control as such and probably the left alt as
 /super/. Btw, note you can get the /tilde/ with =S-A-8=.
 
 #+BEGIN_SRC emacs-lisp
+;; all mapping is done in vmware (Profil deutsch optimized for emacs),
+;; so currenty no special handling here. Instead, activate defaults..
+(setq w32-apps-modifier 'meta)
+(setq w32-alt-is-meta 't)
+(setq w32-lwindow-modifier nil)
+(setq w32-pass-lwindow-to-system 't)
+
 (defun on-apple-keyboard ()
-  ;; (custom-set-variables
-  ;;  '(ns-control-modifier 'control)
-  ;;  '(ns-alternate-modifier 'super)
-  ;;  '(ns-right-alternate-modifier 'alternate)
-  ;;  '(ns-command-modifier 'meta)
-  ;;  '(ns-right-command-modifier 'meta)))
+  ;; (w32-register-hot-key [M-])
 )
 #+END_SRC
 
@@ -793,13 +795,7 @@ used as /AltGr/.
 
 #+BEGIN_SRC emacs-lisp
 (defun on-pc-keyboard ()
-  ;; (custom-set-variables
-  ;;  '(ns-control-modifier 'control)
-  ;;  '(ns-alternate-modifier 'meta)
-  ;;  '(ns-right-alternate-modifier 'alternate)
-  ;;  '(ns-command-modifier 'super)
-  ;;  '(ns-right-command-modifier 'meta)))
-  )
+)
 #+END_SRC
 
 *** Window handling
@@ -879,19 +875,6 @@ Push current window buffer to own frame and revert current window to previous fr
 #+END_SRC
 
 ** Misc
-
-How emacs finds its tools:
-
-#+BEGIN_SRC emacs-lisp
-;; (setenv "PATH" (concat "/opt/local/bin:/opt/local/sbin:" (getenv "PATH")))
-#+END_SRC
-
-This may evolve into real keyboard handling..
-
-#+BEGIN_SRC emacs-lisp
-;; (load-file "~/.emacs.d/keyboard-pc.el")
-(setq w32-apps-modifier 'meta)
-#+END_SRC
 
 Magit for windows passwd query doesn't work in minibuffer.
 
