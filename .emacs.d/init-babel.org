@@ -802,6 +802,7 @@ I'm adding a few ones which I missed so far.
 (global-set-key "\C-x4l" #'go-back-other-window)
 (global-set-key "\C-x4-" #'shrink-other-window-if-larger-than-buffer)
 (global-set-key "\C-x4s" #'dedicate-window)
+(global-set-key "\C-x4e" #'edit-other-window)
 #+END_SRC
 
 Note the window size changing keys, =C-x ^= to enlarge (also negative) and
