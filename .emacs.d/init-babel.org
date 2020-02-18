@@ -114,7 +114,9 @@ The same for frames might also come in handy.
        (select-frame-set-input-focus current))))
 #+END_SRC
 
-And now some other-window-functions.
+And now some other-window-functions. The last one is generic: it allows to
+jump to a window, work there and afterwards return. It also allows nested
+jumps and returning with =C-M-c= or =C-]=.
 
 #+BEGIN_SRC emacs-lisp
 (nth-window go-back-other-window
@@ -137,6 +139,10 @@ And now some other-window-functions.
 (nth-window end-of-other-window
   "Like `end-of-buffer-other-window', but use prefix arg to select window."
   (end-of-buffer))
+
+(nth-window edit-other-window
+  "recursively edit in other buffer, allowing to return later."
+  (recursive-edit))
 #+END_SRC
 
 *** Convenient error stepping
