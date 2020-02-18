@@ -71,6 +71,11 @@
  '(nxml-sexp-element-flag t)
  '(org-agenda-files nil)
  '(org-babel-python-command "python2")
+ '(org-file-apps
+   '((auto-mode . emacs)
+     ("\\.mm\\'" . default)
+     ("\\.x?html?\\'" . default)
+     ("\\.pdf\\'" . emacs)))
  '(org-goto-auto-isearch nil)
  '(org-src-preserve-indentation t)
  '(package-archives
