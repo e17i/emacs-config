@@ -704,30 +704,12 @@ after double - select words, right - define region and save to kill ring,
 right after double click - define region up to next word, double right - kill
 to kill ring, middle - yank to click position.
 
-As on Mac middle button may be otherwise occupied, use mouse-3
-together with /Meta/ as replacement.
-
 ~mouse-wheel-mode~ also enables mouse wheel scrolling. With /Meta/,
 enables scroll turbo; with /shift/, scale text (seems to work only on
 trackpad, as it is mapped to =S-wheel-left= / =right=).
 
-#+BEGIN_SRC emacs-lisp
-;; mac trackpad: select: mouse-1, copy/cut: mouse-3, yank: M-mouse-3
-;; undo: C-M-mouse-3
-;; as a convenience, on mode line M-mouse-1 is also mouse-2
-;; (define-key key-translation-map (kbd "<M-mouse-3>") (kbd "<mouse-2>"))
-;; (global-set-key [C-M-mouse-3] 'undo)
-(define-key key-translation-map (kbd "<mode-line> <M-mouse-3>") (kbd "<mode-line> <mouse-2>"))
-(define-key key-translation-map (kbd "<mode-line> <M-mouse-1>") (kbd "<mode-line> <mouse-2>"))
-(global-set-key [M-mouse-3] #'mouse-yank-at-click)
-;; mac mouse: select: mouse-1, copy/cut: mouse-3, yank: M-mouse-2,
-;; undo: M-mouse-3
-(global-set-key [M-mouse-2] #'mouse-yank-at-click)
-(global-set-key [M-mouse-3] #'undo)
-#+END_SRC
-
 When using a mouse wheel, we also want to use the text size zooming feature which
-in wheel-mode apparently works only with trackpad.
+in wheel-mode apparently works only with native trackpad.
 
 #+BEGIN_SRC emacs-lisp
 (defun my-wheel-zoom ()
@@ -735,6 +717,23 @@ in wheel-mode apparently works only with trackpad.
     (define-key kmap (kbd "<S-wheel-down>") #'text-scale-increase)
     (define-key kmap (kbd "<S-wheel-up>") #'text-scale-decrease)
     (my-env-add-map kmap)))
+#+END_SRC
+
+On Windows trackpad, we enable the text scaling and possibly using =M-mouse-1=
+as =mouse-2=.
+
+#+BEGIN_SRC emacs-lisp
+(defun windows-trackpad ()
+  (let ((kmap (make-sparse-keymap)))
+    (define-key kmap (kbd "<S-wheel-down>") #'text-scale-decrease)
+    (define-key kmap (kbd "<S-wheel-up>") #'text-scale-increase)
+    (define-key key-translation-map (kbd "<M-down-mouse-1>") (kbd "<down-mouse-2>"))
+    (define-key key-translation-map (kbd "<M-mouse-1>") (kbd "<mouse-2>"))
+    (my-env-add-map kmap)))
+
+(defun reset-windows-trackpad ()
+  (define-key key-translation-map (kbd "<M-down-mouse-1>") nil)
+  (define-key key-translation-map (kbd "<M-mouse-1>") nil))
 #+END_SRC
 
 *** Keyboard handling

@@ -79,8 +79,14 @@
  '(my-env-actions
    (quote
     ((mouse-wheel-zoom my-wheel-zoom my-env-reset-keymap)
-     (german-kbd activate-german-keymap my-env-reset-keymap))))
- '(my-env-definitions (quote ((68 (mouse-wheel-zoom)) (77 (german-kbd)))))
+     (german-kbd activate-german-keymap my-env-reset-keymap)
+     (windows-trackpad windows-trackpad reset-windows-trackpad))))
+ '(my-env-definitions
+   (quote
+    ((68
+      (mouse-wheel-zoom))
+     (77
+      (german-kbd windows-trackpad)))))
  '(my-environment-mode t)
  '(my-frame-stylings
    (quote
