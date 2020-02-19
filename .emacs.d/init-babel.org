@@ -84,18 +84,28 @@ but you can specify one with a prefix arg.
   `(defun ,fname (arg)
      ,docstring
      (interactive "P")
-     (let ((scroll-window (get-buffer-window other-window-scroll-buffer)))
-       (save-selected-window
-         (if (and (eq arg nil)
-                  other-window-scroll-buffer
-                  scroll-window)
-             (if (and
-                  (buffer-live-p other-window-scroll-buffer)
-                  (window-live-p scroll-window))
-                 (select-window scroll-window)
-               (other-window (or arg 1)))
-           (other-window (or arg 1)))
-         ,@body))))
+     (save-selected-window
+       (select-other-window arg)
+       ,@body))))
+#+END_SRC
+
+..and a function coding the logic to find the other window.
+
+#+BEGIN_SRC emacs-lisp
+(defun select-other-window (arg)
+  "selects and returns the other window or window specified by prefix arg."
+  (interactive "P")
+  (let ((scroll-window (get-buffer-window other-window-scroll-buffer)))
+    (if (and (eq arg nil)
+             other-window-scroll-buffer
+             scroll-window)
+        (if (and
+             (buffer-live-p other-window-scroll-buffer)
+             (window-live-p scroll-window))
+            (select-window scroll-window)
+          (other-window (or arg 1)))
+      (other-window (or arg 1))))
+  (selected-window))
 #+END_SRC
 
 The same for frames might also come in handy.
