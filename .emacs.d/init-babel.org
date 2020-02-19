@@ -704,9 +704,24 @@ after double - select words, right - define region and save to kill ring,
 right after double click - define region up to next word, double right - kill
 to kill ring, middle - yank to click position.
 
+Additionally, you can double click on delimiters like parens or quotes to
+select the delimited text. Finally, we activated the drag and drop feature.
+
 ~mouse-wheel-mode~ also enables mouse wheel scrolling. With /Meta/,
 enables scroll turbo; with /shift/, scale text (seems to work only on
 trackpad, as it is mapped to =S-wheel-left= / =right=).
+
+To revert yanks when hand on mouse, we place ~undo~ on =M-mouse-2=. Probably
+no more customizations to be done. Especially when using the trackpad, hands
+are already near keyboard.
+
+#+BEGIN_SRC emacs-lisp
+(defun mouse-undo ()
+  "undo with mouse button."
+  (let ((kmap (make-sparse-keymap)))
+    (define-key kmap (kbd "<M-mouse-2>") #'undo)
+    (my-env-add-map kmap)))
+#+END_SRC
 
 When using a mouse wheel, we also want to use the text size zooming feature which
 in wheel-mode apparently works only with native trackpad.

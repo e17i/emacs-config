@@ -74,6 +74,7 @@
  '(jedi:setup-keys t)
  '(jedi:tooltip-method nil)
  '(magit-process-find-password-functions (quote (magit-process-password-prompt ignore)))
+ '(mouse-drag-and-drop-region t)
  '(mouse-drag-copy-region t)
  '(mouse-wheel-scroll-amount (quote (1 ((meta) . 3) ((shift) . text-scale))))
  '(my-env-actions
