@@ -85,7 +85,7 @@
  '(my-env-definitions
    (quote
     ((68
-      (mouse-wheel-zoom))
+      (mouse-wheel-zoom mouse-undo))
      (77
       (german-kbd windows-trackpad)))))
  '(my-environment-mode t)
