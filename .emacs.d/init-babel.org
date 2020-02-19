@@ -86,7 +86,7 @@ but you can specify one with a prefix arg.
      (interactive "P")
      (save-selected-window
        (select-other-window arg)
-       ,@body))))
+       ,@body)))
 #+END_SRC
 
 ..and a function coding the logic to find the other window.
