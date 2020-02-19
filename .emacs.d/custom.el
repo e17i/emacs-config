@@ -52,6 +52,7 @@
  '(mouse-wheel-scroll-amount '(1 ((meta) . 3) ((shift) . text-scale)))
  '(my-env-actions
    '((mouse-wheel-zoom my-wheel-zoom my-env-reset-keymap)
+     (mouse-undo mouse-undo my-env-reset-keymap)
      (german-kbd activate-german-keymap my-env-reset-keymap)
      (apple-kbd on-apple-keyboard ignore)
      (pc-kbd on-pc-keyboard ignore)))
