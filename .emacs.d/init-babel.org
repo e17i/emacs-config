@@ -443,30 +443,27 @@ the corresponding closing brace. When called with prefix arg, the region is
 newly indented after delimiting.
 
 #+BEGIN_SRC emacs-lisp
-(defun my-delimit-region (&optional pre delim)
+(defun my-delimit-region (point mark pre bd)
   "Frame region with delimiters. If delim is an opening type of
 brace, automatically use the corresponding closing delimiter,
 otherwise use the same char for both sides. If called
 interactively, take next key press as opening delimiter. If
 called with prefix arg, the region is newly indented after
 delimiting."
-  (interactive "P")
-  (let* ((bd (if delim delim
-               (read-event "> ")))
-         (ed (case bd
-               ((?\() ?\))
-               ((?\[) ?\])
-               ((?{) ?})
-               ((?<) ?>)
-               (t bd))))
-    (let ((p1 (if (> (point) (mark)) (mark) (point)))
-          (p2 (if (> (point) (mark)) (point) (mark))))
-      (save-excursion
-        (goto-char p1)
-        (insert bd)
-        (goto-char (+ p2 1))
-        (insert ed))
-      (if pre (indent-region p1 p2)))))
+  (interactive "r\nP\nc")
+  (let ((ed (case bd
+              ((?\() ?\))
+              ((?\[) ?\])
+              ((?{) ?})
+              ((?<) ?>)
+              (t bd))))
+    (save-excursion
+      (goto-char mark)
+      (insert ed))
+    (save-excursion
+      (goto-char point)
+      (insert bd))
+    (if pre (indent-region point mark))))
 #+END_SRC
 
 *** Push buffer to frame
@@ -1177,7 +1174,7 @@ Also use our delimiter for parens.
                          ("M-B" . sp-backward-symbol)
                          ("C-M-SPC" . sp-mark-sexp)
                          ("C-c s" . sp-splice-sexp) ;; depth-changing commands
-                         ("C-c S" . (lambda (&optional arg) (interactive "P") (my-delimit-region arg ?\()))
+                         ("C-c S" . (lambda (point mark pre) (interactive "r\nP") (my-delimit-region point mark pre ?\()))
                          ("C-c b" . sp-splice-sexp-killing-backward)
                          ("C-c f" . sp-splice-sexp-killing-forward)
                          ("C-c k" . sp-splice-sexp-killing-around)
