@@ -80,6 +80,7 @@
  '(my-env-actions
    (quote
     ((mouse-wheel-zoom my-wheel-zoom my-env-reset-keymap)
+     (mouse-undo mouse-undo my-env-reset-keymap)
      (german-kbd activate-german-keymap my-env-reset-keymap)
      (windows-trackpad windows-trackpad reset-windows-trackpad))))
  '(my-env-definitions
