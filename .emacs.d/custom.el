@@ -57,7 +57,7 @@
      (pc-kbd on-pc-keyboard ignore)))
  '(my-env-definitions
    '((68
-      (mouse-wheel-zoom pc-kbd))
+      (mouse-wheel-zoom pc-kbd  mouse-undo))
      (77
       (german-kbd apple-kbd))))
  '(my-environment-mode t)
