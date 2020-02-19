@@ -47,6 +47,7 @@
  '(indent-tabs-mode nil)
  '(isearch-lazy-count t)
  '(magit-git-executable "/opt/local/bin/git")
+ '(mouse-drag-and-drop-region t)
  '(mouse-drag-copy-region t)
  '(mouse-wheel-scroll-amount '(1 ((meta) . 3) ((shift) . text-scale)))
  '(my-env-actions
