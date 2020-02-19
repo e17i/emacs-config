@@ -799,6 +799,7 @@ I'm adding a few ones which I missed so far.
 (global-set-key "\C-x4l" #'go-back-other-window)
 (global-set-key "\C-x4-" #'shrink-other-window-if-larger-than-buffer)
 (global-set-key "\C-x4s" #'dedicate-window)
+(global-set-key "\C-x4e" #'edit-other-window)
 #+END_SRC
 
 Note the window size changing keys, =C-x ^= to enlarge (also negative) and
@@ -1163,12 +1164,17 @@ Also use our delimiter for parens.
 #+END_SRC
 
 ** Todo
+*** TODO continue experiments with-current-buffer
+*** TODO read display-buffer
+*** TODO check dired buffer handling
+    - experiment with logging display-buffer function
+*** TODO read about tramp plugins
 *** TODO macro for command composition
     - compose key 1 and key 2
     - assign function name
     - where-is-internal - find key bindings for function
     - key-binding - find function for key binding
-*** TODO finetune nth-window and other window handling
+*** DONE finetune nth-window and other window handling
     - s f. other-window-for-scrolling and v. other-window-scroll-buffer
     - select other window:
       - probably tag different windows with dedication tags (main work
@@ -1176,7 +1182,7 @@ Also use our delimiter for parens.
       - advice display-buffer functions not to use these
     - or define own actions
     - first see display-buffer docs
-*** TODO complete keyboard switching
+*** DONE complete keyboard switching
 *** TODO complete mouse/trackpad handling/switching
 *** TODO cleanup misc, move to mode specific sections
 *** DONE env-mode: use make-composed-keymap, set-keymap-parent
