@@ -33,8 +33,46 @@ actually a quite deterministic operation. Its frontend is ~pop-to-buffer~, the
 implementation and documentation is in ~display-buffer~. There, a range of
 ~display-buffer-functions~ can be selected and combined at will, generating
 this behaviour. Now, often you may want to craft a window configuration into
-your frame, so you dont want any of this to be misused. Here, the following
-functions come in handy. Use them to define your dedicated 'other' window.
+your frame, so you dont want any of this to be misused. 
+
+A first mitigation may ne to sensibly change the ~display-buffer-fallback-action~,
+overriding it in ~display-buffer-base-action~. Here we just replace the
+~display-buffer-use-some-window~ function which probably is the source of those
+erratic behaviour. Our replacement is ~display-buffer-below-selected~, which on
+first view seems to be not such a bad selection. 
+
+#+BEGIN_SRC emacs-lisp
+(custom-set-variables
+ '(display-buffer-base-action
+   '((display-buffer--maybe-same-window display-buffer-reuse-window display-buffer--maybe-pop-up-frame-or-window display-buffer-in-previous-window display-buffer-below-selected display-buffer-pop-up-frame)))
+ '(display-buffer-alist (("\\*Help\\*" display-buffer-dedicated-window
+                          (window-height . fit-window-to-buffer-max-half-frame)))))
+#+END_SRC
+
+We augment it with a buffer specific ~window-height~ action attribute only for
+help buffers, specifying our custom function
+~fit-window-to-buffer-max-half-frame~, which may need more tweaking to use less
+than half frame height or also to use height of original window before split.
+
+#+BEGIN_SRC emacs-lisp
+(defun fit-window-to-buffer-max-half-frame (&optional window)
+  "fit window to buffer size, but use max half of current frame height."
+  (interactive)
+  (let ((wnd (or window (selected-window)))
+        (max-height (/ (frame-height) 2)))
+    (fit-window-to-buffer window max-height)))
+#+END_SRC
+
+This done, we have no more window reusing, so we can leave or remove windows at
+will. A last resort is still the push to frame key defined below.
+
+**** Dedicated window
+
+These functions are not yet matured. Use them to define your dedicated 'other'
+window, but probably only with a selection regex or function limiting its
+application to defined buffer types. The setting of
+~other-window-scroll-buffer~ should happen at a more generic place, making the
+other window key definitions bekow more functional.
 
 Activate by customizing ~display-buffer-alist~, inserting
 ~display-buffer-dedicated-window~. Also interesting are functions like
@@ -68,6 +106,8 @@ if special action attributes are defined, use the default."
         (setq other-window-scroll-buffer buffer))
     nil))
 #+END_SRC
+
+**** Other window applications
 
 This sorted out, I'm adding some useful functions for handling the other
 window. This can be handy after calling or navigating within help texts for
@@ -468,6 +508,13 @@ functions..
         (selected (selected-window)))
     (if (display-buffer-other-frame current)
         (quit-restore-window selected))))
+#+END_SRC
+
+To make this work smoothly, we also change iconification of frames on close.
+
+#+BEGIN_SRC emacs-lisp
+(custom-set-variables
+ '(frame-auto-hide-function #'delete-frame))
 #+END_SRC
 
 ** Environment Minor Mode
