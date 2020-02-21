@@ -1164,10 +1164,21 @@ Also use our delimiter for parens.
 #+END_SRC
 
 ** Todo
-*** TODO continue experiments with-current-buffer
-*** TODO read display-buffer
-*** TODO check dired buffer handling
-    - experiment with logging display-buffer function
+*** TODO display-buffer
+**** DONE option close frame on quit instead of iconify
+     - frame-auto-hide-function to delete
+**** DONE build a function scaling selected window to fit buffer, but use max arg fract of frame
+     - fit-window-to-buffer-max-half-frame
+**** DONE how to make window dedicated? that is not 'dedicated' to a buffer, but not selected as other window
+     - probably mitigated by not using display-buffer-use-some-window
+**** TODO continue experiments with-current-buffer
+**** DONE read display-buffer
+**** DONE check dired buffer handling
+     - experiment with logging display-buffer function
+*** TODO make window resize steps customizable, add center function
+*** TODO find out about alist handling
+*** TODO split custom.el into site specific customization and global custom selection to be merged/distributed
+    - move mergeable options into init-babel.org?
 *** TODO read about tramp plugins
 *** TODO macro for command composition
     - compose key 1 and key 2
