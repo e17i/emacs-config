@@ -60,6 +60,18 @@ If such a window already exists, we want to reuse it, specifying a
 corresponding action.
 
 #+BEGIN_SRC emacs-lisp
+(defun window-apply-height-fnc (window alist)
+  "rudimentary alist parser just accepting a height fnc for now.."
+  (let ((height (cdr (assq 'window-height alist))))
+    (if (functionp height)
+        (ignore-errors (funcall height window)))
+    window))
+
+(defun window-update-buffer (buffer window type alist)
+  "display buffer in window, recording type then apply height"
+  (if (window--display-buffer buffer window type alist)
+      (window-apply-height-fnc window alist)))
+
 (defun display-buffer-reuse-help (buffer alist)
   "If a *Help* or *Apropos* window is live, try to reuse that."
   (let ((wnd (car (remove-if-not
@@ -68,10 +80,7 @@ corresponding action.
                                    (buffer-name (window-buffer w))))
                    (window-list)))))
     (if (and wnd (window-live-p wnd))
-        (progn
-          (message (format "resize..%s " alist))
-          (window--display-buffer buffer wnd 'window alist)))))
-;; FIXME make a function respecting window size args and recording with reuse..
+        (window-update-buffer buffer wnd 'reuse alist))))
 #+END_SRC
 
 Now we define a buffer specific ~window-height~ action attribute only for
@@ -124,7 +133,7 @@ defined, use that to display the buffer."
                                    (eq 't (window-parameter w 'orig-window)))
                                  (window-list)))))
         (if (and my-window (window-live-p my-window))
-            (window--display-buffer buffer my-window 'window alist)))))
+            (window-update-buffer buffer my-window 'reuse alist)))))
 #+END_SRC
 
 Helper function ~dired-p~ checks if a buffer has some ~dired-mode~. The
@@ -187,7 +196,7 @@ functions. So enable this only with specified selectors."
   (setq other-window-scroll-buffer buffer)
   (if (and dedicated-other-window
            (window-live-p dedicated-other-window))
-      (window--display-buffer buffer dedicated-other-window 'window alist)))
+      (window-update-buffer buffer dedicated-other-window 'reuse alist)))
 #+END_SRC
 
 **** Other window applications
