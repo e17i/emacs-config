@@ -41,18 +41,44 @@ overriding it in ~display-buffer-base-action~. Here we just replace the
 erratic behaviour. Our replacement is ~display-buffer-below-selected~, which on
 first view seems to be not such a bad selection. 
 
+But we also need to make sure windows are not splitted if too small.
+
 #+BEGIN_SRC emacs-lisp
 (custom-set-variables
  '(display-buffer-base-action
    '((display-buffer--maybe-same-window display-buffer-reuse-window display-buffer--maybe-pop-up-frame-or-window display-buffer-in-previous-window display-buffer-below-selected display-buffer-pop-up-frame)))
- '(display-buffer-alist (("\\*Help\\*" display-buffer-dedicated-window
-                          (window-height . fit-window-to-buffer-max-half-frame)))))
+ '(window-min-height 8)
+ '(window-min-width 40)
+ )
 #+END_SRC
 
-We augment it with a buffer specific ~window-height~ action attribute only for
-help buffers, specifying our custom function
+**** Help and Apropos buffers
+
+We want to put those buffers into dedicated windows or into windows at bottom,
+where they are unobtrusive and can stay as long as we want.
+If such a window already exists, we want to reuse it, specifying a
+corresponding action.
+
+#+BEGIN_SRC emacs-lisp
+(defun display-buffer-reuse-help (buffer alist)
+  "If a *Help* or *Apropos* window is live, try to reuse that."
+  (let ((wnd (car (remove-if-not
+                   (lambda (w)
+                     (string-match "\\*Help\\*\\|\\*Apropos\\*"
+                                   (buffer-name (window-buffer w))))
+                   (window-list)))))
+    (if (and wnd (window-live-p wnd))
+        (progn
+          (message (format "resize..%s " alist))
+          (window--display-buffer buffer wnd 'window alist)))))
+;; FIXME make a function respecting window size args and recording with reuse..
+#+END_SRC
+
+Now we define a buffer specific ~window-height~ action attribute only for
+help and apropos buffers, specifying our custom function
 ~fit-window-to-buffer-max-half-frame~, which may need more tweaking to use less
 than half frame height or also to use height of original window before split.
+We also put in our ~dired~ functions which see.
 
 #+BEGIN_SRC emacs-lisp
 (defun fit-window-to-buffer-max-half-frame (&optional window)
@@ -63,6 +89,64 @@ than half frame height or also to use height of original window before split.
     (fit-window-to-buffer window max-height)))
 #+END_SRC
 
+#+BEGIN_SRC emacs-lisp
+(custom-set-variables
+ '(display-buffer-alist
+   ((dired-to-other-window nil)
+    (dired-from-other-window
+     (display-buffer-in-orig))
+    ("\\*Help\\*\\|\\*Apropos\\*"
+     (display-buffer-dedicated-window display-buffer-reuse-help display-buffer-at-bottom)
+     (window-height . fit-window-to-buffer-max-half-frame)))))
+#+END_SRC
+
+**** Dired windows
+
+Now, we define a special handling for ~dired~ buffers. We leave it alone if
+used in the same window. But when used in other window, it should memorize its
+origin window and put view buffers sent to subsequent other windows there.
+
+#+BEGIN_SRC emacs-lisp
+(defun set-orig-window (window)
+  "mark the given window as origin of operation, removing the mark from all
+others of frame. This way, a dired buffer in other window can push its
+  subsequent other window view buffers into the origin window."
+  (walk-windows (lambda (w)
+                  (set-window-parameter w 'orig-window nil)))
+  (set-window-parameter window 'orig-window 't))
+
+(defun display-buffer-in-orig (buffer alist)
+  "if action attribute inhibit-same-window is given and a live orig window is
+defined, use that to display the buffer."
+  (if (cdr (assq 'inhibit-same-window alist))
+      (let ((my-window
+             (car (remove-if-not (lambda (w)
+                                   (eq 't (window-parameter w 'orig-window)))
+                                 (window-list)))))
+        (if (and my-window (window-live-p my-window))
+            (window--display-buffer buffer my-window 'window alist)))))
+#+END_SRC
+
+Helper function ~dired-p~ checks if a buffer has some ~dired-mode~. The
+following two predicate functions check if the originating or the new buffer
+is a dired buffer.
+
+#+BEGIN_SRC emacs-lisp
+(defun dired-p (buffer)
+  "is buffer's major mode a dired mode?"
+  (let ((mode (with-current-buffer buffer major-mode)))
+    (string-match "dired-.*mode" (symbol-name mode))))
+
+(defun dired-to-other-window (buffer alist)
+  "match if new buffer is a dired buffer."
+  (if (dired-p buffer)
+      (set-orig-window (selected-window))))
+
+(defun dired-from-other-window (buffer alist)
+  "match if current buffer is a dired buffer."
+  (dired-p (current-buffer)))
+#+END_SRC
+
 This done, we have no more window reusing, so we can leave or remove windows at
 will. A last resort is still the push to frame key defined below.
 
@@ -71,8 +155,9 @@ will. A last resort is still the push to frame key defined below.
 These functions are not yet matured. Use them to define your dedicated 'other'
 window, but probably only with a selection regex or function limiting its
 application to defined buffer types. The setting of
-~other-window-scroll-buffer~ should happen at a more generic place, making the
-other window key definitions bekow more functional.
+~other-window-scroll-buffer~ is handled very generically with the aim of
+making the other window key definitions below more functional. So probably use
+this only with care and for selected buffer regexps or selector functions.
 
 Activate by customizing ~display-buffer-alist~, inserting
 ~display-buffer-dedicated-window~. Also interesting are functions like
@@ -96,15 +181,13 @@ and reverts to the default window selection behaviour."
 
 (defun display-buffer-dedicated-window (buffer alist)
   "Display pop-up-buffer in the dedicated other window, if one is
-selected. If none is selected, revert to the default behaviour. Also,
-if special action attributes are defined, use the default."
-  (if (and (not alist)
-           dedicated-other-window
+selected. If none is selected, revert to the default behaviour.
+Always set the other window scroll buffer to enable my remote buffer accessing
+functions. So enable this only with specified selectors."
+  (setq other-window-scroll-buffer buffer)
+  (if (and dedicated-other-window
            (window-live-p dedicated-other-window))
-      (with-selected-window dedicated-other-window
-        (switch-to-buffer buffer)
-        (setq other-window-scroll-buffer buffer))
-    nil))
+      (window--display-buffer buffer dedicated-other-window 'window alist)))
 #+END_SRC
 
 **** Other window applications
