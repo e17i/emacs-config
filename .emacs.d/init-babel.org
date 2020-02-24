@@ -28,7 +28,7 @@ appropriate hook. We also call it for the current frame.
 *** Handling of other window
 
 First of all, a topic of long and outstanding troubles has been the question
-of seemingly eratically selecting the other window. As it seems, this is
+of seemingly eratically automatic selection of the other window. As it seems, this is
 actually a quite deterministic operation. Its frontend is ~pop-to-buffer~, the
 implementation and documentation is in ~display-buffer~. There, a range of
 ~display-buffer-functions~ can be selected and combined at will, generating
@@ -39,7 +39,7 @@ A first mitigation may ne to sensibly change the ~display-buffer-fallback-action
 overriding it in ~display-buffer-base-action~. Here we just replace the
 ~display-buffer-use-some-window~ function which probably is the source of those
 erratic behaviour. Our replacement is ~display-buffer-below-selected~, which on
-first view seems to be not such a bad selection. 
+first view seems to be not such a bad selection for frames using a large screen space. 
 
 But we also need to make sure windows are not splitted if too small.
 
