@@ -580,14 +580,56 @@ receive an argument list of (FRAME MAX-LINES MAX-COLS).
 (defun frame-height-dec (frame lines cols)
   (set-frame-height frame (- lines 1)))
 
+(defun frame-geom (&optional frame)
+  (let ((current-display
+         (car (remove-if-not
+               (lambda (disp)
+                 (let ((f (assq 'frames disp)))
+                   (member (or frame (selected-frame)) f)))
+               (display-monitor-attributes-list)))))
+    (let ((geom (assq 'workarea current-display)))
+      geom)))
+
 (defun frame-to-left (frame lines cols)
-  (set-frame-position frame 0
-                      (cdr (frame-position frame))))
+  (let ((geom (frame-geom frame)))
+    (let ((x (cadr geom)))
+      (set-frame-position frame
+                          x
+                          (cdr (frame-position frame))))))
 
 (defun frame-to-top (frame lines cols)
-  (set-frame-position frame
-                      (car (frame-position frame))
-                      0))
+  (let ((geom (frame-geom frame)))
+    (let ((y (caddr geom)))
+      (set-frame-position frame
+                          (car (frame-position frame))
+                          y))))
+
+(defun frame-to-center (frame lines cols)
+  (let ((geom (frame-geom frame)))
+    (let ((x (cadr geom))
+          (y (caddr geom))
+          (width (cadddr geom))
+          (height (cadr (cdddr geom))))
+      (let ((dwidth (- width
+                       (frame-pixel-width)))
+            (dheight (- height
+                        (frame-pixel-height))))
+        (set-frame-position
+         frame
+         (+ x (round dwidth 2.1))
+         (+ y (round dheight 2.1)))))))
+
+(defun frame-to-right (frame lines cols)
+  (let ((geom (frame-geom frame)))
+    (let ((x (cadr geom))
+          (width (cadddr geom))
+          (py (cdr (frame-position frame))))
+      (let ((dwidth (- width
+                       (frame-pixel-width))))
+        (set-frame-position
+         frame
+         (+ x dwidth)
+         py)))))
 #+END_SRC
 
 Here we toggle fullscreen, removing all frame decorations and

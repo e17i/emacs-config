@@ -12,7 +12,6 @@
  '(default-input-method "german-postfix")
  '(delete-selection-mode t)
  '(dired-recursive-deletes 'top)
- '(display-buffer-alist '(("" display-buffer-dedicated-window)))
  '(dynamic-completion-mode nil)
  '(ediff-before-setup-hook '((lambda nil (window-configuration-to-register 101))))
  '(ediff-quit-hook '(ediff-cleanup-mess (lambda nil (jump-to-register 101))))
@@ -53,12 +52,12 @@
         (display-battery-mode 0)))))
  '(my-env-definitions
    '((68
-      (mouse-wheel-zoom pc-kbd  mouse-undo))
+      (mouse-wheel-zoom pc-kbd mouse-undo))
      (77
       (german-kbd apple-kbd battery))))
  '(my-environment-mode t)
  '(my-frame-stylings
-   '(frame-width-below-threshold frame-height-dec frame-to-top))
+   '(frame-width-below-threshold frame-height-dec frame-to-right frame-to-top))
  '(my-frame-transparency 85)
  '(ns-alternate-modifier 'alternate)
  '(ns-command-modifier 'meta)
