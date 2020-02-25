@@ -16,7 +16,6 @@
  '(default-input-method "german-postfix")
  '(delete-selection-mode t)
  '(dired-recursive-deletes (quote top))
- '(display-buffer-alist (quote (("" display-buffer-dedicated-window))))
  '(display-time-mode nil)
  '(doc-view-ghostscript-program "c:/Program Files/gs/gs9.50/bin/gswin64c.exe")
  '(dynamic-completion-mode nil)
@@ -82,13 +81,18 @@
     ((mouse-wheel-zoom my-wheel-zoom my-env-reset-keymap)
      (mouse-undo mouse-undo my-env-reset-keymap)
      (german-kbd activate-german-keymap my-env-reset-keymap)
-     (windows-trackpad windows-trackpad reset-windows-trackpad))))
+     (windows-trackpad windows-trackpad reset-windows-trackpad)
+     (battery
+      (lambda nil
+        (display-battery-mode 1))
+      (lambda nil
+        (display-battery-mode 0))))))
  '(my-env-definitions
    (quote
     ((68
       (mouse-wheel-zoom mouse-undo))
      (77
-      (german-kbd windows-trackpad)))))
+      (german-kbd windows-trackpad battery)))))
  '(my-environment-mode t)
  '(my-frame-stylings
    (quote
