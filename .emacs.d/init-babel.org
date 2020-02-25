@@ -47,17 +47,17 @@ activate some further tweaks which are declared in the following sections.
 #+BEGIN_SRC emacs-lisp
 (custom-set-variables
  '(display-buffer-alist
-   ((dired-to-other-window make-buffer-window-origin)
-    (dired-from-other-window
-     (display-buffer-maybe-in-orig))
-    ("\\*Occur\\*" make-buffer-window-origin)
-    ((lambda
-       (buffer alist)
-       (match-current-buffer "\\\\*Occur\\\\*"))
-     display-buffer-in-orig)
-    ("\\*Help\\*\\|\\*Apropos\\*"
-     (display-buffer-as-scroll-buffer display-buffer-dedicated-window display-buffer-reuse-help display-buffer-at-bottom)
-     (window-height . fit-window-to-buffer-max-half-frame))))
+   '((dired-to-other-window make-buffer-window-origin)
+     (dired-from-other-window
+      (display-buffer-maybe-in-orig))
+     ("\\*Occur\\*" make-buffer-window-origin)
+     ((lambda
+        (buffer alist)
+        (match-current-buffer "\\\\*Occur\\\\*"))
+      display-buffer-in-orig)
+     ("\\*Help\\*\\|\\*Apropos\\*"
+      (display-buffer-as-scroll-buffer display-buffer-dedicated-window display-buffer-reuse-help display-buffer-at-bottom)
+      (window-height . fit-window-to-buffer-max-half-frame))))
  '(display-buffer-base-action
    '((display-buffer-maybe-as-scroll-buffer display-buffer-dedicated-window display-buffer--maybe-same-window display-buffer-reuse-window display-buffer--maybe-pop-up-frame-or-window display-buffer-in-previous-window display-buffer-below-selected display-buffer-pop-up-frame)))
  '(window-min-height 8)
@@ -1381,19 +1381,7 @@ Also use our delimiter for parens.
 #+END_SRC
 
 ** Todo
-*** TODO display-buffer
-**** DONE option close frame on quit instead of iconify
-     - frame-auto-hide-function to delete
-**** DONE build a function scaling selected window to fit buffer, but use max arg fract of frame
-     - fit-window-to-buffer-max-half-frame
-**** DONE how to make window dedicated? that is not 'dedicated' to a buffer, but not selected as other window
-     - probably mitigated by not using display-buffer-use-some-window
-**** TODO continue experiments with-current-buffer
-**** DONE read display-buffer
-**** DONE check dired buffer handling
-     - experiment with logging display-buffer function
 *** TODO make window resize steps customizable, add center function
-*** TODO find out about alist handling
 *** TODO split custom.el into site specific customization and global custom selection to be merged/distributed
     - move mergeable options into init-babel.org?
 *** TODO read about tramp plugins
@@ -1402,6 +1390,19 @@ Also use our delimiter for parens.
     - assign function name
     - where-is-internal - find key bindings for function
     - key-binding - find function for key binding
+*** TODO complete mouse/trackpad handling/switching
+*** DONE display-buffer
+**** DONE option close frame on quit instead of iconify
+     - frame-auto-hide-function to delete
+**** DONE build a function scaling selected window to fit buffer, but use max arg fract of frame
+     - fit-window-to-buffer-max-half-frame
+**** DONE how to make window dedicated? that is not 'dedicated' to a buffer, but not selected as other window
+     - probably mitigated by not using display-buffer-use-some-window
+**** DONE continue experiments with-current-buffer
+**** DONE read display-buffer
+**** DONE check dired buffer handling
+     - experiment with logging display-buffer function
+*** DONE find out about alist handling
 *** DONE finetune nth-window and other window handling
     - s f. other-window-for-scrolling and v. other-window-scroll-buffer
     - select other window:
@@ -1411,8 +1412,7 @@ Also use our delimiter for parens.
     - or define own actions
     - first see display-buffer docs
 *** DONE complete keyboard switching
-*** TODO complete mouse/trackpad handling/switching
-*** TODO cleanup misc, move to mode specific sections
+*** DONE cleanup misc, move to mode specific sections
 *** DONE env-mode: use make-composed-keymap, set-keymap-parent
     this way, each action can define an own keymap indefinitely existing and
     just adding/removing it on enter/exit. Advantage is, rebind commands
