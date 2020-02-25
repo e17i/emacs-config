@@ -45,12 +45,17 @@
      (mouse-undo mouse-undo my-env-reset-keymap)
      (german-kbd activate-german-keymap my-env-reset-keymap)
      (apple-kbd on-apple-keyboard ignore)
-     (pc-kbd on-pc-keyboard ignore)))
+     (pc-kbd on-pc-keyboard ignore)
+     (battery
+      (lambda nil
+        (display-battery-mode 1))
+      (lambda nil
+        (display-battery-mode 0)))))
  '(my-env-definitions
    '((68
       (mouse-wheel-zoom pc-kbd  mouse-undo))
      (77
-      (german-kbd apple-kbd))))
+      (german-kbd apple-kbd battery))))
  '(my-environment-mode t)
  '(my-frame-stylings
    '(frame-width-below-threshold frame-height-dec frame-to-top))
