@@ -37,16 +37,18 @@
  '(indent-tabs-mode nil)
  '(isearch-lazy-count t)
  '(magit-git-executable "/opt/local/bin/git")
+ '(mouse-drag-and-drop-region t)
  '(mouse-drag-copy-region t)
  '(mouse-wheel-scroll-amount '(1 ((meta) . 3) ((shift) . text-scale)))
  '(my-env-actions
    '((mouse-wheel-zoom my-wheel-zoom my-env-reset-keymap)
+     (mouse-undo mouse-undo my-env-reset-keymap)
      (german-kbd activate-german-keymap my-env-reset-keymap)
      (apple-kbd on-apple-keyboard ignore)
      (pc-kbd on-pc-keyboard ignore)))
  '(my-env-definitions
    '((68
-      (mouse-wheel-zoom pc-kbd))
+      (mouse-wheel-zoom pc-kbd  mouse-undo))
      (77
       (german-kbd apple-kbd))))
  '(my-environment-mode t)
