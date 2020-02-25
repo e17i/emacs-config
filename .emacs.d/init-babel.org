@@ -4,7 +4,7 @@
 *** Initialization
 
 We want to set each frame to reasonable color defaults by defining an
-appropriate hook. We also call it for the current frame.
+appropriate hook.
 
 #+BEGIN_SRC emacs-lisp
 (defgroup my-cust nil "my customizations")
@@ -28,52 +28,257 @@ appropriate hook. We also call it for the current frame.
 *** Handling of other window
 
 First of all, a topic of long and outstanding troubles has been the question
-of seemingly eratically selecting the other window. As it seems, this is
+of seemingly eratically automatic selection of the other window. As it seems, this is
 actually a quite deterministic operation. Its frontend is ~pop-to-buffer~, the
 implementation and documentation is in ~display-buffer~. There, a range of
 ~display-buffer-functions~ can be selected and combined at will, generating
 this behaviour. Now, often you may want to craft a window configuration into
-your frame, so you dont want any of this to be misused. Here, the following
-functions come in handy. Use them to define your dedicated 'other' window.
+your frame, so you dont want any of this to be misused. 
 
-Activate by customizing ~display-buffer-alist~, inserting
-~display-buffer-dedicated-window~. Also interesting are functions like
-~display-buffer-pop-up-frame~.
+A first mitigation may ne to sensibly change the ~display-buffer-fallback-action~,
+overriding it in ~display-buffer-base-action~. Here we just replace the
+~display-buffer-use-some-window~ function which probably is the source of those
+erratic behaviour. Our replacement is ~display-buffer-below-selected~, which on
+first view seems to be not such a bad selection for frames using a large screen space.
+
+But we also need to make sure windows are not splitted if too small. We also
+activate some further tweaks which are declared in the following sections.
+
+#+BEGIN_SRC emacs-lisp
+(custom-set-variables
+ '(display-buffer-alist
+   ((dired-to-other-window make-buffer-window-origin)
+    (dired-from-other-window
+     (display-buffer-maybe-in-orig))
+    ("\\*Occur\\*" make-buffer-window-origin)
+    ((lambda
+       (buffer alist)
+       (match-current-buffer "\\\\*Occur\\\\*"))
+     display-buffer-in-orig)
+    ("\\*Help\\*\\|\\*Apropos\\*"
+     (display-buffer-as-scroll-buffer display-buffer-dedicated-window display-buffer-reuse-help display-buffer-at-bottom)
+     (window-height . fit-window-to-buffer-max-half-frame))))
+ '(display-buffer-base-action
+   '((display-buffer-maybe-as-scroll-buffer display-buffer-dedicated-window display-buffer--maybe-same-window display-buffer-reuse-window display-buffer--maybe-pop-up-frame-or-window display-buffer-in-previous-window display-buffer-below-selected display-buffer-pop-up-frame)))
+ '(window-min-height 8)
+ '(window-min-width 40))
+#+END_SRC
+
+Finally we add a function to recursively edit with original behaviour.
+
+#+BEGIN_SRC emacs-lisp
+(defun edit-with-fallback-display ()
+  "reset `display-buffer-base-action' and edit recursively, to
+  have the original buffer sharing behaviour."
+  (interactive)
+  (let ((display-buffer-base-action nil))
+    (recursive-edit)))
+#+END_SRC
+
+**** Help and Apropos buffers
+
+We want to put those buffers into dedicated windows or into windows at bottom,
+where they are unobtrusive and can stay as long as we want.
+If such a window already exists, we want to reuse it, specifying a
+corresponding action.
+
+#+BEGIN_SRC emacs-lisp
+(defun window-apply-height-fnc (window alist)
+  "rudimentary alist parser just accepting a height fnc for now.."
+  (let ((height (cdr (assq 'window-height alist))))
+    (if (functionp height)
+        (ignore-errors (funcall height window)))
+    window))
+
+(defun window-update-buffer (buffer window type alist)
+  "display buffer in window, recording type then apply height"
+  (if (window--display-buffer buffer window type alist)
+      (window-apply-height-fnc window alist)))
+
+(defun display-buffer-reuse-help (buffer alist)
+  "If a *Help* or *Apropos* window is live, try to reuse that."
+  (let ((wnd (car (remove-if-not
+                   (lambda (w)
+                     (string-match "\\*Help\\*\\|\\*Apropos\\*"
+                                   (buffer-name (window-buffer w))))
+                   (window-list)))))
+    (if (and wnd (window-live-p wnd))
+        (window-update-buffer buffer wnd 'reuse alist))))
+#+END_SRC
+
+Now we define a buffer specific ~window-height~ action attribute only for
+help and apropos buffers, specifying our custom function
+~fit-window-to-buffer-max-half-frame~, which may need more tweaking to use less
+than half frame height or also to use height of original window before split.
+
+#+BEGIN_SRC emacs-lisp
+(defun fit-window-to-buffer-max-half-frame (&optional window)
+  "fit window to buffer size, but use max half of current frame height."
+  (interactive)
+  (let ((wnd (or window (selected-window)))
+        (max-height (/ (frame-height) 2)))
+    (fit-window-to-buffer window max-height)))
+#+END_SRC
+
+**** Dired and other file navigation buffers
+
+Now, we define a special handling for ~dired~ buffers. We leave it alone if
+used in the same window. But when used in other window, it should memorize its
+origin window and put view buffers sent to subsequent other windows there.
+
+#+BEGIN_SRC emacs-lisp
+(defun set-orig-window (window)
+  "mark the given window as origin of operation, removing the mark from all
+others of frame. This way, a dired buffer in other window can push its
+  subsequent other window view buffers into the origin window."
+  (walk-windows (lambda (w)
+                  (set-window-parameter w 'orig-window nil)))
+  (set-window-parameter window 'orig-window 't))
+
+(defun make-buffer-window-origin (buffer alist)
+  "use with a regex or matcher to memorize origin window. Then use
+`display-buffer-in-orig' with same regex to push buffers to origin."
+  (set-orig-window (selected-window))
+  nil)
+
+(defun display-buffer-in-orig (buffer alist)
+  "if a live orig window is defined, unconditionally use that to
+display the buffer."
+  (let ((my-window
+         (car (remove-if-not (lambda (w)
+                               (eq 't (window-parameter w 'orig-window)))
+                             (window-list)))))
+    (if (and my-window (window-live-p my-window))
+        (window-update-buffer buffer my-window 'reuse alist))))
+
+(defun display-buffer-maybe-in-orig (buffer alist)
+  "if action attribute inhibit-same-window is given and a live orig window is
+defined, use that to display the buffer."
+  (if (cdr (assq 'inhibit-same-window alist))
+      (display-buffer-in-orig buffer alist)))
+#+END_SRC
+
+Helper function ~dired-p~ checks if a buffer has some ~dired-mode~. The
+following two predicate functions check if the originating or the new buffer
+is a dired buffer.
+
+#+BEGIN_SRC emacs-lisp
+(defun dired-p (buffer)
+  "is buffer's major mode a dired mode?"
+  (let ((mode (with-current-buffer buffer major-mode)))
+    (string-match "dired-.*mode" (symbol-name mode))))
+
+(defun dired-to-other-window (buffer alist)
+  "match if new buffer is a dired buffer."
+  (dired-p buffer))
+
+(defun dired-from-other-window (buffer alist)
+  "match if current buffer is a dired buffer."
+  (dired-p (current-buffer)))
+#+END_SRC
+
+A generalized matcher function, matching the current buffer.
+Different applications use different strategies to display their buffers, so
+you may need to use the ~display-buffer~-variants with or withour ~maybe~. See
+customization at the beginning for an example addressing occur.
+
+#+BEGIN_SRC emacs-lisp
+(defun match-current-buffer (regex)
+  "match if regex matches current buffer."
+  (string-match regex (buffer-name (current-buffer))))
+#+END_SRC
+
+**** Dedicated window
+
+Use this to define a dedicated 'other' window. Optional arg allows to limit
+the dedication to the next ~n~ buffer pushs. So prefix =C-1= makes a one time
+dedication, =C-0= removes a dedication.
 
 #+BEGIN_SRC emacs-lisp
 (defvar dedicated-other-window nil)
+(defvar dedication-count)
 
 (defun dedicate-window (arg)
   "Dedicate the currently selected window as 'other' window. When
-called with a =C-u= prefix arg, releases the previously set window
-and reverts to the default window selection behaviour."
+called with a =C-0= prefix arg, releases the previously set
+window and reverts to the default window selection behaviour. Default is a
+one-time dedication, use =C-u= for unlimited."
   (interactive "p")
   (setq dedicated-other-window
-        (if (eq arg 4)
+        (if (eq arg 0)
             nil
           (selected-window)))
+  (setq dedication-count
+        (if (eq 4 arg) nil arg))
   (if dedicated-other-window
       (message "window dedicated")
     (message "dedication removed")))
 
 (defun display-buffer-dedicated-window (buffer alist)
   "Display pop-up-buffer in the dedicated other window, if one is
-selected. If none is selected, revert to the default behaviour. Also,
-if special action attributes are defined, use the default."
-  (if (and (not alist)
-           dedicated-other-window
+selected. If none is selected, revert to the default behaviour."
+  (if (and dedicated-other-window
            (window-live-p dedicated-other-window))
-      (with-selected-window dedicated-other-window
-        (switch-to-buffer buffer)
-        (setq other-window-scroll-buffer buffer))
-    nil))
+      (prog1
+          (window-update-buffer buffer dedicated-other-window 'reuse alist)
+        (if (and dedication-count (> dedication-count 0))
+            (setq dedication-count (- dedication-count 1)))
+        (if (eq 0 dedication-count)
+            (setq dedicated-other-window nil)))))
 #+END_SRC
+
+**** Other window applications
 
 This sorted out, I'm adding some useful functions for handling the other
 window. This can be handy after calling or navigating within help texts for
 example.
 
-First, a macro defining such functions. Default is to address the next window,
+First, some functions recording a buffer to be shown in another window. This
+one should be remote controllable as long as it is visible. When removed and
+no new buffer pushed to another window, we will fall back to the remote
+controlling behaviour selecting the next window.
+
+#+BEGIN_SRC emacs-lisp
+(defun display-buffer-as-scroll-buffer (buffer alist)
+  "This action actually doesn't display a buffer, but records it
+as `other-window-scroll-buffer'. It always returns nil so it can
+be placed with highest priority."
+  (setq other-window-scroll-buffer buffer)
+  nil)
+
+(defun display-buffer-maybe-as-scroll-buffer (buffer alist)
+  "This action actually doesn't display a buffer, but records it as
+`other-window-scroll-buffer', if the inhibit-same-window attribute
+is given. It always returns nil so it can be placed with highest priority."
+  (if (cdr (assq 'inhibit-same-window alist))
+      (display-buffer-as-scroll-buffer buffer alist)))
+
+(defun scroll-buffer-window ()
+  "find window of `other-window-scroll-buffer', if live, or reset
+other-window-scroll-buffer to nil, letting the other-window
+functions fall back to default."
+  (let ((scroll-window (get-buffer-window other-window-scroll-buffer)))
+    (if (and (buffer-live-p other-window-scroll-buffer)
+             (window-live-p scroll-window))
+        scroll-window
+      (setq other-window-scroll-buffer nil))))
+
+(defun my-scroll-other-window ()
+  "just like `scroll-other-window', but don't pop up the window
+if not live."
+  (interactive)
+  (scroll-buffer-window)
+  (call-interactively #'scroll-other-window))
+
+(defun my-scroll-other-window-down ()
+  "just like `scroll-other-window-down', but don't pop up the window
+if not live."
+  (interactive)
+  (scroll-buffer-window)
+  (call-interactively #'scroll-other-window-down))
+#+END_SRC
+
+A macro defining remote controlling functions. Default is to address the next window,
 but you can specify one with a prefix arg.
 
 #+BEGIN_SRC emacs-lisp
@@ -84,18 +289,24 @@ but you can specify one with a prefix arg.
   `(defun ,fname (arg)
      ,docstring
      (interactive "P")
-     (let ((scroll-window (get-buffer-window other-window-scroll-buffer)))
-       (save-selected-window
-         (if (and (eq arg nil)
-                  other-window-scroll-buffer
-                  scroll-window)
-             (if (and
-                  (buffer-live-p other-window-scroll-buffer)
-                  (window-live-p scroll-window))
-                 (select-window scroll-window)
-               (other-window (or arg 1)))
-           (other-window (or arg 1)))
-         ,@body))))
+     (save-selected-window
+       (select-other-window arg)
+       ,@body)))
+#+END_SRC
+
+..and a function coding the logic to find the other window.
+
+#+BEGIN_SRC emacs-lisp
+(defun select-other-window (arg)
+  "selects and returns the other window or window specified by prefix arg."
+  (interactive "P")
+  (let ((scroll-window (scroll-buffer-window)))
+    (if (and (eq arg nil)
+             other-window-scroll-buffer
+             scroll-window)
+        (select-window scroll-window)
+      (other-window (or arg 1))))
+  (selected-window))
 #+END_SRC
 
 The same for frames might also come in handy.
@@ -416,30 +627,27 @@ the corresponding closing brace. When called with prefix arg, the region is
 newly indented after delimiting.
 
 #+BEGIN_SRC emacs-lisp
-(defun my-delimit-region (&optional pre delim)
+(defun my-delimit-region (point mark pre bd)
   "Frame region with delimiters. If delim is an opening type of
 brace, automatically use the corresponding closing delimiter,
 otherwise use the same char for both sides. If called
 interactively, take next key press as opening delimiter. If
 called with prefix arg, the region is newly indented after
 delimiting."
-  (interactive "P")
-  (let* ((bd (if delim delim
-               (read-event "> ")))
-         (ed (case bd
-               ((?\() ?\))
-               ((?\[) ?\])
-               ((?{) ?})
-               ((?<) ?>)
-               (t bd))))
-    (let ((p1 (if (> (point) (mark)) (mark) (point)))
-          (p2 (if (> (point) (mark)) (point) (mark))))
-      (save-excursion
-        (goto-char p1)
-        (insert bd)
-        (goto-char (+ p2 1))
-        (insert ed))
-      (if pre (indent-region p1 p2)))))
+  (interactive "r\nP\nc")
+  (let ((ed (case bd
+              ((?\() ?\))
+              ((?\[) ?\])
+              ((?{) ?})
+              ((?<) ?>)
+              (t bd))))
+    (save-excursion
+      (goto-char mark)
+      (insert ed))
+    (save-excursion
+      (goto-char point)
+      (insert bd))
+    (if pre (indent-region point mark))))
 #+END_SRC
 
 *** Push buffer to frame
@@ -461,6 +669,13 @@ functions..
         (selected (selected-window)))
     (if (display-buffer-other-frame current)
         (quit-restore-window selected))))
+#+END_SRC
+
+To make this work smoothly, we also change iconification of frames on close.
+
+#+BEGIN_SRC emacs-lisp
+(custom-set-variables
+ '(frame-auto-hide-function #'delete-frame))
 #+END_SRC
 
 ** Environment Minor Mode
@@ -677,26 +892,23 @@ after double - select words, right - define region and save to kill ring,
 right after double click - define region up to next word, double right - kill
 to kill ring, middle - yank to click position.
 
-As on Mac middle button may be otherwise occupied, use mouse-3
-together with /Meta/ as replacement.
+Additionally, you can double click on delimiters like parens or quotes to
+select the delimited text. Finally, we activated the drag and drop feature.
 
 ~mouse-wheel-mode~ also enables mouse wheel scrolling. With /Meta/,
 enables scroll turbo; with /shift/, scale text (seems to work only on
 trackpad, as it is mapped to =S-wheel-left= / =right=).
 
+To revert yanks when hand on mouse, we place ~undo~ on =M-mouse-2=. Probably
+no more customizations to be done. Especially when using the trackpad, hands
+are already near keyboard.
+
 #+BEGIN_SRC emacs-lisp
-;; mac trackpad: select: mouse-1, copy/cut: mouse-3, yank: M-mouse-3
-;; undo: C-M-mouse-3
-;; as a convenience, on mode line M-mouse-1 is also mouse-2
-;; (define-key key-translation-map (kbd "<M-mouse-3>") (kbd "<mouse-2>"))
-;; (global-set-key [C-M-mouse-3] 'undo)
-(define-key key-translation-map (kbd "<mode-line> <M-mouse-3>") (kbd "<mode-line> <mouse-2>"))
-(define-key key-translation-map (kbd "<mode-line> <M-mouse-1>") (kbd "<mode-line> <mouse-2>"))
-(global-set-key [M-mouse-3] #'mouse-yank-at-click)
-;; mac mouse: select: mouse-1, copy/cut: mouse-3, yank: M-mouse-2,
-;; undo: M-mouse-3
-(global-set-key [M-mouse-2] #'mouse-yank-at-click)
-(global-set-key [M-mouse-3] #'undo)
+(defun mouse-undo ()
+  "undo with mouse button."
+  (let ((kmap (make-sparse-keymap)))
+    (define-key kmap (kbd "<M-mouse-2>") #'undo)
+    (my-env-add-map kmap)))
 #+END_SRC
 
 When using a mouse wheel, we also want to use the text size zooming feature which
@@ -802,6 +1014,7 @@ I'm adding a few ones which I missed so far.
 (global-set-key "\C-x4l" #'go-back-other-window)
 (global-set-key "\C-x4-" #'shrink-other-window-if-larger-than-buffer)
 (global-set-key "\C-x4s" #'dedicate-window)
+(global-set-key "\C-x4e" #'edit-other-window)
 #+END_SRC
 
 Note the window size changing keys, =C-x ^= to enlarge (also negative) and
@@ -817,6 +1030,8 @@ We also want to jump to beginning/end in other window by =C-M-<= and =C-M->=
 #+BEGIN_SRC emacs-lisp
 (global-set-key [201326652] #'beginning-of-other-window)
 (global-set-key [201326654] #'end-of-other-window)
+(global-set-key [remap scroll-other-window] #'my-scroll-other-window)
+(global-set-key [remap scroll-other-window-down] #'my-scroll-other-window-down)
 #+END_SRC
 
 How to get these codes? Call =M-x global-set-key RET C-M-< beg=.. to manually
@@ -1131,7 +1346,7 @@ Also use our delimiter for parens.
                          ("M-B" . sp-backward-symbol)
                          ("C-M-SPC" . sp-mark-sexp)
                          ("C-c s" . sp-splice-sexp) ;; depth-changing commands
-                         ("C-c S" . (lambda (&optional arg) (interactive "P") (my-delimit-region arg ?\()))
+                         ("C-c S" . (lambda (point mark pre) (interactive "r\nP") (my-delimit-region point mark pre ?\()))
                          ("C-c b" . sp-splice-sexp-killing-backward)
                          ("C-c f" . sp-splice-sexp-killing-forward)
                          ("C-c k" . sp-splice-sexp-killing-around)
@@ -1166,12 +1381,28 @@ Also use our delimiter for parens.
 #+END_SRC
 
 ** Todo
+*** TODO display-buffer
+**** DONE option close frame on quit instead of iconify
+     - frame-auto-hide-function to delete
+**** DONE build a function scaling selected window to fit buffer, but use max arg fract of frame
+     - fit-window-to-buffer-max-half-frame
+**** DONE how to make window dedicated? that is not 'dedicated' to a buffer, but not selected as other window
+     - probably mitigated by not using display-buffer-use-some-window
+**** TODO continue experiments with-current-buffer
+**** DONE read display-buffer
+**** DONE check dired buffer handling
+     - experiment with logging display-buffer function
+*** TODO make window resize steps customizable, add center function
+*** TODO find out about alist handling
+*** TODO split custom.el into site specific customization and global custom selection to be merged/distributed
+    - move mergeable options into init-babel.org?
+*** TODO read about tramp plugins
 *** TODO macro for command composition
     - compose key 1 and key 2
     - assign function name
     - where-is-internal - find key bindings for function
     - key-binding - find function for key binding
-*** TODO finetune nth-window and other window handling
+*** DONE finetune nth-window and other window handling
     - s f. other-window-for-scrolling and v. other-window-scroll-buffer
     - select other window:
       - probably tag different windows with dedication tags (main work
@@ -1179,7 +1410,7 @@ Also use our delimiter for parens.
       - advice display-buffer functions not to use these
     - or define own actions
     - first see display-buffer docs
-*** TODO complete keyboard switching
+*** DONE complete keyboard switching
 *** TODO complete mouse/trackpad handling/switching
 *** TODO cleanup misc, move to mode specific sections
 *** DONE env-mode: use make-composed-keymap, set-keymap-parent
