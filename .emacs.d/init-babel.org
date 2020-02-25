@@ -47,9 +47,14 @@ activate some further tweaks which are declared in the following sections.
 #+BEGIN_SRC emacs-lisp
 (custom-set-variables
  '(display-buffer-alist
-   ((dired-to-other-window nil)
+   ((dired-to-other-window make-buffer-window-origin)
     (dired-from-other-window
-     (display-buffer-in-orig))
+     (display-buffer-maybe-in-orig))
+    ("\\*Occur\\*" make-buffer-window-origin)
+    ((lambda
+       (buffer alist)
+       (match-current-buffer "\\\\*Occur\\\\*"))
+     display-buffer-in-orig)
     ("\\*Help\\*\\|\\*Apropos\\*"
      (display-buffer-as-scroll-buffer display-buffer-dedicated-window display-buffer-reuse-help display-buffer-at-bottom)
      (window-height . fit-window-to-buffer-max-half-frame))))
@@ -115,7 +120,7 @@ than half frame height or also to use height of original window before split.
     (fit-window-to-buffer window max-height)))
 #+END_SRC
 
-**** Dired buffers
+**** Dired and other file navigation buffers
 
 Now, we define a special handling for ~dired~ buffers. We leave it alone if
 used in the same window. But when used in other window, it should memorize its
@@ -130,16 +135,27 @@ others of frame. This way, a dired buffer in other window can push its
                   (set-window-parameter w 'orig-window nil)))
   (set-window-parameter window 'orig-window 't))
 
+(defun make-buffer-window-origin (buffer alist)
+  "use with a regex or matcher to memorize origin window. Then use
+`display-buffer-in-orig' with same regex to push buffers to origin."
+  (set-orig-window (selected-window))
+  nil)
+
 (defun display-buffer-in-orig (buffer alist)
+  "if a live orig window is defined, unconditionally use that to
+display the buffer."
+  (let ((my-window
+         (car (remove-if-not (lambda (w)
+                               (eq 't (window-parameter w 'orig-window)))
+                             (window-list)))))
+    (if (and my-window (window-live-p my-window))
+        (window-update-buffer buffer my-window 'reuse alist))))
+
+(defun display-buffer-maybe-in-orig (buffer alist)
   "if action attribute inhibit-same-window is given and a live orig window is
 defined, use that to display the buffer."
   (if (cdr (assq 'inhibit-same-window alist))
-      (let ((my-window
-             (car (remove-if-not (lambda (w)
-                                   (eq 't (window-parameter w 'orig-window)))
-                                 (window-list)))))
-        (if (and my-window (window-live-p my-window))
-            (window-update-buffer buffer my-window 'reuse alist)))))
+      (display-buffer-in-orig buffer alist)))
 #+END_SRC
 
 Helper function ~dired-p~ checks if a buffer has some ~dired-mode~. The
@@ -154,12 +170,22 @@ is a dired buffer.
 
 (defun dired-to-other-window (buffer alist)
   "match if new buffer is a dired buffer."
-  (if (dired-p buffer)
-      (set-orig-window (selected-window))))
+  (dired-p buffer))
 
 (defun dired-from-other-window (buffer alist)
   "match if current buffer is a dired buffer."
   (dired-p (current-buffer)))
+#+END_SRC
+
+A generalized matcher function, matching the current buffer.
+Different applications use different strategies to display their buffers, so
+you may need to use the ~display-buffer~-variants with or withour ~maybe~. See
+customization at the beginning for an example addressing occur.
+
+#+BEGIN_SRC emacs-lisp
+(defun match-current-buffer (regex)
+  "match if regex matches current buffer."
+  (string-match regex (buffer-name (current-buffer))))
 #+END_SRC
 
 **** Dedicated window
@@ -174,14 +200,16 @@ dedication, =C-0= removes a dedication.
 
 (defun dedicate-window (arg)
   "Dedicate the currently selected window as 'other' window. When
-called with a =C-0= prefix arg, releases the previously set window
-and reverts to the default window selection behaviour."
-  (interactive "P")
+called with a =C-0= prefix arg, releases the previously set
+window and reverts to the default window selection behaviour. Default is a
+one-time dedication, use =C-u= for unlimited."
+  (interactive "p")
   (setq dedicated-other-window
         (if (eq arg 0)
             nil
           (selected-window)))
-  (setq dedication-count arg)
+  (setq dedication-count
+        (if (eq 4 arg) nil arg))
   (if dedicated-other-window
       (message "window dedicated")
     (message "dedication removed")))
