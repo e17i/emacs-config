@@ -160,5 +160,5 @@
  '(ediff-odd-diff-Ancestor ((t (:background "purple2"))))
  '(ediff-odd-diff-B ((t (:background "purple3"))))
  '(ediff-odd-diff-C ((t (:background "purple4"))))
- '(highlight-indentation-current-column-face ((t (:background "sienna"))))
- '(highlight-indentation-face ((t (:background "dark slate gray")))))
+ '(highlight-indentation-current-column-face ((t (:background "gray25"))))
+ '(highlight-indentation-face ((t (:background "gray12")))))
