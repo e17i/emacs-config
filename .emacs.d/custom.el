@@ -94,7 +94,9 @@
      (lambda nil "Activate jedi"
        (jedi:setup))
      (lambda nil "use superword mode"
-       (superword-mode))) t)
+       (superword-mode))
+     (lambda nil "use electric spacing mode"
+       (electric-spacing-mode))) t)
  '(savehist-mode t nil (savehist))
  '(scroll-bar-mode nil)
  '(select-enable-clipboard t)
