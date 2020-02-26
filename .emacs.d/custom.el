@@ -117,7 +117,7 @@
      ("melpa" . "https://melpa.org/packages/"))))
  '(package-selected-packages
    (quote
-    (markdown-mode+ markdown-mode htmlize ox-rst smartparens tagedit ob-restclient company-restclient restclient py-autopep8 flycheck elpy company-jedi deadgrep magit json-mode evil jedi-direx jedi ace-jump-mode zzz-to-char helm realgud web-mode js2-mode electric-spacing)))
+    (which-key markdown-mode+ markdown-mode htmlize ox-rst smartparens tagedit ob-restclient company-restclient restclient py-autopep8 flycheck elpy company-jedi deadgrep magit json-mode evil jedi-direx jedi ace-jump-mode zzz-to-char helm realgud web-mode js2-mode electric-spacing)))
  '(python-mode-hook
    (quote
     ((lambda nil "Turn off Indent Tabs mode."
