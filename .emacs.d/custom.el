@@ -12,6 +12,20 @@
  '(default-input-method "german-postfix")
  '(delete-selection-mode t)
  '(dired-recursive-deletes 'top)
+ '(display-buffer-alist
+   '((dired-to-other-window make-buffer-window-origin)
+     (dired-from-other-window
+      (display-buffer-maybe-in-orig))
+     ("\\*Occur\\*" make-buffer-window-origin)
+     ((lambda
+        (buffer alist)
+        (match-current-buffer "\\\\*Occur\\\\*"))
+      display-buffer-in-orig)
+     ("\\*Help\\*\\|\\*Apropos\\*"
+      (display-buffer-as-scroll-buffer display-buffer-dedicated-window display-buffer-reuse-help display-buffer-at-bottom)
+      (window-height . fit-window-to-buffer-max-half-frame))))
+ '(display-buffer-base-action
+   '((display-buffer-maybe-as-scroll-buffer display-buffer-dedicated-window display-buffer--maybe-same-window display-buffer-reuse-window display-buffer--maybe-pop-up-frame-or-window display-buffer-in-previous-window display-buffer-below-selected display-buffer-pop-up-frame)))
  '(dynamic-completion-mode nil)
  '(ediff-before-setup-hook '((lambda nil (window-configuration-to-register 101))))
  '(ediff-quit-hook '(ediff-cleanup-mess (lambda nil (jump-to-register 101))))
@@ -28,6 +42,7 @@
  '(evil-insert-state-modes nil)
  '(evil-motion-state-modes nil)
  '(fill-column 78)
+ '(frame-auto-hide-function #'delete-frame)
  '(frame-icon-title-format
    '(('buffer-name "%b")
      " || " system-name " || "
@@ -72,7 +87,7 @@
  '(ns-alternate-modifier 'meta)
  '(ns-command-modifier 'super)
  '(ns-control-modifier 'control)
- '(ns-right-alternate-modifier 'none)
+ '(ns-right-alternate-modifier 'alternate)
  '(ns-right-command-modifier 'meta)
  '(nxml-sexp-element-flag t)
  '(org-agenda-files nil)
@@ -99,9 +114,7 @@
      (lambda nil "Activate jedi"
        (jedi:setup))
      (lambda nil "use superword mode"
-       (superword-mode))
-     (lambda nil "use electric spacing mode"
-       (electric-spacing-mode))) t)
+       (superword-mode))) t)
  '(savehist-mode t nil (savehist))
  '(scroll-bar-mode nil)
  '(select-enable-clipboard t)
@@ -115,7 +128,12 @@
  '(sql-oracle-options (list oracle-startup-script))
  '(svn-status-hide-unmodified t)
  '(tool-bar-mode nil)
- '(wdired-allow-to-change-permissions 'advanced))
+ '(wdired-allow-to-change-permissions 'advanced)
+ '(which-key-idle-delay 2.0)
+ '(which-key-idle-secondary-delay 0.5)
+ '(which-key-mode t)
+ '(window-min-height 8)
+ '(window-min-width 40))
 (custom-set-faces
  ;; custom-set-faces was added by Custom.
  ;; If you edit it by hand, you could mess it up, so be careful.
@@ -130,5 +148,5 @@
  '(ediff-odd-diff-Ancestor ((t (:background "purple2"))))
  '(ediff-odd-diff-B ((t (:background "purple3"))))
  '(ediff-odd-diff-C ((t (:background "purple4"))))
- '(highlight-indentation-current-column-face ((t (:background "gray25"))))
- '(highlight-indentation-face ((t (:background "gray12")))))
+ '(highlight-indentation-current-column-face ((t (:background "sienna"))))
+ '(highlight-indentation-face ((t (:background "dark slate gray")))))
