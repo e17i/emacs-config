@@ -354,6 +354,10 @@ jumps and returning with =C-M-c= or =C-]=.
 (nth-window edit-other-window
   "recursively edit in other buffer, allowing to return later."
   (recursive-edit))
+
+(nth-window kill-other-buffer-and-window
+  "kill buffer in other window and delete that window."
+  (kill-buffer-and-window))
 #+END_SRC
 
 *** Convenient error stepping
@@ -1057,6 +1061,8 @@ I'm adding a few ones which I missed so far.
 (global-set-key "\C-x4-" #'shrink-other-window-if-larger-than-buffer)
 (global-set-key "\C-x4s" #'dedicate-window)
 (global-set-key "\C-x4e" #'edit-other-window)
+(global-set-key "\C-x40" #'kill-other-buffer-and-window)
+(global-set-key "\C-x4k" #'kill-buffer-and-window)
 #+END_SRC
 
 Note the window size changing keys, =C-x ^= to enlarge (also negative) and
