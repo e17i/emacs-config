@@ -16,6 +16,22 @@
  '(default-input-method "german-postfix")
  '(delete-selection-mode t)
  '(dired-recursive-deletes (quote top))
+ '(display-buffer-alist
+   (quote
+    ((dired-to-other-window make-buffer-window-origin)
+     (dired-from-other-window
+      (display-buffer-maybe-in-orig))
+     ("\\*Occur\\*" make-buffer-window-origin)
+     ((lambda
+        (buffer alist)
+        (match-current-buffer "\\\\*Occur\\\\*"))
+      display-buffer-in-orig)
+     ("\\*Help\\*\\|\\*Apropos\\*"
+      (display-buffer-as-scroll-buffer display-buffer-dedicated-window display-buffer-reuse-help display-buffer-at-bottom)
+      (window-height . fit-window-to-buffer-max-half-frame)))))
+ '(display-buffer-base-action
+   (quote
+    ((display-buffer-maybe-as-scroll-buffer display-buffer-dedicated-window display-buffer--maybe-same-window display-buffer-reuse-window display-buffer--maybe-pop-up-frame-or-window display-buffer-in-previous-window display-buffer-below-selected display-buffer-pop-up-frame))))
  '(display-time-mode nil)
  '(doc-view-ghostscript-program "c:/Program Files/gs/gs9.50/bin/gswin64c.exe")
  '(dynamic-completion-mode nil)
@@ -49,6 +65,7 @@
  '(evil-motion-state-modes nil)
  '(fill-column 78)
  '(flycheck-python-flake8-executable "c:\\sdk\\win32\\tools\\Python27\\Scripts\\flake8.exe")
+ '(frame-auto-hide-function (function delete-frame))
  '(frame-icon-title-format
    (quote
     (((quote buffer-name)
@@ -147,7 +164,11 @@
  '(svn-status-hide-unmodified t)
  '(tool-bar-mode nil)
  '(transient-mark-mode t)
- '(wdired-allow-to-change-permissions (quote advanced)))
+ '(wdired-allow-to-change-permissions (quote advanced))
+ '(which-key-idle-delay 2.0)
+ '(which-key-idle-secondary-delay 0.5)
+ '(window-min-height 8)
+ '(window-min-width 40))
 (custom-set-faces
  ;; custom-set-faces was added by Custom.
  ;; If you edit it by hand, you could mess it up, so be careful.
