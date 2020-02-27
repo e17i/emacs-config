@@ -54,6 +54,8 @@ M-/		expand text
 M-C-/		show all expansions
 M-x jedi	python/javascript: show function args/docstrings
 M-x realgud:pdb	debug python
+M-x which-function-mode show current function in modeline, use mouse to
+                        narrow/jump to begin/end
 
 M-x flyspell-mode
 M-x ispell-buffer|region
