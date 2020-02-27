@@ -354,6 +354,10 @@ jumps and returning with =C-M-c= or =C-]=.
 (nth-window edit-other-window
   "recursively edit in other buffer, allowing to return later."
   (recursive-edit))
+
+(nth-window kill-other-buffer-and-window
+  "kill buffer in other window and delete that window."
+  (kill-buffer-and-window))
 #+END_SRC
 
 *** Convenient error stepping
@@ -1057,6 +1061,8 @@ I'm adding a few ones which I missed so far.
 (global-set-key "\C-x4-" #'shrink-other-window-if-larger-than-buffer)
 (global-set-key "\C-x4s" #'dedicate-window)
 (global-set-key "\C-x4e" #'edit-other-window)
+(global-set-key "\C-x40" #'kill-other-buffer-and-window)
+(global-set-key "\C-x4k" #'kill-buffer-and-window)
 #+END_SRC
 
 Note the window size changing keys, =C-x ^= to enlarge (also negative) and
@@ -1120,12 +1126,13 @@ Load and enable different additional packages
 (setq org-element-use-cache nil)  ;; temporarily disable org element cache
 (load-library "realgud")
 (load-library "evil")
-(global-undo-tree-mode)
 (require 'wdired)
 (load "dired-x.el") ;; also enable C-x C-j
 (require 'helm-config)
 (require 'ox-rst)
+(global-undo-tree-mode)
 (global-magit-file-mode t)
+(which-key-mode 1)
 
 (setq erc-autojoin-channels-alist '(("freenode.net" "#latex-de" "##latinitas" "#NetBSD" "##bash-de" "#git" "#vim" "#emacs" "#erc" "#oberon" "#macosx")))
 #+END_SRC
@@ -1160,6 +1167,10 @@ Now that ~ediff~ is configured for use in ~magit~, also use it in ~dired~.
 
 Here we implement some kind of .vimrc initialization.
 This is also an example of defining an evil leader key and some adjacent keymaps.
+Inspired by spacemacs, we experiment with rebinding the =C-x= and =C-c= maps.
+They are accessable by =SPC x= and =SPC c=, while the =C-x= map is also parent
+of leader map. This way, all unambiguous key commands should be directly
+accessable by =SPC=. Lets see how this works out.
 
 #+BEGIN_SRC emacs-lisp
 (defun evil-rc ()
@@ -1167,17 +1178,30 @@ This is also an example of defining an evil leader key and some adjacent keymaps
   (define-prefix-command 'leader-map)
 
   (define-key evil-normal-state-map " " leader-map)
+  ;; yes, we really want to scroll up in evil mode
+  (define-key evil-normal-state-map "\C-u" #'evil-scroll-up)
 
-  (define-key leader-map "b" #'list-buffers)
-  (define-key leader-map "#" #'bs-show)
+  (define-key leader-map "#" #'list-buffers)
   (define-key leader-map "l" #'global-linum-mode)
 
-  (define-prefix-command #'evil-other-window-map)
-  (define-key leader-map "4" evil-other-window-map)
-  (define-key evil-other-window-map "-" #'shrink-other-window-if-larger-than-buffer)
-  (define-key evil-other-window-map "+" #'fit-other-window)
-  (define-key evil-other-window-map "q" #'quit-restore-other-window)
-  (define-key evil-other-window-map "l" #'go-back-other-window))
+  (define-key leader-map "x" (key-binding "\C-x"))
+  (define-key leader-map "c" (key-binding "\C-c"))
+  (set-keymap-parent leader-map (key-binding "\C-x"))
+
+  (evil-define-state scroll "scroll-state"
+    :tag " <S>"
+    :message "-- SCROLL --"
+    :suppress-keymap 't)
+  (define-key evil-scroll-state-map "0" #'evil-digit-argument-or-evil-beginning-of-line)
+  (define-key evil-scroll-state-map "j" (lambda nil
+                                          (interactive)(evil-next-line)(call-interactively
+                                                                        #'evil-scroll-line-to-center)))
+  (define-key evil-scroll-state-map "k" (lambda nil
+                                          (interactive)(evil-previous-line)(call-interactively
+                                                                            #'evil-scroll-line-to-center)))
+  (define-key evil-scroll-state-map (kbd "<escape>") 'evil-normal-state)
+  (define-key evil-scroll-state-map "\C-\M-z" 'evil-emacs-state)
+  (define-key leader-map "s" 'evil-scroll-state))
 #+END_SRC
 
 **** Evil Emacs config
