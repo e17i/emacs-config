@@ -70,7 +70,8 @@
        (set-scroll-bar-mode nil))
      (lambda nil
        (switch-frame-transparency nil))
-     toggle-menu-bar-mode-from-frame)))
+     (lambda nil
+       (toggle-menu-bar-mode-from-frame 0)))))
  '(evil-default-state (quote emacs))
  '(evil-insert-state-modes nil)
  '(evil-motion-state-modes nil)
@@ -84,7 +85,9 @@
      (lambda nil
        (switch-frame-transparency
         (quote t)))
-     toggle-menu-bar-mode-from-frame)))
+     (lambda nil
+       (toggle-menu-bar-mode-from-frame
+        (quote t))))))
  '(fill-column 78)
  '(flycheck-python-flake8-executable "c:\\sdk\\win32\\tools\\Python27\\Scripts\\flake8.exe")
  '(frame-auto-hide-function (function delete-frame))
