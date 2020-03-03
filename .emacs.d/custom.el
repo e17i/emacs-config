@@ -32,6 +32,8 @@
  '(display-buffer-base-action
    (quote
     ((display-buffer-maybe-as-scroll-buffer display-buffer-dedicated-window display-buffer--maybe-same-window display-buffer-reuse-window display-buffer--maybe-pop-up-frame-or-window display-buffer-in-previous-window display-buffer-below-selected display-buffer-pop-up-frame))))
+ '(display-time-24hr-format t)
+ '(display-time-default-load-average nil)
  '(display-time-mode nil)
  '(doc-view-ghostscript-program "c:/Program Files/gs/gs9.50/bin/gswin64c.exe")
  '(dynamic-completion-mode nil)
@@ -60,9 +62,29 @@
     (elpy-module-company elpy-module-eldoc elpy-module-folding elpy-module-pyvenv elpy-module-highlight-indentation elpy-module-yasnippet elpy-module-django elpy-module-sane-defaults)))
  '(elpy-rpc-python-command "C:\\sdk\\win32\\tools\\Python27\\python.exe")
  '(elpy-syntax-check-command "c:\\sdk\\win32\\tools\\Python27\\Scripts\\flake8.exe")
+ '(enter-maximize-frame-hook
+   (quote
+    ((lambda nil
+       (display-time-mode 1))
+     (lambda nil
+       (set-scroll-bar-mode nil))
+     (lambda nil
+       (switch-frame-transparency nil))
+     toggle-menu-bar-mode-from-frame)))
  '(evil-default-state (quote emacs))
  '(evil-insert-state-modes nil)
  '(evil-motion-state-modes nil)
+ '(exit-maximize-frame-hook
+   (quote
+    ((lambda nil
+       (display-time-mode 0))
+     (lambda nil
+       (set-scroll-bar-mode
+        (quote right)))
+     (lambda nil
+       (switch-frame-transparency
+        (quote t)))
+     toggle-menu-bar-mode-from-frame)))
  '(fill-column 78)
  '(flycheck-python-flake8-executable "c:\\sdk\\win32\\tools\\Python27\\Scripts\\flake8.exe")
  '(frame-auto-hide-function (function delete-frame))
