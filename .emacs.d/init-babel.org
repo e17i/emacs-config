@@ -16,13 +16,13 @@ appropriate hook.
          (setq my-frame-transparency val)
          (dolist (frame (frames-on-display-list))
            (set-frame-parameter frame 'alpha `(,val . ,val)))))
+
 (add-hook 'after-make-frame-functions
 	  (lambda (frame)
 	    (set-frame-parameter frame 'alpha (cons my-frame-transparency my-frame-transparency))
 	    (with-selected-frame frame
 	      (set-background-color "Black")
-	      (set-foreground-color "Green")
-	      )))
+	      (set-foreground-color "Green"))))
 #+END_SRC
 
 *** Handling of other window
@@ -95,11 +95,17 @@ corresponding action.
   (if (window--display-buffer buffer window type alist)
       (window-apply-height-fnc window alist)))
 
+(defcustom help-buffer-regex "\\*Help\\*\\|\\*Apropos\\*"
+  "regular expression defining which buffers should be recognized as help
+buffers in `display-buffer-reuse-help'."
+  :type '(string)
+  :group 'my-cust)
+
 (defun display-buffer-reuse-help (buffer alist)
   "If a *Help* or *Apropos* window is live, try to reuse that."
   (let ((wnd (car (remove-if-not
                    (lambda (w)
-                     (string-match "\\*Help\\*\\|\\*Apropos\\*"
+                     (string-match help-buffer-regex
                                    (buffer-name (window-buffer w))))
                    (window-list)))))
     (if (and wnd (window-live-p wnd))
@@ -305,7 +311,7 @@ but you can specify one with a prefix arg.
              other-window-scroll-buffer
              scroll-window)
         (select-window scroll-window)
-      (other-window (or arg 1))))
+      (call-interactively #'other-window)))
   (selected-window))
 #+END_SRC
 
@@ -354,6 +360,10 @@ jumps and returning with =C-M-c= or =C-]=.
 (nth-window edit-other-window
   "recursively edit in other buffer, allowing to return later."
   (recursive-edit))
+
+(nth-window kill-other-buffer-and-window
+  "kill buffer in other window and delete that window."
+  (kill-buffer-and-window))
 #+END_SRC
 
 *** Convenient error stepping
@@ -636,27 +646,47 @@ Here we toggle fullscreen, removing all frame decorations and
 transparency.
 
 #+BEGIN_SRC emacs-lisp
+(defcustom enter-maximize-frame-hook
+  '((lambda nil
+    (display-time-mode 1))
+  (lambda nil
+    (switch-frame-transparency nil)))
+  "hook executed when maximizing a frame"
+  :type '(repeat function)
+  :group 'my-cust)
+
+(defcustom exit-maximize-frame-hook
+  '((lambda nil
+    (display-time-mode 0))
+  (lambda nil
+    (switch-frame-transparency 't)))
+  "hook executed when normalizing a frame"
+  :type '(repeat function)
+  :group 'my-cust)
+
 (defun toggle-maximize-frame ()
   "Toggle fullscreen and switch off menu bar and scroll bar."
   (interactive)
-  (labels ((set-scroll-bar (where) (customize-set-variable 'scroll-bar-mode where)))
-    (let ((fullscreen (frame-parameter nil 'fullscreen)))
-      (cond
-       ((memq fullscreen '(fullscreen fullboth))
-	(set-scroll-bar (frame-parameter nil 'scrollbar))
-	(set-frame-parameter nil 'scrollbar nil)
-        (apply (get 'my-frame-transparency 'custom-set) 'my-frame-transparency
-               (frame-parameter nil 'my-transparency) nil)
-        (set-frame-parameter nil 'my-transparency nil)
-	(toggle-menu-bar-mode-from-frame 1)
-        (toggle-frame-fullscreen))
-       ((eq fullscreen nil)
-	(set-frame-parameter nil 'scrollbar scroll-bar-mode)
-	(menu-bar-no-scroll-bar)
-	(set-frame-parameter nil 'my-transparency my-frame-transparency)
-        (apply (get 'my-frame-transparency 'custom-set) 'my-frame-transparency 100 nil)
-	(toggle-menu-bar-mode-from-frame 0)
-        (toggle-frame-fullscreen))))))
+  (let ((fullscreen (frame-parameter nil 'fullscreen)))
+    (cond
+     ((memq fullscreen '(fullscreen fullboth))
+      (dolist (fnc exit-maximize-frame-hook)
+        (funcall fnc))
+      (toggle-frame-fullscreen))
+     ((eq fullscreen nil)
+      (dolist (fnc enter-maximize-frame-hook)
+        (funcall fnc))
+      (toggle-frame-fullscreen)))))
+
+(defun switch-frame-transparency (state)
+  (cond
+   (state
+    (apply (get 'my-frame-transparency 'custom-set) 'my-frame-transparency
+           (frame-parameter nil 'my-transparency) nil)
+    (set-frame-parameter nil 'my-transparency nil))
+   ('t
+    (set-frame-parameter nil 'my-transparency my-frame-transparency)
+    (apply (get 'my-frame-transparency 'custom-set) 'my-frame-transparency 100 nil))))
 #+END_SRC
 
 *** electric delimiter
@@ -1069,6 +1099,8 @@ I'm adding a few ones which I missed so far.
 (global-set-key "\C-x4-" #'shrink-other-window-if-larger-than-buffer)
 (global-set-key "\C-x4s" #'dedicate-window)
 (global-set-key "\C-x4e" #'edit-other-window)
+(global-set-key "\C-x40" #'kill-other-buffer-and-window)
+(global-set-key "\C-x4k" #'kill-buffer-and-window)
 #+END_SRC
 
 Note the window size changing keys, =C-x ^= to enlarge (also negative) and
@@ -1132,12 +1164,13 @@ Load and enable different additional packages
 (setq org-element-use-cache nil)  ;; temporarily disable org element cache
 (load-library "realgud")
 (load-library "evil")
-(global-undo-tree-mode)
 (require 'wdired)
 (load "dired-x.el") ;; also enable C-x C-j
 (require 'helm-config)
 ;; (require 'ox-rst) ; not yet installed
+(global-undo-tree-mode)
 (global-magit-file-mode t)
+(which-key-mode 1)
 
 (setq erc-autojoin-channels-alist '(("freenode.net" "#latex-de" "##latinitas" "#NetBSD" "##bash-de" "#git" "#vim" "#emacs" "#erc" "#oberon" "#macosx")))
 (define-key global-map [ns-drag-file] 'ns-find-file)
@@ -1191,6 +1224,10 @@ Now that ~ediff~ is configured for use in ~magit~, also use it in ~dired~.
 
 Here we implement some kind of .vimrc initialization.
 This is also an example of defining an evil leader key and some adjacent keymaps.
+Inspired by spacemacs, we experiment with rebinding the =C-x= and =C-c= maps.
+They are accessable by =SPC x= and =SPC c=, while the =C-x= map is also parent
+of leader map. This way, all unambiguous key commands should be directly
+accessable by =SPC=. Lets see how this works out.
 
 #+BEGIN_SRC emacs-lisp
 (defun evil-rc ()
@@ -1198,17 +1235,30 @@ This is also an example of defining an evil leader key and some adjacent keymaps
   (define-prefix-command 'leader-map)
 
   (define-key evil-normal-state-map " " leader-map)
+  ;; yes, we really want to scroll up in evil mode
+  (define-key evil-normal-state-map "\C-u" #'evil-scroll-up)
 
-  (define-key leader-map "b" #'list-buffers)
-  (define-key leader-map "#" #'bs-show)
+  (define-key leader-map "#" #'list-buffers)
   (define-key leader-map "l" #'global-linum-mode)
 
-  (define-prefix-command #'evil-other-window-map)
-  (define-key leader-map "4" evil-other-window-map)
-  (define-key evil-other-window-map "-" #'shrink-other-window-if-larger-than-buffer)
-  (define-key evil-other-window-map "+" #'fit-other-window)
-  (define-key evil-other-window-map "q" #'quit-restore-other-window)
-  (define-key evil-other-window-map "l" #'go-back-other-window))
+  (define-key leader-map "x" (key-binding "\C-x"))
+  (set-keymap-parent leader-map (key-binding "\C-x"))
+  (define-key leader-map "c" (key-binding "\C-c"))
+
+  (evil-define-state scroll "scroll-state"
+    :tag " <S>"
+    :message "-- SCROLL --"
+    :suppress-keymap 't)
+  (define-key evil-scroll-state-map "0" #'evil-digit-argument-or-evil-beginning-of-line)
+  (define-key evil-scroll-state-map "j" (lambda nil
+                                          (interactive)(evil-next-line)(call-interactively
+                                                                        #'evil-scroll-line-to-center)))
+  (define-key evil-scroll-state-map "k" (lambda nil
+                                          (interactive)(evil-previous-line)(call-interactively
+                                                                            #'evil-scroll-line-to-center)))
+  (define-key evil-scroll-state-map (kbd "<escape>") 'evil-normal-state)
+  (define-key evil-scroll-state-map "\C-\M-z" 'evil-emacs-state)
+  (define-key leader-map "s" 'evil-scroll-state))
 #+END_SRC
 
 **** Evil Emacs config
@@ -1221,13 +1271,18 @@ way, without getting in the way it is always only a key press away.
 (define-key evil-emacs-state-map "\C-z" nil)
 (define-key evil-emacs-state-map "\C-\M-z" #'evil-exit-emacs-state)
 (define-key evil-normal-state-map "\C-\M-z" #'evil-emacs-state)
+(advice-add #'evil-exit-emacs-state
+            :before
+            (lambda (arg msg)
+              (message "entering EVIL")
+              (evil-rc)))
 #+END_SRC
 
 Now, after Initializing evil, we may probably also activate it in all buffers.
 
 #+BEGIN_SRC emacs-lisp
-(evil-rc)
 (evil-mode)
+(evil-rc)
 #+END_SRC
 
 *** Etags

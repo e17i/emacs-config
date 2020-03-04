@@ -86,7 +86,9 @@
      (lambda nil "Activate jedi"
        (jedi:setup))
      (lambda nil "use superword mode"
-       (superword-mode))) t)
+       (superword-mode))
+     (lambda nil "use electric spacing mode"
+       (electric-spacing-mode))) t)
  '(savehist-mode t nil (savehist))
  '(scroll-bar-mode nil)
  '(select-enable-clipboard t)
@@ -113,7 +115,7 @@
  '(ediff-odd-diff-B ((t (:background "purple3"))))
  '(ediff-odd-diff-C ((t (:background "purple4"))))
  '(fringe ((((class color) (background light)) (:background "grey50"))))
- '(highlight-indentation-current-column-face ((t (:background "sienna"))))
- '(highlight-indentation-face ((t (:background "dark slate gray")))))
+ '(highlight-indentation-current-column-face ((t (:background "gray25"))))
+ '(highlight-indentation-face ((t (:background "gray12")))))
 ;; '(package-selected-packages
 ;;   '(smartparens tagedit ob-restclient company-restclient restclient py-autopep8 flycheck elpy company-jedi json-mode jedi-direx jedi ox-rst magit zzz-to-char ace-jump-mode helm realgud evil markdown-mode cider web-mode org-plus-contrib js2-mode electric-spacing auctex))
