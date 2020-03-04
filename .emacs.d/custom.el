@@ -12,6 +12,20 @@
  '(default-input-method "german-postfix")
  '(delete-selection-mode t)
  '(dired-recursive-deletes 'top)
+ '(display-buffer-alist
+   '((dired-to-other-window make-buffer-window-origin)
+     (dired-from-other-window
+      (display-buffer-maybe-in-orig))
+     ("\\*Occur\\*" make-buffer-window-origin)
+     ((lambda
+        (buffer alist)
+        (match-current-buffer "\\\\*Occur\\\\*"))
+      display-buffer-in-orig)
+     ("\\*Help\\*\\|\\*Apropos\\*"
+      (display-buffer-as-scroll-buffer display-buffer-dedicated-window display-buffer-reuse-help display-buffer-at-bottom)
+      (window-height . fit-window-to-buffer-max-half-frame))))
+ '(display-buffer-base-action
+   '((display-buffer-maybe-as-scroll-buffer display-buffer-dedicated-window display-buffer--maybe-same-window display-buffer-reuse-window display-buffer--maybe-pop-up-frame-or-window display-buffer-in-previous-window display-buffer-below-selected display-buffer-pop-up-frame)))
  '(dynamic-completion-mode nil)
  '(ediff-before-setup-hook '((lambda nil (window-configuration-to-register 101))))
  '(ediff-quit-hook '(ediff-cleanup-mess (lambda nil (jump-to-register 101))))
@@ -29,6 +43,7 @@
  '(evil-motion-state-modes nil)
  '(exec-path
    '("/usr/bin" "/bin" "/usr/sbin" "/sbin" "/Applications/MacPorts/Emacs.app/Contents/MacOS/bin" "/opt/local/bin"))
+ '(frame-auto-hide-function #'delete-frame)
  '(fringe-mode 0 nil (fringe))
  '(gud-mixvm-command-name "/opt/local/bin/mixvm")
  '(hippie-expand-verbose nil)
@@ -75,7 +90,7 @@
      ("melpa-stable" . "https://stable.melpa.org/packages/")
      ("melpa" . "https://melpa.org/packages/")))
  '(package-selected-packages
-   '(zzz-to-char htmlize smartparens magit ace-jump-zap helm realgud evil auctex))
+   '(which-key zzz-to-char htmlize smartparens magit ace-jump-zap helm realgud evil auctex))
  '(paren-match-face 'paren-face-match-light)
  '(paren-sexp-mode t)
  '(python-mode-hook
@@ -99,7 +114,9 @@
  '(size-indication-mode t)
  '(sp-base-key-bindings nil)
  '(tool-bar-mode nil)
- '(wdired-allow-to-change-permissions 'advanced))
+ '(wdired-allow-to-change-permissions 'advanced)
+ '(window-min-height 8)
+ '(window-min-width 40))
 (custom-set-faces
  ;; custom-set-faces was added by Custom.
  ;; If you edit it by hand, you could mess it up, so be careful.
