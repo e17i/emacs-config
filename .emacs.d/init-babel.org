@@ -305,7 +305,7 @@ but you can specify one with a prefix arg.
              other-window-scroll-buffer
              scroll-window)
         (select-window scroll-window)
-      (other-window (or arg 1))))
+      (call-interactively #'other-window)))
   (selected-window))
 #+END_SRC
 
@@ -640,27 +640,47 @@ Here we toggle fullscreen, removing all frame decorations and
 transparency.
 
 #+BEGIN_SRC emacs-lisp
+(defcustom enter-maximize-frame-hook
+  '((lambda nil
+    (display-time-mode 1))
+  (lambda nil
+    (switch-frame-transparency nil)))
+  "hook executed when maximizing a frame"
+  :type '(repeat function)
+  :group 'my-cust)
+
+(defcustom exit-maximize-frame-hook
+  '((lambda nil
+    (display-time-mode 0))
+  (lambda nil
+    (switch-frame-transparency 't)))
+  "hook executed when normalizing a frame"
+  :type '(repeat function)
+  :group 'my-cust)
+
 (defun toggle-maximize-frame ()
   "Toggle fullscreen and switch off menu bar and scroll bar."
   (interactive)
-  (labels ((set-scroll-bar (where) (customize-set-variable 'scroll-bar-mode where)))
-    (let ((fullscreen (frame-parameter nil 'fullscreen)))
-      (cond
-       ((memq fullscreen '(fullscreen fullboth))
-	(set-scroll-bar (frame-parameter nil 'scrollbar))
-	(set-frame-parameter nil 'scrollbar nil)
-        (apply (get 'my-frame-transparency 'custom-set) 'my-frame-transparency
-               (frame-parameter nil 'my-transparency) nil)
-        (set-frame-parameter nil 'my-transparency nil)
-	(toggle-menu-bar-mode-from-frame 1)
-        (toggle-frame-fullscreen))
-       ((eq fullscreen nil)
-	(set-frame-parameter nil 'scrollbar scroll-bar-mode)
-	(menu-bar-no-scroll-bar)
-	(set-frame-parameter nil 'my-transparency my-frame-transparency)
-        (apply (get 'my-frame-transparency 'custom-set) 'my-frame-transparency 100 nil)
-	(toggle-menu-bar-mode-from-frame 0)
-        (toggle-frame-fullscreen))))))
+  (let ((fullscreen (frame-parameter nil 'fullscreen)))
+    (cond
+     ((memq fullscreen '(fullscreen fullboth))
+      (dolist (fnc exit-maximize-frame-hook)
+        (funcall fnc))
+      (toggle-frame-fullscreen))
+     ((eq fullscreen nil)
+      (dolist (fnc enter-maximize-frame-hook)
+        (funcall fnc))
+      (toggle-frame-fullscreen)))))
+
+(defun switch-frame-transparency (state)
+  (cond
+   (state
+    (apply (get 'my-frame-transparency 'custom-set) 'my-frame-transparency
+           (frame-parameter nil 'my-transparency) nil)
+    (set-frame-parameter nil 'my-transparency nil))
+   ('t
+    (set-frame-parameter nil 'my-transparency my-frame-transparency)
+    (apply (get 'my-frame-transparency 'custom-set) 'my-frame-transparency 100 nil))))
 #+END_SRC
 
 *** electric delimiter
@@ -1185,8 +1205,8 @@ accessable by =SPC=. Lets see how this works out.
   (define-key leader-map "l" #'global-linum-mode)
 
   (define-key leader-map "x" (key-binding "\C-x"))
-  (define-key leader-map "c" (key-binding "\C-c"))
   (set-keymap-parent leader-map (key-binding "\C-x"))
+  (define-key leader-map "c" (key-binding "\C-c"))
 
   (evil-define-state scroll "scroll-state"
     :tag " <S>"
@@ -1214,13 +1234,18 @@ way, without getting in the way it is always only a key press away.
 (define-key evil-emacs-state-map "\C-z" nil)
 (define-key evil-emacs-state-map "\C-\M-z" #'evil-exit-emacs-state)
 (define-key evil-normal-state-map "\C-\M-z" #'evil-emacs-state)
+(advice-add #'evil-exit-emacs-state
+            :before
+            (lambda (arg msg)
+              (message "entering EVIL")
+              (evil-rc)))
 #+END_SRC
 
 Now, after Initializing evil, we may probably also activate it in all buffers.
 
 #+BEGIN_SRC emacs-lisp
-(evil-rc)
 (evil-mode)
+(evil-rc)
 #+END_SRC
 
 *** C++ mode customizations, in use for aeons now
