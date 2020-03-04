@@ -26,7 +26,7 @@
         (buffer alist)
         (match-current-buffer "\\\\*Occur\\\\*"))
       display-buffer-in-orig)
-     ("\\*Help\\*\\|\\*Apropos\\*"
+     ("\\*Help\\*\\|\\*Apropos\\*\\|\\*Python Doc\\*"
       (display-buffer-as-scroll-buffer display-buffer-dedicated-window display-buffer-reuse-help display-buffer-at-bottom)
       (window-height . fit-window-to-buffer-max-half-frame)))))
  '(display-buffer-base-action
@@ -106,6 +106,7 @@
      ((quote buffer-name)
       "%f"))) t)
  '(fringe-mode (quote (5 . 5)) nil (fringe))
+ '(help-buffer-regex "\\*Help\\*\\|\\*Apropos\\*\\|\\*Python Doc\\*")
  '(hippie-expand-verbose nil)
  '(history-delete-duplicates t)
  '(indent-tabs-mode nil)
