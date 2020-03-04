@@ -16,13 +16,13 @@ appropriate hook.
          (setq my-frame-transparency val)
          (dolist (frame (frames-on-display-list))
            (set-frame-parameter frame 'alpha `(,val . ,val)))))
+
 (add-hook 'after-make-frame-functions
 	  (lambda (frame)
 	    (set-frame-parameter frame 'alpha (cons my-frame-transparency my-frame-transparency))
 	    (with-selected-frame frame
 	      (set-background-color "Black")
-	      (set-foreground-color "Green")
-	      )))
+	      (set-foreground-color "Green"))))
 #+END_SRC
 
 *** Handling of other window
@@ -95,11 +95,17 @@ corresponding action.
   (if (window--display-buffer buffer window type alist)
       (window-apply-height-fnc window alist)))
 
+(defcustom help-buffer-regex "\\*Help\\*\\|\\*Apropos\\*"
+  "regular expression defining which buffers should be recognized as help
+buffers in `display-buffer-reuse-help'."
+  :type '(string)
+  :group 'my-cust)
+
 (defun display-buffer-reuse-help (buffer alist)
   "If a *Help* or *Apropos* window is live, try to reuse that."
   (let ((wnd (car (remove-if-not
                    (lambda (w)
-                     (string-match "\\*Help\\*\\|\\*Apropos\\*"
+                     (string-match help-buffer-regex
                                    (buffer-name (window-buffer w))))
                    (window-list)))))
     (if (and wnd (window-live-p wnd))

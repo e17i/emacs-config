@@ -1,8 +1,25 @@
+* infix snippet
+
+ #+BEGIN_SRC emacs-lisp
+(defmacro infixn (op arg1 &rest args)
+  `(,arg1 ,op ,@args))
+
+(defmacro infix (&rest args)
+  (list (second args) (first args) (nth 2 args)))
+ #+END_SRC
+
+* Y Combinator
+
+#+BEGIN_SRC emacs-lisp
 (defun Y (f)
   (lexical-let ((f f))
     (lambda (&rest args)
       (apply f (Y f) args))))
+#+END_SRC
 
+Trampoline:
+
+#+BEGIN_SRC emacs-lisp
 (defun Y/ (f)
   (lexical-let ((f f))
     (lambda (&rest args)
@@ -23,8 +40,11 @@
 (T (lambda (f n a)
      (if (eq n 0) a
        (funcall f (- n 1) (+ a n)))) 4 0)
+#+END_SRC
 
+* recursion macro
 
+#+BEGIN_SRC emacs-lisp
 (defmacro recurse (name argvals &rest conds-and-step)
   "Here is the pinnacle and building material of recursion. NAME
 defines a name for the defined recursion. ARGVALS defines the
@@ -60,19 +80,23 @@ expression of the form (NAME vals)."
 
 (loop for i from 0 to 20 do
       (print
-       (recurse fac ((n i) (f0 1) (f1 1))
+       (recurse fib ((n i) (f0 1) (f1 1))
                 ((< n 2) (return f1))
                 ((- n 1) f1 (+ f0 f1)))))
 
 (loop for i from 0 to 20 do (print
-(recurse fac2 ((n i) (c (lambda (r) (return r))))
+(recurse fib2 ((n i) (c (lambda (r) (return r))))
          ((< n 2) (funcall c 1))
          ((- n 2) (lexical-let ((cn n) (cc c))
                     (lambda (rl)
-                      (fac2 (- cn 1) (lexical-let ((rl rl))
+                      (fib2 (- cn 1) (lexical-let ((rl rl))
                                        (lambda (rr)
                                          (funcall cc (+ rl rr)))))))))))
+#+END_SRC
 
+* list comprehension
+
+#+BEGIN_SRC emacs-lisp
 (defun range (steps &optional start inc)
   (let ((inc (or inc 1)))
     (recurse range ((i 0) (n (or start 0)) (a))
@@ -81,10 +105,14 @@ expression of the form (NAME vals)."
 
 (defmacro list-compr (expr for i in seq &optional if cond)
   (let ((cond (or cond 't))
-        (gseq (gensym)))
+        (gseq (gensym))
+        (gn (gensym))
+        (ga (gensym)))
     `(let ((,gseq ,seq))
-       (recurse list-compr ((n ,gseq) (,i (car ,gseq)) (a))
-                ((not n) (return a))
-                ((cdr n) (cadr n) (if ,cond (append a (list ,expr)) a))))))
+       (recurse list-compr ((,gn ,gseq) (,i (car ,gseq)) (,ga))
+                ((not ,gn) (return ,ga))
+                ((cdr ,gn) (cadr ,gn) (if ,cond (append ,ga (list ,expr)) ,ga))))))
 
 (list-compr (* 2 i) for i in (range 10) if (eq 0 (% i 2)))
+#+END_SRC
+* coroutines
