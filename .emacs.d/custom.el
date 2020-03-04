@@ -117,6 +117,8 @@
  '(sp-base-key-bindings nil)
  '(tool-bar-mode nil)
  '(wdired-allow-to-change-permissions 'advanced)
+ '(which-key-idle-delay 2.0)
+ '(which-key-idle-secondary-delay 0.5)
  '(window-min-height 8)
  '(window-min-width 40))
 (custom-set-faces
