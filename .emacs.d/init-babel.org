@@ -910,11 +910,13 @@ not shadow future functionality here.
 We replace =C-x C-f= with ~find-file~, as the ~-at-point~ function is then
 still reachable through =M-n=. The old mapping of =C-c C-f= to
 ~find-file-at-point~ is removed, as it is now overlayed by org.
+Probably the idea of having =M-x= also on a /Control/ binding proves to be good.
 
 #+BEGIN_SRC emacs-lisp
 (global-set-key "\C-x\C-b" #'bs-show)	;; this used to be electric-buffer-list
 (global-set-key "\C-x\C-f" #'find-file)
 (global-set-key [3 67108919] #'toggle-my-environment)  ;; make global to enable env switch on german kbd
+(global-set-key [24 67108877] 'execute-extended-command) ;; C-x C-RET
 #+END_SRC
 
 And my delimiting function:
@@ -944,11 +946,12 @@ enabled here on =C-return=.
 Convenience keys for buffer scrolling. Enables up/down also with /Meta/
 modifier. Together with /Shift/ this enables scrolling. This way you can very
 conveniently move the pointer and scroll by just adding/releasing the /Shift/
-modifier.
+modifier. When ~visual-line-mode~ is activated, the /Meta/ keys act on the
+logical lines.
 
 #+BEGIN_SRC emacs-lisp
-(global-set-key "\M-p" #'previous-line)
-(global-set-key "\M-n" #'next-line)
+(global-set-key "\M-p" #'previous-logical-line)
+(global-set-key "\M-n" #'next-logical-line)
 (global-set-key "\M-P" #'scroll-down-line)
 (global-set-key "\M-N" #'scroll-up-line)
 (global-set-key [end] #'move-end-of-line)
