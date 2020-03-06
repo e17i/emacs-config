@@ -35,11 +35,14 @@ implementation and documentation is in ~display-buffer~. There, a range of
 this behaviour. Now, often you may want to craft a window configuration into
 your frame, so you dont want any of this to be misused. 
 
-A first mitigation may ne to sensibly change the ~display-buffer-fallback-action~,
-overriding it in ~display-buffer-base-action~. Here we just replace the
-~display-buffer-use-some-window~ function which probably is the source of those
-erratic behaviour. Our replacement is ~display-buffer-below-selected~, which on
-first view seems to be not such a bad selection for frames using a large screen space.
+A first mitigation may be to sensibly change the
+~display-buffer-fallback-action~, overriding it in
+~display-buffer-base-action~. Here we just replace the
+~display-buffer-use-some-window~ function which probably is the source of
+those erratic behaviour. Our replacement is a combination of
+~display-buffer-below-selected~ and ~display-buffer-at-bottom~, which on first
+view seems to be not such a bad selection for frames using a large screen
+space.
 
 But we also need to make sure windows are not splitted if too small. We also
 activate some further tweaks which are declared in the following sections.
@@ -59,7 +62,7 @@ activate some further tweaks which are declared in the following sections.
       (display-buffer-as-scroll-buffer display-buffer-dedicated-window display-buffer-reuse-help display-buffer-at-bottom)
       (window-height . fit-window-to-buffer-max-half-frame))))
  '(display-buffer-base-action
-   '((display-buffer-maybe-as-scroll-buffer display-buffer-dedicated-window display-buffer--maybe-same-window display-buffer-reuse-window display-buffer--maybe-pop-up-frame-or-window display-buffer-in-previous-window display-buffer-below-selected display-buffer-pop-up-frame)))
+   '((display-buffer-maybe-as-scroll-buffer display-buffer-dedicated-window display-buffer--maybe-same-window display-buffer-reuse-window display-buffer--maybe-pop-up-frame-or-window display-buffer-in-previous-window display-buffer-below-selected display-buffer-at-bottom display-buffer-pop-up-frame)))
  '(window-min-height 8)
  '(window-min-width 40))
 #+END_SRC
@@ -358,8 +361,10 @@ jumps and returning with =C-M-c= or =C-]=.
   (end-of-buffer))
 
 (nth-window edit-other-window
-  "recursively edit in other buffer, allowing to return later."
-  (recursive-edit))
+  "recursively edit in other buffer, allowing to return later. Save
+`other-window-scroll-buffer', reverting it after finishing."
+  (let ((other-window-scroll-buffer nil))
+    (recursive-edit)))
 
 (nth-window kill-other-buffer-and-window
   "kill buffer in other window and delete that window."
@@ -484,6 +489,11 @@ allowing to specify a remote window to be controlled."
 	   (define-key map "v" (with-window (scroll-up-command (get-arg-acc))))
 	   (define-key map "V" (with-window (scroll-down-command (get-arg-acc))))
 	 map) 't)))))
+
+(defun navigate-window ()
+  "like `navigate-other-window', but always use current window."
+  (interactive)
+  (navigate-buffer))
 
 (nth-window navigate-other-window
   "Enter a temporary buffer navigation mode, allowing some window to be
@@ -1126,7 +1136,7 @@ Here we bind the temporary navigation mode to some useful keys for current and
 other window.
 
 #+BEGIN_SRC emacs-lisp
-(global-set-key "\C-x\C-v" (lambda () (interactive)(navigate-other-window 0)))
+(global-set-key "\C-x\C-v" #'navigate-window)
 (global-set-key "\C-x4v" #'navigate-other-window)
 #+END_SRC
 
