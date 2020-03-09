@@ -13,7 +13,7 @@
  '(delete-selection-mode t)
  '(dired-recursive-deletes 'top)
  '(display-buffer-alist
-   '((dired-to-other-window make-buffer-window-origin)
+   '((dired-to-other-window maybe-make-buffer-window-origin)
      (dired-from-other-window
       (display-buffer-maybe-in-orig))
      ("\\*Occur\\*" make-buffer-window-origin)
