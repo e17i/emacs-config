@@ -59,7 +59,7 @@ expression of the form (NAME vals)."
   (let ((args (mapcar #'car argvals))
         (conds (mapcar (lambda (elem)
                          `(,(car elem) (return ,(cadr elem))))
-                       (seq-take conds-and-step (- (length conds-and-step) 1))))
+                       (butlast conds-and-step)))
         (step (car (last conds-and-step)))
         (iter (gensym)))
     `(macrolet ((,name (&rest vals)
