@@ -50,7 +50,7 @@ activate some further tweaks which are declared in the following sections.
 #+BEGIN_SRC emacs-lisp
 (custom-set-variables
  '(display-buffer-alist
-   '((dired-to-other-window make-buffer-window-origin)
+   '((dired-to-other-window maybe-make-buffer-window-origin)
      (dired-from-other-window
       (display-buffer-maybe-in-orig))
      ("\\*Occur\\*" make-buffer-window-origin)
@@ -149,6 +149,11 @@ others of frame. This way, a dired buffer in other window can push its
 `display-buffer-in-orig' with same regex to push buffers to origin."
   (set-orig-window (selected-window))
   nil)
+
+(defun maybe-make-buffer-window-origin (buffer alist)
+  "if action attribute inhibit-same-window is given, store originating window."
+  (if (cdr (assq 'inhibit-same-window alist))
+      (make-buffer-window-origin buffer alist)))
 
 (defun display-buffer-in-orig (buffer alist)
   "if a live orig window is defined, unconditionally use that to
@@ -276,14 +281,14 @@ functions fall back to default."
   "just like `scroll-other-window', but don't pop up the window
 if not live."
   (interactive)
-  (scroll-buffer-window)
+  (scroll-buffer-window) ; only for the side-effect of possibly resetting other-window-scroll-buffer
   (call-interactively #'scroll-other-window))
 
 (defun my-scroll-other-window-down ()
   "just like `scroll-other-window-down', but don't pop up the window
 if not live."
   (interactive)
-  (scroll-buffer-window)
+  (scroll-buffer-window) ; only for the side-effect of possibly resetting other-window-scroll-buffer
   (call-interactively #'scroll-other-window-down))
 #+END_SRC
 
@@ -312,7 +317,8 @@ but you can specify one with a prefix arg.
   (let ((scroll-window (scroll-buffer-window)))
     (if (and (eq arg nil)
              other-window-scroll-buffer
-             scroll-window)
+             scroll-window
+             (not (eq scroll-window (selected-window))))
         (select-window scroll-window)
       (call-interactively #'other-window)))
   (selected-window))
@@ -363,7 +369,10 @@ jumps and returning with =C-M-c= or =C-]=.
 (nth-window edit-other-window
   "recursively edit in other buffer, allowing to return later. Save
 `other-window-scroll-buffer', reverting it after finishing."
-  (let ((other-window-scroll-buffer nil))
+  (let ((other-window-scroll-buffer
+         (if (eq (scroll-buffer-window) (selected-window))
+             nil
+           other-window-scroll-buffer)))
     (recursive-edit)))
 
 (nth-window kill-other-buffer-and-window
