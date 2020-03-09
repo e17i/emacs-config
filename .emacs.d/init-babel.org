@@ -16,13 +16,13 @@ appropriate hook.
          (setq my-frame-transparency val)
          (dolist (frame (frames-on-display-list))
            (set-frame-parameter frame 'alpha `(,val . ,val)))))
+
 (add-hook 'after-make-frame-functions
 	  (lambda (frame)
 	    (set-frame-parameter frame 'alpha (cons my-frame-transparency my-frame-transparency))
 	    (with-selected-frame frame
 	      (set-background-color "Black")
-	      (set-foreground-color "Green")
-	      )))
+	      (set-foreground-color "Green"))))
 #+END_SRC
 
 *** Handling of other window
@@ -35,11 +35,14 @@ implementation and documentation is in ~display-buffer~. There, a range of
 this behaviour. Now, often you may want to craft a window configuration into
 your frame, so you dont want any of this to be misused. 
 
-A first mitigation may ne to sensibly change the ~display-buffer-fallback-action~,
-overriding it in ~display-buffer-base-action~. Here we just replace the
-~display-buffer-use-some-window~ function which probably is the source of those
-erratic behaviour. Our replacement is ~display-buffer-below-selected~, which on
-first view seems to be not such a bad selection for frames using a large screen space.
+A first mitigation may be to sensibly change the
+~display-buffer-fallback-action~, overriding it in
+~display-buffer-base-action~. Here we just replace the
+~display-buffer-use-some-window~ function which probably is the source of
+those erratic behaviour. Our replacement is a combination of
+~display-buffer-below-selected~ and ~display-buffer-at-bottom~, which on first
+view seems to be not such a bad selection for frames using a large screen
+space.
 
 But we also need to make sure windows are not splitted if too small. We also
 activate some further tweaks which are declared in the following sections.
@@ -59,7 +62,7 @@ activate some further tweaks which are declared in the following sections.
       (display-buffer-as-scroll-buffer display-buffer-dedicated-window display-buffer-reuse-help display-buffer-at-bottom)
       (window-height . fit-window-to-buffer-max-half-frame))))
  '(display-buffer-base-action
-   '((display-buffer-maybe-as-scroll-buffer display-buffer-dedicated-window display-buffer--maybe-same-window display-buffer-reuse-window display-buffer--maybe-pop-up-frame-or-window display-buffer-in-previous-window display-buffer-below-selected display-buffer-pop-up-frame)))
+   '((display-buffer-maybe-as-scroll-buffer display-buffer-dedicated-window display-buffer--maybe-same-window display-buffer-reuse-window display-buffer--maybe-pop-up-frame-or-window display-buffer-in-previous-window display-buffer-below-selected display-buffer-at-bottom display-buffer-pop-up-frame)))
  '(window-min-height 8)
  '(window-min-width 40))
 #+END_SRC
@@ -358,8 +361,10 @@ jumps and returning with =C-M-c= or =C-]=.
   (end-of-buffer))
 
 (nth-window edit-other-window
-  "recursively edit in other buffer, allowing to return later."
-  (recursive-edit))
+  "recursively edit in other buffer, allowing to return later. Save
+`other-window-scroll-buffer', reverting it after finishing."
+  (let ((other-window-scroll-buffer nil))
+    (recursive-edit)))
 
 (nth-window kill-other-buffer-and-window
   "kill buffer in other window and delete that window."
@@ -484,6 +489,11 @@ allowing to specify a remote window to be controlled."
 	   (define-key map "v" (with-window (scroll-up-command (get-arg-acc))))
 	   (define-key map "V" (with-window (scroll-down-command (get-arg-acc))))
 	 map) 't)))))
+
+(defun navigate-window ()
+  "like `navigate-other-window', but always use current window."
+  (interactive)
+  (navigate-buffer))
 
 (nth-window navigate-other-window
   "Enter a temporary buffer navigation mode, allowing some window to be
@@ -885,11 +895,13 @@ not shadow future functionality here.
 We replace =C-x C-f= with ~find-file~, as the ~-at-point~ function is then
 still reachable through =M-n=. The old mapping of =C-c C-f= to
 ~find-file-at-point~ is removed, as it is now overlayed by org.
+Probably the idea of having =M-x= also on a /Control/ binding proves to be good.
 
 #+BEGIN_SRC emacs-lisp
 (global-set-key "\C-x\C-b" #'bs-show)	;; this used to be electric-buffer-list
 (global-set-key "\C-x\C-f" #'find-file)
 (global-set-key [3 67108919] #'toggle-my-environment)  ;; make global to enable env switch on german kbd
+(global-set-key [24 67108877] 'execute-extended-command) ;; C-x C-RET
 #+END_SRC
 
 And my delimiting function:
@@ -919,11 +931,12 @@ enabled here on =C-return=.
 Convenience keys for buffer scrolling. Enables up/down also with /Meta/
 modifier. Together with /Shift/ this enables scrolling. This way you can very
 conveniently move the pointer and scroll by just adding/releasing the /Shift/
-modifier.
+modifier. When ~visual-line-mode~ is activated, the /Meta/ keys act on the
+logical lines.
 
 #+BEGIN_SRC emacs-lisp
-(global-set-key "\M-p" #'previous-line)
-(global-set-key "\M-n" #'next-line)
+(global-set-key "\M-p" #'previous-logical-line)
+(global-set-key "\M-n" #'next-logical-line)
 (global-set-key "\M-P" #'scroll-down-line)
 (global-set-key "\M-N" #'scroll-up-line)
 (global-set-key [end] #'move-end-of-line)
@@ -1126,7 +1139,7 @@ Here we bind the temporary navigation mode to some useful keys for current and
 other window.
 
 #+BEGIN_SRC emacs-lisp
-(global-set-key "\C-x\C-v" (lambda () (interactive)(navigate-other-window 0)))
+(global-set-key "\C-x\C-v" #'navigate-window)
 (global-set-key "\C-x4v" #'navigate-other-window)
 #+END_SRC
 
