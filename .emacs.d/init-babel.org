@@ -50,9 +50,9 @@ activate some further tweaks which are declared in the following sections.
 #+BEGIN_SRC emacs-lisp
 (custom-set-variables
  '(display-buffer-alist
-   '((dired-to-other-window maybe-make-buffer-window-origin)
+   '((dired-to-other-window maybe-make-dired-window-origin)
      (dired-from-other-window
-      (display-buffer-maybe-in-orig))
+      (display-dired-maybe-in-orig))
      ("\\*Occur\\*" make-buffer-window-origin)
      ((lambda
         (buffer alist)
@@ -136,18 +136,23 @@ used in the same window. But when used in other window, it should memorize its
 origin window and put view buffers sent to subsequent other windows there.
 
 #+BEGIN_SRC emacs-lisp
-(defun set-orig-window (window)
-  "mark the given window as origin of operation, removing the mark from all
-others of frame. This way, a dired buffer in other window can push its
-  subsequent other window view buffers into the origin window."
-  (walk-windows (lambda (w)
-                  (set-window-parameter w 'orig-window nil)))
-  (set-window-parameter window 'orig-window 't))
+(defun set-orig-window (window marker-or-buffer)
+  "mark the given window as origin of operation specific to
+buffer, removing the mark from other windows this buffer was
+assgned to. This way, a dired buffer in other window can push its
+subsequent other window view buffers into the origin window."
+  (if (not (eq (window-buffer window) marker-or-buffer))
+      (progn
+        (walk-windows (lambda (w)
+                        (if (eq marker-or-buffer
+                                (window-parameter w 'orig-window))
+                            (set-window-parameter w 'orig-window nil))))
+        (set-window-parameter window 'orig-window marker-or-buffer))))
 
 (defun make-buffer-window-origin (buffer alist)
   "use with a regex or matcher to memorize origin window. Then use
 `display-buffer-in-orig' with same regex to push buffers to origin."
-  (set-orig-window (selected-window))
+  (set-orig-window (selected-window) buffer)
   nil)
 
 (defun maybe-make-buffer-window-origin (buffer alist)
@@ -158,10 +163,11 @@ others of frame. This way, a dired buffer in other window can push its
 (defun display-buffer-in-orig (buffer alist)
   "if a live orig window is defined, unconditionally use that to
 display the buffer."
-  (let ((my-window
-         (car (remove-if-not (lambda (w)
-                               (eq 't (window-parameter w 'orig-window)))
-                             (window-list)))))
+  (let* ((other-buffer (current-buffer))
+         (my-window (get-window-with-predicate
+                     (lambda (w)
+                       (eq other-buffer
+                           (window-parameter w 'orig-window))))))
     (if (and my-window (window-live-p my-window))
         (window-update-buffer buffer my-window 'reuse alist))))
 
@@ -189,6 +195,34 @@ is a dired buffer.
 (defun dired-from-other-window (buffer alist)
   "match if current buffer is a dired buffer."
   (dired-p (current-buffer)))
+
+(defun make-dired-window-origin (buffer alist)
+  "special case of `make-buffer-window-origin'. Use with a regex
+or matcher to memorize origin window. Then use
+`display-buffer-in-orig' with same regex to push dired buffers to
+origin."
+  (set-orig-window (selected-window) :dired)
+  nil)
+
+(defun maybe-make-dired-window-origin (buffer alist)
+  "if action attribute inhibit-same-window is given, store originating dired window."
+  (if (cdr (assq 'inhibit-same-window alist))
+      (make-dired-window-origin buffer alist)))
+
+(defun display-dired-in-orig (buffer alist)
+  "if a live orig window is defined, unconditionally use that to
+display the dired buffer."
+  (let ((my-window (get-window-with-predicate
+                    (lambda (w)
+                      (eq :dired (window-parameter w 'orig-window))))))
+    (if (and my-window (window-live-p my-window))
+        (window-update-buffer buffer my-window 'reuse alist))))
+
+(defun display-dired-maybe-in-orig (buffer alist)
+  "if action attribute inhibit-same-window is given and a live orig window is
+defined, use that to display the dired buffer."
+  (if (cdr (assq 'inhibit-same-window alist))
+      (display-dired-in-orig buffer alist)))
 #+END_SRC
 
 A generalized matcher function, matching the current buffer.
@@ -241,7 +275,7 @@ selected. If none is selected, revert to the default behaviour."
             (setq dedicated-other-window nil)))))
 #+END_SRC
 
-**** Other window applications
+**** Other window functions
 
 This sorted out, I'm adding some useful functions for handling the other
 window. This can be handy after calling or navigating within help texts for
@@ -339,6 +373,8 @@ The same for frames might also come in handy.
        ,@body
        (select-frame-set-input-focus current))))
 #+END_SRC
+
+**** Other window applications
 
 And now some other-window-functions. The last one is generic: it allows to
 jump to a window, work there and afterwards return. It also allows nested
@@ -1126,6 +1162,8 @@ We also want to jump to beginning/end in other window by =C-M-<= and =C-M->=
 #+BEGIN_SRC emacs-lisp
 (global-set-key [201326652] #'beginning-of-other-window)
 (global-set-key [201326654] #'end-of-other-window)
+(global-set-key "\C-x4<" #'beginning-of-other-window)
+(global-set-key "\C-x4>" #'end-of-other-window)
 (global-set-key [remap scroll-other-window] #'my-scroll-other-window)
 (global-set-key [remap scroll-other-window-down] #'my-scroll-other-window-down)
 #+END_SRC
@@ -1500,7 +1538,6 @@ Also use our delimiter for parens.
 #+END_SRC
 
 ** Todo
-*** TODO make window resize steps customizable, add center function
 *** TODO split custom.el into site specific customization and global custom selection to be merged/distributed
     - move mergeable options into init-babel.org?
 *** TODO read about tramp plugins
@@ -1510,6 +1547,7 @@ Also use our delimiter for parens.
     - where-is-internal - find key bindings for function
     - key-binding - find function for key binding
 *** TODO complete mouse/trackpad handling/switching
+*** DONE make window resize steps customizable, add center function
 *** DONE display-buffer
 **** DONE option close frame on quit instead of iconify
      - frame-auto-hide-function to delete
