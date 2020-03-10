@@ -21,7 +21,7 @@
         (buffer alist)
         (match-current-buffer "\\\\*Occur\\\\*"))
       display-buffer-in-orig)
-     ("\\*Help\\*\\|\\*Apropos\\*"
+     ("\\*Help\\*\\|\\*Apropos\\*\\|\\*Python Doc\\*"
       (display-buffer-as-scroll-buffer display-buffer-dedicated-window display-buffer-reuse-help display-buffer-at-bottom)
       (window-height . fit-window-to-buffer-max-half-frame))))
  '(display-buffer-base-action
@@ -62,6 +62,9 @@
  '(history-delete-duplicates t)
  '(indent-tabs-mode nil)
  '(isearch-lazy-count t)
+ '(jedi:complete-on-dot t)
+ '(jedi:setup-keys t)
+ '(jedi:tooltip-method nil)
  '(magit-git-executable "/opt/local/bin/git")
  '(mouse-drag-and-drop-region t)
  '(mouse-drag-copy-region t)
@@ -116,7 +119,9 @@
      (lambda nil "Activate jedi"
        (jedi:setup))
      (lambda nil "use superword mode"
-       (superword-mode))) t)
+       (superword-mode))
+     (lambda nil "use electric spacing mode"
+       (electric-spacing-mode))) t)
  '(savehist-mode t nil (savehist))
  '(scroll-bar-mode nil)
  '(select-enable-clipboard t)
@@ -150,5 +155,5 @@
  '(ediff-odd-diff-Ancestor ((t (:background "purple2"))))
  '(ediff-odd-diff-B ((t (:background "purple3"))))
  '(ediff-odd-diff-C ((t (:background "purple4"))))
- '(highlight-indentation-current-column-face ((t (:background "sienna"))))
- '(highlight-indentation-face ((t (:background "dark slate gray")))))
+ '(highlight-indentation-current-column-face ((t (:background "gray25"))))
+ '(highlight-indentation-face ((t (:background "gray12")))))
