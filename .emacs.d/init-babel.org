@@ -1472,15 +1472,31 @@ Here we use ~hs-mode~, enabling tag view toggling and tag level hiding. Also
                sgml-skip-tag-forward
                nil))
 
-(add-hook 'nxml-mode-hook 'hs-minor-mode)
+(add-hook 'nxml-mode-hook #'hs-minor-mode)
 
-(define-key nxml-mode-map (kbd "C-c C-h") 'hs-toggle-hiding)
-(define-key nxml-mode-map (kbd "C-c C-l") 'hs-hide-level)
+(define-key nxml-mode-map (kbd "C-c C-h") #'hs-toggle-hiding)
+(define-key nxml-mode-map (kbd "C-c C-l") #'hs-hide-level)
 #+END_SRC
 
 **** tagedit-mode
 
-tbd
+#+BEGIN_SRC emacs-lisp
+(add-hook 'nxml-mode-hook #'sgml-electric-tag-pair-mode)
+#+END_SRC
+
+#+BEGIN_SRC emacs-lisp
+(eval-after-load "sgml-mode"
+  '(progn
+     (require 'tagedit)
+     (add-hook 'html-mode-hook (lambda () (tagedit-mode 1)))
+     (add-hook 'nxml-mode-hook (lambda () (tagedit-mode 1)))))
+
+(define-key tagedit-mode-map (kbd "C-c )") #'tagedit-forward-slurp-tag)
+(define-key tagedit-mode-map (kbd "C-c }") #'tagedit-forward-barf-tag)
+(define-key tagedit-mode-map (kbd "C-c s") #'tagedit-raise-tag)
+(define-key tagedit-mode-map (kbd "C-M-k") #'tagedit-kill)
+(define-key tagedit-mode-map (kbd "C-c a") #'tagedit-kill-attribute)
+#+END_SRC
 
 *** smartparens mode
 
