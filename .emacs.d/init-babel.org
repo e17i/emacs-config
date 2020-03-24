@@ -695,6 +695,11 @@ receive an argument list of (FRAME MAX-LINES MAX-COLS).
          frame
          (+ x dwidth)
          py)))))
+
+(defun frame-to-second-x11 (frame lines cols)
+  (set-frame-position frame 1441 0)
+  (set-frame-width frame 159)
+  (set-frame-height frame 57))
 #+END_SRC
 
 Here we toggle fullscreen, removing all frame decorations and

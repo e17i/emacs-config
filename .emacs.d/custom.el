@@ -101,9 +101,7 @@
      (77
       (german-kbd apple-kbd)))))
  '(my-environment-mode t)
- '(my-frame-stylings
-   (quote
-    (frame-width-below-threshold frame-height-dec frame-to-top frame-to-right)))
+ '(my-frame-stylings (quote (frame-to-second-x11)))
  '(my-frame-transparency 100)
  '(ns-alternate-modifier (quote super))
  '(ns-command-modifier (quote meta))
