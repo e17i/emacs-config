@@ -578,7 +578,17 @@ On X11, set a convenient frame size.
   (set-frame-width nil 160)
   (set-frame-height nil 45))
 
-(global-set-key "\C-ci" #'init-frame-on-x11)
+(defun fake-large-fullsize-on-x11 ()
+  "Set frame size to a prescribed fullsize on mobile display."
+  (interactive)
+  (set-frame-width nil 186)
+  (set-frame-height nil 55))
+
+(define-prefix-command 'fake-frame-size)
+(global-set-key "\C-ci" #'fake-frame-size)
+(define-key fake-frame-size "0" #'init-frame-on-x11)
+(define-key fake-frame-size "1" #'fake-small-fullsize-on-x11)
+(define-key fake-frame-size "2" #'fake-large-fullsize-on-x11)
 #+END_SRC
 
 Interactively resize windows.
