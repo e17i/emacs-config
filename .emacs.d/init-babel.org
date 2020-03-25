@@ -572,6 +572,12 @@ On X11, set a convenient frame size.
   (set-frame-width nil 100)
   (set-frame-height nil 40))
 
+(defun fake-small-fullsize-on-x11 ()
+  "Set frame size to a prescribed fullsize on mobile display."
+  (interactive)
+  (set-frame-width nil 160)
+  (set-frame-height nil 45))
+
 (global-set-key "\C-ci" #'init-frame-on-x11)
 #+END_SRC
 
