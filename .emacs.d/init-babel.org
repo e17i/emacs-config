@@ -563,6 +563,18 @@ Keys are:
 
 *** Frame and window size
 
+On X11, set a convenient frame size.
+
+#+BEGIN_SRC emacs-lisp
+(defun init-frame-on-x11 ()
+  "Set frame size to a prescribed convenient size."
+  (interactive)
+  (set-frame-width nil 100)
+  (set-frame-height nil 40))
+
+(global-set-key "\C-ci" #'init-frame-on-x11)
+#+END_SRC
+
 Interactively resize windows.
 
 #+BEGIN_SRC emacs-lisp
