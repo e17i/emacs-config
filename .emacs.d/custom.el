@@ -97,14 +97,14 @@
  '(my-env-definitions
    (quote
     ((68
-      (mouse-wheel-zoom pc-kbd mouse-undo german-kbd))
+      (mouse-wheel-zoom pc-kbd mouse-undo))
      (77
       (german-kbd apple-kbd)))))
  '(my-environment-mode t)
  '(my-frame-stylings (quote (frame-to-second-x11)))
  '(my-frame-transparency 100)
- '(ns-alternate-modifier (quote super))
- '(ns-command-modifier (quote meta))
+ '(ns-alternate-modifier (quote meta))
+ '(ns-command-modifier (quote super))
  '(ns-control-modifier (quote control))
  '(ns-right-alternate-modifier (quote alternate))
  '(ns-right-command-modifier (quote meta))
