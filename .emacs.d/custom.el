@@ -73,6 +73,7 @@
       (background light))
      (:background "grey50"))))
  '(fringe-mode 0 nil (fringe))
+ '(help-buffer-regex "\\*Help\\*\\|\\*Apropos\\*\\|\\*Python Doc\\*")
  '(hippie-expand-verbose nil)
  '(history-delete-duplicates t)
  '(indent-tabs-mode nil)
