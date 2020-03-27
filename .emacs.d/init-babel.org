@@ -402,6 +402,10 @@ jumps and returning with =C-M-c= or =C-]=.
   "Like `end-of-buffer-other-window', but use prefix arg to select window."
   (end-of-buffer))
 
+(nth-window kill-other-buffer-and-window
+  "kill buffer in other window and delete that window."
+  (kill-buffer-and-window))
+
 (nth-window edit-other-window
   "recursively edit in other buffer, allowing to return later. Save
 `other-window-scroll-buffer', reverting it after finishing."
@@ -410,10 +414,6 @@ jumps and returning with =C-M-c= or =C-]=.
              nil
            other-window-scroll-buffer)))
     (recursive-edit)))
-
-(nth-window kill-other-buffer-and-window
-  "kill buffer in other window and delete that window."
-  (kill-buffer-and-window))
 #+END_SRC
 
 *** Convenient error stepping
@@ -1145,8 +1145,8 @@ I'm adding a few ones which I missed so far.
 (global-set-key "\C-x4-" #'shrink-other-window-if-larger-than-buffer)
 (global-set-key "\C-x4s" #'dedicate-window)
 (global-set-key "\C-x4e" #'edit-other-window)
-(global-set-key "\C-x40" #'kill-other-buffer-and-window)
-(global-set-key "\C-x4k" #'kill-buffer-and-window)
+(global-set-key "\C-x4k" #'kill-other-buffer-and-window)
+(global-set-key "\C-x40" #'kill-buffer-and-window)
 #+END_SRC
 
 Note the window size changing keys, =C-x ^= to enlarge (also negative) and
@@ -1273,18 +1273,40 @@ accessable by =SPC=. Lets see how this works out.
   (define-key leader-map "x" (key-binding "\C-x"))
   (set-keymap-parent leader-map (key-binding "\C-x"))
   (define-key leader-map "c" (key-binding "\C-c"))
+  (def-evil-scroll-state))
+#+END_SRC
 
+**** experimental evil scroll mode
+
+Example of defining an own vi mode. Motivated by the convenient navigation
+mode ([[Convenient Navigation Mode]]) and a vi configuration mapping j to jzz, k
+to kzz, this allows probably easier scrolling in evil.
+
+#+BEGIN_SRC emacs-lisp
+(defun def-evil-scroll-state ()
   (evil-define-state scroll "scroll-state"
     :tag " <S>"
     :message "-- SCROLL --"
     :suppress-keymap 't)
-  (define-key evil-scroll-state-map "0" #'evil-digit-argument-or-evil-beginning-of-line)
+  (define-key evil-scroll-state-map "0" #'digit-argument)
+  (define-key evil-scroll-state-map "1" #'digit-argument)
+  (define-key evil-scroll-state-map "2" #'digit-argument)
+  (define-key evil-scroll-state-map "3" #'digit-argument)
+  (define-key evil-scroll-state-map "4" #'digit-argument)
+  (define-key evil-scroll-state-map "5" #'digit-argument)
+  (define-key evil-scroll-state-map "6" #'digit-argument)
+  (define-key evil-scroll-state-map "7" #'digit-argument)
+  (define-key evil-scroll-state-map "8" #'digit-argument)
+  (define-key evil-scroll-state-map "9" #'digit-argument)
+  (define-key evil-scroll-state-map (kbd "<return>") #'evil-ret)
   (define-key evil-scroll-state-map "j" (lambda nil
-                                          (interactive)(evil-next-line)(call-interactively
-                                                                        #'evil-scroll-line-to-center)))
+                                          (interactive)
+                                          (call-interactively #'evil-next-line)
+                                          (evil-scroll-line-to-center nil)))
   (define-key evil-scroll-state-map "k" (lambda nil
-                                          (interactive)(evil-previous-line)(call-interactively
-                                                                            #'evil-scroll-line-to-center)))
+                                          (interactive)
+                                          (call-interactively #'evil-previous-line)
+                                          (evil-scroll-line-to-center nil)))
   (define-key evil-scroll-state-map (kbd "<escape>") 'evil-normal-state)
   (define-key evil-scroll-state-map "\C-\M-z" 'evil-emacs-state)
   (define-key leader-map "s" 'evil-scroll-state))
@@ -1297,12 +1319,33 @@ When using evil-mode, set ~evil-exit-emacs-state~ to =C-M-z=, as I'm used to
 way, without getting in the way it is always only a key press away.
 
 #+BEGIN_SRC emacs-lisp
+(defun change-evil-emacs-state (arg)
+  "when ARG is true, set all live buffers to exit emacs-state. When nil, set
+all buffers to emacs-state."
+  (interactive "P")
+  (setq evil-default-state (if arg 'normal 'emacs))
+  (dolist (b (buffer-list))
+    (with-current-buffer b
+      (if arg
+          (evil-exit-emacs-state)
+        (evil-emacs-state)))))
+
+(defun enter-evil ()
+  "enter evil. That is, switch all buffers to normal mode and set default mode to normal."
+  (interactive)
+  (change-evil-emacs-state 't))
+
+(defun exit-evil ()
+  "exit evil. That is, switch all buffers to emacs mode and set default mode to emacs."
+  (interactive)
+  (change-evil-emacs-state nil))
+
 (define-key evil-emacs-state-map "\C-z" nil)
-(define-key evil-emacs-state-map "\C-\M-z" #'evil-exit-emacs-state)
-(define-key evil-normal-state-map "\C-\M-z" #'evil-emacs-state)
+(define-key evil-emacs-state-map "\C-\M-z" #'enter-evil)
+(define-key evil-normal-state-map "\C-\M-z" #'exit-evil)
 (advice-add #'evil-exit-emacs-state
             :before
-            (lambda (arg msg)
+            (lambda (&optional arg msg)
               (message "entering EVIL")
               (evil-rc)))
 #+END_SRC
