@@ -1367,11 +1367,21 @@ For this, set ~python-shell-interpreter~ to path of buildout powerscript exe and
 Also worth to remember the company backend completion on =C-M-i=.
 
 Note: ~elpy-enable~ adds to ~python-mode-hook~ only on first call. So if you
-re-evaluate ~custom.el~, remember to afterwards ~(setq elpy-enabled-p nil)~
+re-evaluate [[custom.el]], remember to afterwards ~(setq elpy-enabled-p nil)~
 and ~(elpy-enable)~.
 
+Because of this, we enable elpy in [[init.el]] after loading [[custom.el]].
+Nevertheless, provision of a function to reenable it after reloading
+[[custom.el]] has been proven to be handy.
+
 #+BEGIN_SRC emacs-lisp
-(elpy-enable)
+;; (elpy-enable)
+
+(defun elpy-reenable ()
+  "make sure elpy is put into `python-mode-hook'."
+  (interactive)
+  (setq elpy-enabled-p nil)
+  (elpy-enable))
 #+END_SRC
 
 To navigate using more convenient keys, we put the block navigation moves
