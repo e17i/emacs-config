@@ -13,9 +13,9 @@
  '(delete-selection-mode t)
  '(dired-recursive-deletes 'top)
  '(display-buffer-alist
-   '((dired-to-other-window make-buffer-window-origin)
+   '((dired-to-other-window maybe-make-dired-window-origin)
      (dired-from-other-window
-      (display-buffer-maybe-in-orig))
+      (display-dired-maybe-in-orig))
      ("\\*Occur\\*" make-buffer-window-origin)
      ((lambda
         (buffer alist)
@@ -25,7 +25,7 @@
       (display-buffer-as-scroll-buffer display-buffer-dedicated-window display-buffer-reuse-help display-buffer-at-bottom)
       (window-height . fit-window-to-buffer-max-half-frame))))
  '(display-buffer-base-action
-   '((display-buffer-maybe-as-scroll-buffer display-buffer-dedicated-window display-buffer--maybe-same-window display-buffer-reuse-window display-buffer--maybe-pop-up-frame-or-window display-buffer-in-previous-window display-buffer-below-selected display-buffer-pop-up-frame)))
+   '((display-buffer-maybe-as-scroll-buffer display-buffer-dedicated-window display-buffer--maybe-same-window display-buffer-reuse-window display-buffer--maybe-pop-up-frame-or-window display-buffer-in-previous-window display-buffer-below-selected display-buffer-at-bottom display-buffer-pop-up-frame)))
  '(display-time-24hr-format t)
  '(display-time-default-load-average nil)
  '(dynamic-completion-mode nil)
@@ -76,10 +76,10 @@
  '(my-frame-stylings
    '(frame-width-below-threshold frame-height-dec frame-to-right frame-to-top))
  '(my-frame-transparency 85)
- '(ns-alternate-modifier 'alternate)
+ '(ns-alternate-modifier 'super)
  '(ns-command-modifier 'meta)
  '(ns-control-modifier 'control)
- '(ns-right-alternate-modifier 'none)
+ '(ns-right-alternate-modifier 'alternate)
  '(ns-right-command-modifier 'meta)
  '(nxml-sexp-element-flag t)
  '(org-agenda-files nil)
