@@ -5,7 +5,9 @@
 (package-initialize)
 
 (setq custom-file "~/.emacs.d/custom.el")
-(load custom-file)
 
 (setq org-element-use-cache nil)  ;; temporarily disable org element cache
 (org-babel-load-file "~/.emacs.d/init-babel.org")
+
+(load custom-file)  ;; load cust after babel
+(elpy-reenable)  ;; call this after load custom-file

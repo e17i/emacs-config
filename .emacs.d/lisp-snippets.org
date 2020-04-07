@@ -58,40 +58,41 @@ A new recursion state can also be defined explicitely, using an
 expression of the form (NAME vals)."
   (let ((args (mapcar #'car argvals))
         (conds (mapcar (lambda (elem)
-                         `(,(car elem) ,(cadr elem)))
-                       (seq-take conds-and-step (- (length conds-and-step) 1))))
-        (step (car (last conds-and-step))))
+                         `(,(car elem) (return ,(cadr elem))))
+                       (butlast conds-and-step)))
+        (step (car (last conds-and-step)))
+        (iter (gensym)))
     `(macrolet ((,name (&rest vals)
                        `(progn
                           (psetq ,@(apply #'nconc (mapcar* #'list ',args vals)))
-                          (go iter)))
+                          (go ,',iter)))
                 (return (val)
                         `(return-from ,',name ,val)))
        (block ,name
          (let ,argvals
            (cl-tagbody
-            iter
+            ,iter
             (cond ,@conds)
             (,name ,@step)))))))
 
 (recurse test ((n 5) (a 0))
-         ((eq n 0) (return a))
+         ((eq n 0) a)
          ((- n 1) (+ a n)))
 
 (loop for i from 0 to 20 do
       (print
        (recurse fib ((n i) (f0 1) (f1 1))
-                ((< n 2) (return f1))
+                ((< n 2) f1)
                 ((- n 1) f1 (+ f0 f1)))))
 
 (loop for i from 0 to 20 do (print
-(recurse fib2 ((n i) (c (lambda (r) (return r))))
-         ((< n 2) (funcall c 1))
-         ((- n 2) (lexical-let ((cn n) (cc c))
-                    (lambda (rl)
-                      (fib2 (- cn 1) (lexical-let ((rl rl))
-                                       (lambda (rr)
-                                         (funcall cc (+ rl rr)))))))))))
+ (recurse fib2 ((n i) (c (lambda (r) (return r))))
+          ((< n 2) (funcall c 1))
+          ((- n 2) (lexical-let ((cn n) (cc c))
+                     (lambda (rl)
+                       (fib2 (- cn 1) (lexical-let ((rl rl))
+                                        (lambda (rr)
+                                          (funcall cc (+ rl rr)))))))))))
 #+END_SRC
 
 * list comprehension
