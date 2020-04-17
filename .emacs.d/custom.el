@@ -11,9 +11,10 @@
  '(custom-file "~/.emacs.d/custom.el")
  '(default-input-method "german-postfix")
  '(delete-selection-mode t)
- '(dired-recursive-deletes 'top)
+ '(dired-recursive-deletes (quote top))
  '(display-buffer-alist
-   '((dired-to-other-window maybe-make-dired-window-origin)
+   (quote
+    ((dired-to-other-window maybe-make-dired-window-origin)
      (dired-from-other-window
       (display-dired-maybe-in-orig))
      ("\\*Occur\\*" make-buffer-window-origin)
@@ -23,41 +24,54 @@
       display-buffer-in-orig)
      ("\\*Help\\*\\|\\*Apropos\\*"
       (display-buffer-as-scroll-buffer display-buffer-dedicated-window display-buffer-reuse-help display-buffer-at-bottom)
-      (window-height . fit-window-to-buffer-max-half-frame))))
+      (window-height . fit-window-to-buffer-max-half-frame)))))
  '(display-buffer-base-action
-   '((display-buffer-maybe-as-scroll-buffer display-buffer-dedicated-window display-buffer--maybe-same-window display-buffer-reuse-window display-buffer--maybe-pop-up-frame-or-window display-buffer-in-previous-window display-buffer-below-selected display-buffer-at-bottom display-buffer-pop-up-frame)))
+   (quote
+    ((display-buffer-maybe-as-scroll-buffer display-buffer-dedicated-window display-buffer--maybe-same-window display-buffer-reuse-window display-buffer--maybe-pop-up-frame-or-window display-buffer-in-previous-window display-buffer-below-selected display-buffer-at-bottom display-buffer-pop-up-frame))))
  '(display-time-24hr-format t)
  '(display-time-default-load-average nil)
  '(dynamic-completion-mode nil)
- '(ediff-before-setup-hook '((lambda nil (window-configuration-to-register 101))))
- '(ediff-quit-hook '(ediff-cleanup-mess (lambda nil (jump-to-register 101))))
- '(ediff-split-window-function 'split-window-horizontally)
- '(ediff-suspend-hook
-   '(ediff-default-suspend-function
+ '(ediff-before-setup-hook
+   (quote
+    ((lambda nil
+       (window-configuration-to-register 101)))))
+ '(ediff-quit-hook
+   (quote
+    (ediff-cleanup-mess
      (lambda nil
-       (jump-to-register 101))))
- '(ediff-window-setup-function 'ediff-setup-windows-plain)
- '(elpy-mode-hook '(hl-line-mode flycheck-mode))
+       (jump-to-register 101)))))
+ '(ediff-split-window-function (quote split-window-horizontally))
+ '(ediff-suspend-hook
+   (quote
+    (ediff-default-suspend-function
+     (lambda nil
+       (jump-to-register 101)))))
+ '(ediff-window-setup-function (quote ediff-setup-windows-plain))
+ '(elpy-mode-hook (quote (hl-line-mode flycheck-mode)))
  '(elpy-modules
-   '(elpy-module-company elpy-module-eldoc elpy-module-folding elpy-module-pyvenv elpy-module-highlight-indentation elpy-module-yasnippet elpy-module-django elpy-module-sane-defaults))
- '(evil-default-state 'emacs)
+   (quote
+    (elpy-module-company elpy-module-eldoc elpy-module-folding elpy-module-pyvenv elpy-module-highlight-indentation elpy-module-yasnippet elpy-module-django elpy-module-sane-defaults)))
+ '(evil-default-state (quote emacs))
  '(evil-insert-state-modes nil)
  '(evil-motion-state-modes nil)
  '(exec-path
-   '("/usr/bin" "/bin" "/usr/sbin" "/sbin" "/Applications/MacPorts/Emacs.app/Contents/MacOS/bin" "/opt/local/bin"))
- '(frame-auto-hide-function #'delete-frame)
+   (quote
+    ("/usr/bin" "/bin" "/usr/sbin" "/sbin" "/usr/pkg/bin")))
+ '(frame-auto-hide-function (function delete-frame))
  '(fringe-mode 0 nil (fringe))
  '(gud-mixvm-command-name "/opt/local/bin/mixvm")
  '(hippie-expand-verbose nil)
  '(history-delete-duplicates t)
  '(indent-tabs-mode nil)
  '(isearch-lazy-count t)
- '(magit-git-executable "/opt/local/bin/git")
+ '(magit-git-executable "/usr/pkg/bin/git")
+ '(menu-bar-mode nil)
  '(mouse-drag-and-drop-region t)
  '(mouse-drag-copy-region t)
- '(mouse-wheel-scroll-amount '(1 ((meta) . 3) ((shift) . text-scale)))
+ '(mouse-wheel-scroll-amount (quote (1 ((meta) . 3) ((shift) . text-scale))))
  '(my-env-actions
-   '((mouse-wheel-zoom my-wheel-zoom my-env-reset-keymap)
+   (quote
+    ((mouse-wheel-zoom my-wheel-zoom my-env-reset-keymap)
      (mouse-undo mouse-undo my-env-reset-keymap)
      (german-kbd activate-german-keymap my-env-reset-keymap)
      (apple-kbd on-apple-keyboard ignore)
@@ -66,37 +80,37 @@
       (lambda nil
         (display-battery-mode 1))
       (lambda nil
-        (display-battery-mode 0)))))
+        (display-battery-mode 0))))))
  '(my-env-definitions
-   '((68
+   (quote
+    ((68
       (mouse-wheel-zoom pc-kbd mouse-undo))
      (77
-      (german-kbd apple-kbd battery))))
+      (german-kbd apple-kbd battery)))))
  '(my-environment-mode t)
  '(my-frame-stylings
-   '(frame-width-below-threshold frame-height-dec frame-to-right frame-to-top))
+   (quote
+    (frame-width-below-threshold frame-height-dec frame-to-right frame-to-top)))
  '(my-frame-transparency 85)
- '(ns-alternate-modifier 'super)
- '(ns-command-modifier 'meta)
- '(ns-control-modifier 'control)
- '(ns-right-alternate-modifier 'alternate)
- '(ns-right-command-modifier 'meta)
  '(nxml-sexp-element-flag t)
  '(org-agenda-files nil)
  '(org-babel-python-command "python2")
  '(org-goto-auto-isearch nil)
  '(org-src-preserve-indentation t)
  '(package-archives
-   '(("gnu" . "https://elpa.gnu.org/packages/")
+   (quote
+    (("gnu" . "https://elpa.gnu.org/packages/")
      ("marmalade" . "https://marmalade-repo.org/packages/")
      ("melpa-stable" . "https://stable.melpa.org/packages/")
-     ("melpa" . "https://melpa.org/packages/")))
+     ("melpa" . "https://melpa.org/packages/"))))
  '(package-selected-packages
-   '(which-key zzz-to-char htmlize smartparens magit ace-jump-zap helm realgud evil auctex))
- '(paren-match-face 'paren-face-match-light)
+   (quote
+    (tagedit undo-tree which-key zzz-to-char htmlize smartparens magit ace-jump-zap helm realgud evil auctex)))
+ '(paren-match-face (quote paren-face-match-light))
  '(paren-sexp-mode t)
  '(python-mode-hook
-   '((lambda nil "Turn off Indent Tabs mode."
+   (quote
+    ((lambda nil "Turn off Indent Tabs mode."
        (setq indent-tabs-mode nil))
      (lambda nil "highlight current column"
        (highlight-indentation-current-column-mode))
@@ -105,7 +119,7 @@
      (lambda nil "use superword mode"
        (superword-mode))
      (lambda nil "use electric spacing mode"
-       (electric-spacing-mode))) t)
+       (electric-spacing-mode)))) t)
  '(savehist-mode t nil (savehist))
  '(scroll-bar-mode nil)
  '(select-enable-clipboard t)
@@ -116,7 +130,8 @@
  '(size-indication-mode t)
  '(sp-base-key-bindings nil)
  '(tool-bar-mode nil)
- '(wdired-allow-to-change-permissions 'advanced)
+ '(tooltip-mode nil)
+ '(wdired-allow-to-change-permissions (quote advanced))
  '(which-key-idle-delay 2.0)
  '(which-key-idle-secondary-delay 0.5)
  '(window-min-height 8)
