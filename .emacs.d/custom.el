@@ -116,13 +116,13 @@
  '(org-src-preserve-indentation t)
  '(package-archives
    (quote
-    (("gnu" . "https://elpa.gnu.org/packages/")
+    (("gnu" . "http://elpa.gnu.org/packages/")
      ("marmalade" . "https://marmalade-repo.org/packages/")
      ("melpa-stable" . "https://stable.melpa.org/packages/")
      ("melpa" . "https://melpa.org/packages/"))))
  '(package-selected-packages
    (quote
-    (undo-tree which-key smartparens tagedit ob-restclient company-restclient restclient py-autopep8 flycheck elpy company-jedi json-mode jedi-direx jedi ox-rst magit zzz-to-char ace-jump-mode helm realgud evil markdown-mode cider web-mode org-plus-contrib js2-mode electric-spacing auctex)))
+    (deadgrep undo-tree which-key smartparens tagedit ob-restclient company-restclient restclient py-autopep8 flycheck elpy company-jedi json-mode jedi-direx jedi ox-rst magit zzz-to-char ace-jump-mode helm realgud evil markdown-mode cider web-mode org-plus-contrib js2-mode electric-spacing auctex)))
  '(python-mode-hook
    (quote
     ((lambda nil "Turn off Indent Tabs mode."
