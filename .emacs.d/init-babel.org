@@ -16,13 +16,31 @@ appropriate hook.
          (setq my-frame-transparency val)
          (dolist (frame (frames-on-display-list))
            (set-frame-parameter frame 'alpha `(,val . ,val)))))
+(defcustom my-frame-background "Black"
+  "background color used for all display frames."
+  :type '(string)
+  :group 'my-cust
+  :set (lambda (symb val)
+         (setq my-frame-background val)
+         (dolist (frame (frames-on-display-list))
+           (with-selected-frame frame
+             (set-background-color my-frame-background)))))
+(defcustom my-frame-foreground "Green"
+  "foreground color used for all display frames."
+  :type '(string)
+  :group 'my-cust
+  :set (lambda (symb val)
+         (setq my-frame-foreground val)
+         (dolist (frame (frames-on-display-list))
+           (with-selected-frame frame
+             (set-foreground-color my-frame-foreground)))))
 
 (add-hook 'after-make-frame-functions
 	  (lambda (frame)
 	    (set-frame-parameter frame 'alpha (cons my-frame-transparency my-frame-transparency))
 	    (with-selected-frame frame
-	      (set-background-color "Black")
-	      (set-foreground-color "Green"))))
+	      (set-background-color my-frame-background)
+	      (set-foreground-color my-frame-foreground))))
 #+END_SRC
 
 *** Handling of other window
