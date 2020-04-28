@@ -10,3 +10,4 @@
 (org-babel-load-file "~/.emacs.d/init-babel.org")
 
 (load custom-file)  ;; load cust after babel
+(elpy-reenable)  ;; call this after load custom-file
