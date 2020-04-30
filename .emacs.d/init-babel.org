@@ -1077,8 +1077,8 @@ in wheel-mode apparently works only with trackpad.
 #+BEGIN_SRC emacs-lisp
 (defun my-wheel-zoom ()
   (let ((kmap (make-sparse-keymap)))
-    (define-key kmap (kbd "<S-wheel-right>") #'text-scale-increase)
-    (define-key kmap (kbd "<S-wheel-left>") #'text-scale-decrease)
+    (define-key kmap (kbd "<S-mouse-7>") #'text-scale-increase)
+    (define-key kmap (kbd "<S-mouse-6>") #'text-scale-decrease)
     (my-env-add-map kmap)))
 #+END_SRC
 
