@@ -1,10 +1,25 @@
 #+TITLE: Jörgs Emacs init
 * Emacs Configuration
+
+This configuration consists of three parts. In the first one, I'm collecting
+lisp functios. Some of them maybe should be put into proper packages
+instead. The second part defines global key bindings. I see it as main
+part, as the overall emacs behaviour is defined there.
+In the third part, I'm placing configurations for the packages I use.
+
+I'm not using =use-package=. I want to distribute my config over
+several machines, so I'm setting config defaults in this file. Each
+machine uses it's local custom.el, which is adopted by using the
+=customize= functions and may or may not overwrite the defaults
+defined here. To make this effective, the ~custom.el~ file is loaded
+after this one has been processed.
+
 ** Lisp functions
 *** Initialization
 
-We want to set each frame to reasonable color defaults by defining an
-appropriate hook.
+I like to have an easy way setting and changing colors and
+transparency for all frames, this way having a consistent appearance
+on each machine.
 
 #+BEGIN_SRC emacs-lisp
 (defgroup my-cust nil "my customizations")
@@ -45,13 +60,18 @@ appropriate hook.
 
 *** Handling of other window
 
-First of all, a topic of long and outstanding troubles has been the question
-of seemingly eratically automatic selection of the other window. As it seems, this is
-actually a quite deterministic operation. Its frontend is ~pop-to-buffer~, the
-implementation and documentation is in ~display-buffer~. There, a range of
-~display-buffer-functions~ can be selected and combined at will, generating
-this behaviour. Now, often you may want to craft a window configuration into
-your frame, so you dont want any of this to be misused. 
+A topic of long and outstanding troubles has been the question
+of seemingly eratically automatic selection of the /other window/.
+While this is no problem when there is only one window in the current
+frame, as soon as you craft a window configuration into your frame,
+often the wrong window is chosen when a buffer should be pushed into
+the /other window/.
+
+As it seems, this selection of the other window is actually a quite
+deterministic operation. Its frontend is ~pop-to-buffer~, the
+implementation and documentation is in ~display-buffer~. There, a
+range of ~display-buffer-functions~ can be combined at
+will, generating this behaviour.
 
 A first mitigation may be to sensibly change the
 ~display-buffer-fallback-action~, overriding it in
@@ -60,10 +80,15 @@ A first mitigation may be to sensibly change the
 those erratic behaviour. Our replacement is a combination of
 ~display-buffer-below-selected~ and ~display-buffer-at-bottom~, which on first
 view seems to be not such a bad selection for frames using a large screen
-space.
+space. This way, info/occur/magit windows which you want to pop up on
+the fly, are put below the window you are working in currently. Other
+windows further down or at the sides are left untouched.
 
 But we also need to make sure windows are not splitted if too small. We also
 activate some further tweaks which are declared in the following sections.
+
+First of all, the configuration, including changes to
+~display-buffer-alist~, whose parts are introduced below.
 
 #+BEGIN_SRC emacs-lisp
 (custom-set-variables
@@ -98,10 +123,18 @@ Finally we add a function to recursively edit with original behaviour.
 
 **** Help and Apropos buffers
 
-We want to put those buffers into dedicated windows or into windows at bottom,
+All help or apropos buffers to be pushed into the other window,
+recognized by a regex, receive a special list if display actions and
+also attributes modifying the window size.I want to put those buffers into windows at bottom,
 where they are unobtrusive and can stay as long as we want.
-If such a window already exists, we want to reuse it, specifying a
-corresponding action.
+If such a window already exists, I want to reuse it. If I previously
+defined a special dedicated window (see below) I want that to be used.
+The given ~display-height~ attribute makes sure the window (also if
+reused) is shrunk to it's actual contents. If it needs to be widened
+instead, this is done only to half of the frame size.
+This way, I can describe functions or variables as often as I need and
+the description always goes into the same window at the bottom,
+resizing it as needed.
 
 #+BEGIN_SRC emacs-lisp
 (defun window-apply-height-fnc (window alist)
@@ -133,9 +166,9 @@ buffers in `display-buffer-reuse-help'."
         (window-update-buffer buffer wnd 'reuse alist))))
 #+END_SRC
 
-Now we define a buffer specific ~window-height~ action attribute only for
-help and apropos buffers, specifying our custom function
-~fit-window-to-buffer-max-half-frame~, which may need more tweaking to use less
+Now I'm defining a buffer specific ~window-height~ action attribute only for
+help and apropos buffers, specifying my custom function
+~fit-window-to-buffer-max-half-frame~, which probably may need more tweaking to use less
 than half frame height or also to use height of original window before split.
 
 #+BEGIN_SRC emacs-lisp
@@ -149,9 +182,14 @@ than half frame height or also to use height of original window before split.
 
 **** Dired and other file navigation buffers
 
-Now, we define a special handling for ~dired~ buffers. We leave it alone if
-used in the same window. But when used in other window, it should memorize its
-origin window and put view buffers sent to subsequent other windows there.
+The sasme should work in a similar way for ~dired~ buffers. But here
+is more too do besides selecting a window for the dired buffer. If used in
+the same window (e.g. via =C-x C-j=) , nothing to be done. But when
+used in the other window (=C-x 4 C-j=), it should memorize its origin window and put
+view buffers sent to /subsequent/ other windows there. So I can open
+dired in the other window (or leave it there and later on jump back to
+it), select other files and open them (=o=) within my main window,
+this way jumping forth and back between main and dired window.
 
 #+BEGIN_SRC emacs-lisp
 (defun set-orig-window (window marker-or-buffer)
@@ -243,10 +281,11 @@ defined, use that to display the dired buffer."
       (display-dired-in-orig buffer alist)))
 #+END_SRC
 
-A generalized matcher function, matching the current buffer.
+Here is a generalized matcher function, matching the current buffer.
 Different applications use different strategies to display their buffers, so
 you may need to use the ~display-buffer~-variants with or withour ~maybe~. See
-customization at the beginning for an example addressing occur.
+customization at the beginning for an example addressing occur, this
+way enabling using occur buffers in a similar way as dired.
 
 #+BEGIN_SRC emacs-lisp
 (defun match-current-buffer (regex)
@@ -256,9 +295,16 @@ customization at the beginning for an example addressing occur.
 
 **** Dedicated window
 
-Use this to define a dedicated 'other' window. Optional arg allows to limit
-the dedication to the next ~n~ buffer pushs. So prefix =C-1= makes a one time
-dedication, =C-0= removes a dedication.
+Use this to define a dedicated /other window/. Afterwards, the next
+operation selecting another window will choose the dedicated one.
+Optional arg allows to limit the dedication to the next ~n~ buffer
+pushs. So prefix =C-1= makes a one time dedication, =C-0= removes a
+dedication still lasting.
+
+I often use this to override the split threshold variables, first splitting
+in the direction I want, dedicating the new window and then calling
+info/occur/dired ot whatever and letting it put it's buffer into the
+other window.
 
 #+BEGIN_SRC emacs-lisp
 (defvar dedicated-other-window nil)
@@ -296,13 +342,13 @@ selected. If none is selected, revert to the default behaviour."
 **** Other window functions
 
 This sorted out, I'm adding some useful functions for handling the other
-window. This can be handy after calling or navigating within help texts for
-example.
+window. Most of them are aimed at navigating text within the other
+window without leaving the current window.
 
-First, some functions recording a buffer to be shown in another window. This
-one should be remote controllable as long as it is visible. When removed and
-no new buffer pushed to another window, we will fall back to the remote
-controlling behaviour selecting the next window.
+First, some functions recording a buffer to be shown in another
+window. It should be remote controllable as long as it is visible.
+When removed and no new buffer pushed to another window, we will fall
+back to the remote controlling behaviour selecting the next window.
 
 #+BEGIN_SRC emacs-lisp
 (defun display-buffer-as-scroll-buffer (buffer alist)
@@ -344,8 +390,7 @@ if not live."
   (call-interactively #'scroll-other-window-down))
 #+END_SRC
 
-A macro defining remote controlling functions. Default is to address the next window,
-but you can specify one with a prefix arg.
+A macro defining remote controlling functions, used in the following definitions.
 
 #+BEGIN_SRC emacs-lisp
 (defmacro nth-window (fname docstring &rest body)
@@ -360,7 +405,11 @@ but you can specify one with a prefix arg.
        ,@body)))
 #+END_SRC
 
-..and a function coding the logic to find the other window.
+..and a function coding the logic to find the other window. The
+functions scrolling the other window (=C-M-v= etc) and my funtions
+modifying the other window should behave consistently. Nevertheless, I
+want my functions to behave like =C-x o=, where applying prefix args I
+can jump to a specific window.
 
 #+BEGIN_SRC emacs-lisp
 (defun select-other-window (arg)
