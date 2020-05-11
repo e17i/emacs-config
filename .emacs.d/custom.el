@@ -88,6 +88,8 @@
      (77
       (german-kbd apple-kbd battery)))))
  '(my-environment-mode t)
+ '(my-frame-background "NavajoWhite3")
+ '(my-frame-foreground "Black")
  '(my-frame-stylings
    (quote
     (frame-width-below-threshold frame-height-dec frame-to-right frame-to-top)))
