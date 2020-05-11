@@ -1,10 +1,28 @@
 #+TITLE: Jörgs Emacs init
 * Emacs Configuration
+
+This configuration consists of three parts. In the first one, I'm collecting
+all kinds of lisp functions. Some of them probably should be put into proper packages
+instead. The second part defines global key bindings. This is the main
+part, as the overall emacs behaviour is defined there.
+In the third part, configurations for the packages I use are placed.
+
+I'm not using =use-package=. I want to distribute my config over
+several machines, so I'm setting config defaults in this file. Each
+machine uses it's local =custom.el=, which is adopted by using the
+=customize= functions and may or may not overwrite the defaults
+defined here. To make this effective, the =custom.el= file is loaded
+after this one has been processed.
+
+Some nice customizations are still hidden in =custom.el= and probably
+should be moved here..
+
 ** Lisp functions
 *** Initialization
 
-We want to set each frame to reasonable color defaults by defining an
-appropriate hook.
+I like to have an easy way of setting and changing colors and
+transparency for all frames, this way having a consistent appearance
+on each machine.
 
 #+BEGIN_SRC emacs-lisp
 (defgroup my-cust nil "my customizations")
@@ -45,13 +63,18 @@ appropriate hook.
 
 *** Handling of other window
 
-First of all, a topic of long and outstanding troubles has been the question
-of seemingly eratically automatic selection of the other window. As it seems, this is
-actually a quite deterministic operation. Its frontend is ~pop-to-buffer~, the
-implementation and documentation is in ~display-buffer~. There, a range of
-~display-buffer-functions~ can be selected and combined at will, generating
-this behaviour. Now, often you may want to craft a window configuration into
-your frame, so you dont want any of this to be misused. 
+A topic of long and outstanding troubles has been the question
+of seemingly eratically automatic selection of the /other window/.
+While this is no problem when there is only one window in the current
+frame, as soon as you craft a window configuration into your frame,
+often the wrong window is chosen when a buffer should be pushed into
+the /other window/.
+
+As it seems, this selection of the other window is actually a quite
+deterministic operation. Its frontend is ~pop-to-buffer~, the
+implementation and documentation is in ~display-buffer~. There, a
+range of ~display-buffer-functions~ can be combined at
+will, generating this behaviour.
 
 A first mitigation may be to sensibly change the
 ~display-buffer-fallback-action~, overriding it in
@@ -60,10 +83,15 @@ A first mitigation may be to sensibly change the
 those erratic behaviour. Our replacement is a combination of
 ~display-buffer-below-selected~ and ~display-buffer-at-bottom~, which on first
 view seems to be not such a bad selection for frames using a large screen
-space.
+space. This way, info/occur/magit windows which you want to pop up on
+the fly are put below the window you are working in currently. Other
+windows further down or at the sides are left untouched.
 
 But we also need to make sure windows are not splitted if too small. We also
 activate some further tweaks which are declared in the following sections.
+
+First of all, here is the configuration, including changes to
+~display-buffer-alist~, whose parts are introduced below.
 
 #+BEGIN_SRC emacs-lisp
 (custom-set-variables
@@ -85,7 +113,7 @@ activate some further tweaks which are declared in the following sections.
  '(window-min-width 40))
 #+END_SRC
 
-Finally we add a function to recursively edit with original behaviour.
+As a fallback we add a function to recursively edit with original behaviour.
 
 #+BEGIN_SRC emacs-lisp
 (defun edit-with-fallback-display ()
@@ -98,10 +126,18 @@ Finally we add a function to recursively edit with original behaviour.
 
 **** Help and Apropos buffers
 
-We want to put those buffers into dedicated windows or into windows at bottom,
-where they are unobtrusive and can stay as long as we want.
-If such a window already exists, we want to reuse it, specifying a
-corresponding action.
+All help or apropos buffers to be pushed into the other window,
+recognized by a regex, receive a special list if display actions and
+also attributes modifying the window size. We want to put those
+buffers into windows at bottom, where they are unobtrusive and can
+stay as long as we want. If such a window already exists, it should be
+reused. If a special dedicated window (see below) has been defined,
+that should be used instead. The given ~display-height~ attribute
+makes sure the window (also if reused) is shrunk to it's actual
+contents. If it needs to be widened instead, this is done at max to
+half of the frame size. This way, describing functions or variables
+can be repeated as often as wished and the description always goes
+into the same window, resizing it as needed.
 
 #+BEGIN_SRC emacs-lisp
 (defun window-apply-height-fnc (window alist)
@@ -133,9 +169,9 @@ buffers in `display-buffer-reuse-help'."
         (window-update-buffer buffer wnd 'reuse alist))))
 #+END_SRC
 
-Now we define a buffer specific ~window-height~ action attribute only for
-help and apropos buffers, specifying our custom function
-~fit-window-to-buffer-max-half-frame~, which may need more tweaking to use less
+Now I'm defining a buffer specific ~window-height~ action attribute only for
+help and apropos buffers, specifying my custom function
+~fit-window-to-buffer-max-half-frame~, which probably may need more tweaking to use less
 than half frame height or also to use height of original window before split.
 
 #+BEGIN_SRC emacs-lisp
@@ -149,9 +185,15 @@ than half frame height or also to use height of original window before split.
 
 **** Dired and other file navigation buffers
 
-Now, we define a special handling for ~dired~ buffers. We leave it alone if
-used in the same window. But when used in other window, it should memorize its
-origin window and put view buffers sent to subsequent other windows there.
+The same should work in a similar way for ~dired~ buffers. But here is
+more too do besides selecting a window for the dired buffer. If used
+in the same window (e.g. via =C-x C-j=) , nothing to be done. But when
+used in the other window (=C-x 4 C-j=), it should memorize its origin
+window and put view buffers sent to /subsequent/ other windows there.
+So ~dired~ can be opened in the other window (or be left there to be
+reused later). When other files are selected and opened within the main
+window (=o= or =C-o=), jumping forth and back between main and dired
+window is easily possible.
 
 #+BEGIN_SRC emacs-lisp
 (defun set-orig-window (window marker-or-buffer)
@@ -243,10 +285,11 @@ defined, use that to display the dired buffer."
       (display-dired-in-orig buffer alist)))
 #+END_SRC
 
-A generalized matcher function, matching the current buffer.
+Here is a generalized matcher function, matching the current buffer.
 Different applications use different strategies to display their buffers, so
 you may need to use the ~display-buffer~-variants with or withour ~maybe~. See
-customization at the beginning for an example addressing occur.
+customization at the beginning for an example addressing occur, this
+way enabling using occur buffers in a similar way as dired.
 
 #+BEGIN_SRC emacs-lisp
 (defun match-current-buffer (regex)
@@ -256,9 +299,16 @@ customization at the beginning for an example addressing occur.
 
 **** Dedicated window
 
-Use this to define a dedicated 'other' window. Optional arg allows to limit
-the dedication to the next ~n~ buffer pushs. So prefix =C-1= makes a one time
-dedication, =C-0= removes a dedication.
+Use this to define a dedicated /other window/. Afterwards, the next
+operation selecting another window will choose the dedicated one.
+Optional arg allows to limit the dedication to the next ~n~ buffer
+pushs. So prefix =C-1= makes a one time dedication, =C-0= removes a
+dedication still lasting.
+
+I often use this to override the split threshold variables, first splitting
+in the direction I want, dedicating the new window and then calling
+info/occur/dired ot whatever and letting it put it's buffer into the
+other window.
 
 #+BEGIN_SRC emacs-lisp
 (defvar dedicated-other-window nil)
@@ -296,13 +346,14 @@ selected. If none is selected, revert to the default behaviour."
 **** Other window functions
 
 This sorted out, I'm adding some useful functions for handling the other
-window. This can be handy after calling or navigating within help texts for
-example.
+window. Most of them are aimed at navigating text within the other
+window without leaving the current window.
 
-First, some functions recording a buffer to be shown in another window. This
-one should be remote controllable as long as it is visible. When removed and
-no new buffer pushed to another window, we will fall back to the remote
-controlling behaviour selecting the next window.
+First, some functions making the behaviour of ~scroll-other-window~
+and the =C-x4= functions more consistent. The other window should be remote
+controllable as long as it is visible. When removed and no new buffer
+pushed to another window, we will fall back to the remote controlling
+behaviour selecting the next window.
 
 #+BEGIN_SRC emacs-lisp
 (defun display-buffer-as-scroll-buffer (buffer alist)
@@ -344,8 +395,7 @@ if not live."
   (call-interactively #'scroll-other-window-down))
 #+END_SRC
 
-A macro defining remote controlling functions. Default is to address the next window,
-but you can specify one with a prefix arg.
+A macro defining remote controlling functions, used in the following definitions.
 
 #+BEGIN_SRC emacs-lisp
 (defmacro nth-window (fname docstring &rest body)
@@ -360,7 +410,11 @@ but you can specify one with a prefix arg.
        ,@body)))
 #+END_SRC
 
-..and a function coding the logic to find the other window.
+..and a function coding the logic to find the current other window. The
+functions scrolling the other window (=C-M-v= etc) and my funtions
+modifying the other window should behave consistently. Nevertheless, I
+want my functions to behave like =C-x o=, where applying prefix args I
+can jump to a specific window.
 
 #+BEGIN_SRC emacs-lisp
 (defun select-other-window (arg)
@@ -434,6 +488,34 @@ jumps and returning with =C-M-c= or =C-]=.
     (recursive-edit)))
 #+END_SRC
 
+**** Push buffer to frame
+
+Sometimes, auxiliary buffers to be displayed in the other window are
+eratically pushed into some well arranged window. While this can be configured
+through action variables used by ~display-buffer~, this is a complex and
+error-prone configuration. To mitigate, use this function to push a buffer into its
+own frame and revert the previously crafted window arrangement.
+
+This also calls a little bit for some further 'remote control other frame'
+functions..
+
+#+BEGIN_SRC emacs-lisp
+(defun push-buffer-to-frame ()
+  "push current window buffer to own frame and revert current window to previous frame."
+  (interactive)
+  (let ((current (current-buffer))
+        (selected (selected-window)))
+    (if (display-buffer-other-frame current)
+        (quit-restore-window selected))))
+#+END_SRC
+
+To make this work smoothly, we also change iconification of frames on close.
+
+#+BEGIN_SRC emacs-lisp
+(custom-set-variables
+ '(frame-auto-hide-function #'delete-frame))
+#+END_SRC
+
 *** Convenient error stepping
 
 Often I want to quickly navigate through a list of error messages or
@@ -442,8 +524,8 @@ different ways to archieve this. First of all, with =C-x C-f= you can activate
 ~error-follow-minor-mode~, allowing to move the mark through the error buffer,
 letting the referenced source buffers follow you. But if you want to have the
 source buffer active, you would need to jump to the error buffer for each next
-step. As a remedy, the following functions are introduced. While they follow
-the previous scheme adding remote control functions for the other window, they
+step. To ease this, the following functions are introduced. While they follow
+the scheme of adding remote control functions for the other window, they
 also show a cool feature of setting a temporary keymap in place, allowing
 further navigation steps by using shortcuts. This way, the long key sequence
 of addressing the other window (=C-x 4=) and starting the goto sequence
@@ -485,10 +567,11 @@ easy. This is quite convenient in the most different applications.
 
 *** Convenient Navigation Mode
 
-This is an experimental feature in the spirit of previous means of other
-window handling, allowing for activation of a temporary navigation mode. Using
+This is another feature in the spirit of previous means of other
+window handling, activating some kind of temporary navigation mode. Using
 this, you can conveniently navigate, scroll, set marks and jump to previous
-mark positions. Features include navigating up and down of the point,
+mark positions in the other window, without actually leaving the
+current window. Features include navigating up and down of the point,
 scrolling up and down, jumping to begin and end of buffer, pagewise up and
 down. Most of these can be combined with a numeric argument. The mode is
 cancelled by using any other key.
@@ -581,7 +664,7 @@ Keys are:
 
 *** Frame and window size
 
-Interactively resize windows.
+And another temporary pseudo mode, this time interactively resizing windows.
 
 #+BEGIN_SRC emacs-lisp
 (defun resize-window ()
@@ -590,8 +673,8 @@ Keys supported:
 
  - shrink window vertically
  + enlarge window vertically
- [ shrink window horizontally
- ] enlarge window horizontally
+ { shrink window horizontally
+ } enlarge window horizontally
  0 balance all frames window sizes"
   (interactive)
   (macrolet ((msg ()
@@ -616,8 +699,9 @@ Keys supported:
        tmap) 't)))
 #+END_SRC
 
-This used to be a frame maximize function for Mac, which is not longer
-needed here. Instead we build a configurable solution toggling through
+The following used to be a pseudo frame maximizing function for Mac,
+which is no longer needed, since macos supports native full screen
+modes. Instead we build a configurable solution toggling through
 normal, maximized and visually attractive. "Visually attractive" would
 then be something like "leave a small configurable space outside the
 frame and use the rest of screen". For this, we use a customizable
@@ -715,7 +799,7 @@ receive an argument list of (FRAME MAX-LINES MAX-COLS).
          py)))))
 #+END_SRC
 
-Here we toggle fullscreen, removing all frame decorations and
+Here we toggle native fullscreen, removing all frame decorations and
 transparency.
 
 #+BEGIN_SRC emacs-lisp
@@ -766,7 +850,7 @@ transparency.
 
 Often I want to put some text into delimiters after writing it, for example a
 string or an argument list. So the reverse of a splicing operation is needed.
-Here, you can define a region and delimit it using a character. In the special
+Here, you can select a region and delimit it using a character. In the special
 case of the character being an opening type of brace, automatically selects
 the corresponding closing brace. When called with prefix arg, the region is
 newly indented after delimiting.
@@ -795,38 +879,13 @@ delimiting."
     (if pre (indent-region point mark))))
 #+END_SRC
 
-*** Push buffer to frame
-
-Sometimes, auxiliary buffers to be displayed in the 'other' window are
-eratically pushed into some well arranged window. While this can be configured
-through action variables used by ~display-buffer~, this is a complex and
-error-prone configuration. To mitigate, use this function to push it into its
-own frame and revert the previously crafted window arrangement.
-
-This also calls a little bit for some further 'remote control other frame'
-functions..
-
-#+BEGIN_SRC emacs-lisp
-(defun push-buffer-to-frame ()
-  "push current window buffer to own frame and revert current window to previous frame."
-  (interactive)
-  (let ((current (current-buffer))
-        (selected (selected-window)))
-    (if (display-buffer-other-frame current)
-        (quit-restore-window selected))))
-#+END_SRC
-
-To make this work smoothly, we also change iconification of frames on close.
-
-#+BEGIN_SRC emacs-lisp
-(custom-set-variables
- '(frame-auto-hide-function #'delete-frame))
-#+END_SRC
-
 ** Environment Minor Mode
+
 We want to easily be able to switch between different environments. For
-example, using a notebook in mobile or in docked mode may mean using mouse or
-trackpad, apple or pc keyboard. This is implemented in a global minor mode,
+example, when using a notebook in mobile or in docked mode, you may
+have a mouse or trackpad, apple or pc keyboard at hand. Each of
+them needs other custom configurations, which should be easily
+switable when changing the environment. This is implemented in a global minor mode,
 binding a hot key as environment toggle. Each environment is designated by an
 id character shown in the mode line and a list of actions. Each action has
 enter and exit functions to setup and leave the corresponding action. This
@@ -969,7 +1028,7 @@ default N id and no actions."
 *** Generic
 
 Some convenience keys for handling buffers and files. Use caution and check to
-not shadow future functionality here.
+not shadow future default functionality here.
 We replace =C-x C-f= with ~find-file~, as the ~-at-point~ function is then
 still reachable through =M-n=. The old mapping of =C-c C-f= to
 ~find-file-at-point~ is removed, as it is now overlayed by org.
@@ -982,6 +1041,14 @@ Probably the idea of having =M-x= also on a /Control/ binding proves to be good.
 (global-set-key [24 67108877] 'execute-extended-command) ;; C-x C-RET
 #+END_SRC
 
+Having the repeat commands more within reach also proves very helpful:
+
+#+BEGIN_SRC emacs-lisp
+(global-set-key "\C-x\C-z" #'repeat)
+(global-set-key [201326651] #'repeat-complex-command)  ;; C-M-;
+(global-set-key [201326650] #'repeat-complex-command) ;; C-M-:
+#+END_SRC
+
 And my delimiting function:
 
 #+BEGIN_SRC emacs-lisp
@@ -990,10 +1057,15 @@ And my delimiting function:
 
 *** Convenience for searching
 
-Often you want to finish a search leaving the point on the first character of
-the string found. This enables using isearch as a convenient tool for
-positioning, selecting or killing to but not including a string. This is
-enabled here on =C-return=.
+This one really is a small hidden diamond. Often you want to finish a
+search leaving the point on the first character of the string found.
+As each search also positions the mark at it's origin, by executing
+adjacent searches you can easily select a region. This enables using
+isearch as a convenient tool not only for navigating, but also for
+selecting or killing. This is enabled here on =C-return=. So you start
+a search, typing ahead until you reach the desired location, =C-RET=
+and hit the desired spot. Repeating it selects the region between both
+spots. Make it visible with =C-x C-x=.
 
 #+BEGIN_SRC emacs-lisp
 (define-key isearch-mode-map (kbd "<C-return>")
@@ -1029,7 +1101,7 @@ Ace enables some more vi-style jumping and zapping (see =M-z= for the basic
 #+BEGIN_SRC emacs-lisp
 (global-set-key "\M-J" #'ace-jump-char-mode)
 ;;;(global-set-key "\C-x\C-j" #'ace-jump-mode-pop-mark) ;; this is dired-jump
-(global-set-key "\C-x\C-z" #'zzz-up-to-char)
+(global-set-key "\M-Z" #'zzz-up-to-char)
 #+END_SRC
 
 *** Mouse handling
@@ -1242,13 +1314,13 @@ Load and enable different additional packages
 (setq org-element-use-cache nil)  ;; temporarily disable org element cache
 (load-library "realgud")
 (load-library "evil")
-(require 'wdired)
+(require 'wdired)  ;; edit dired buffers with C-x C-q
 (load "dired-x.el") ;; also enable C-x C-j
 (require 'helm-config)
 ;; (require 'ox-rst) ; not yet installed
 (global-undo-tree-mode)
 (global-magit-file-mode t)
-(which-key-mode 1)
+(which-key-mode 1)  ;; not only for spacemacs..
 
 (setq erc-autojoin-channels-alist '(("freenode.net" "#latex-de" "##latinitas" "#NetBSD" "##bash-de" "#git" "#vim" "#emacs" "#erc" "#oberon" "#macosx")))
 (define-key global-map [ns-drag-file] 'ns-find-file)
@@ -1281,7 +1353,8 @@ Accept simplified answers.
 ** Mode-specific customizations
 *** dired
 
-Now that ~ediff~ is configured for use in ~magit~, also use it in ~dired~.
+Enable simple access to  ~ediff~ within ~dired~. Select two files with
+mark and point, then press ~=~ to compare.
 
 #+BEGIN_SRC emacs-lisp
 (define-key dired-mode-map "="
@@ -1300,7 +1373,7 @@ Now that ~ediff~ is configured for use in ~magit~, also use it in ~dired~.
 
 **** Evil defines
 
-Here we implement some kind of .vimrc initialization.
+Here we implement some kind of =.vimrc= initialization.
 This is also an example of defining an evil leader key and some adjacent keymaps.
 Inspired by spacemacs, we experiment with rebinding the =C-x= and =C-c= maps.
 They are accessable by =SPC x= and =SPC c=, while the =C-x= map is also parent
@@ -1327,7 +1400,7 @@ accessable by =SPC=. Lets see how this works out.
 
 **** experimental evil scroll mode
 
-Example of defining an own vi mode. Motivated by the convenient navigation
+Example of defining an own evil mode. Motivated by the convenient navigation
 mode ([[Convenient Navigation Mode]]) and a vi configuration mapping j to jzz, k
 to kzz, this allows probably easier scrolling in evil.
 
@@ -1363,7 +1436,7 @@ to kzz, this allows probably easier scrolling in evil.
 
 **** Evil Emacs config
 
-When using evil-mode, set ~evil-exit-emacs-state~ to =C-M-z=, as I'm used to
+When using evil-mode, we set ~evil-exit-emacs-state~ to =C-M-z=, as I'm used to
 ~suspend-frame~. Additionally, always enter evil mode in emacs state (see custom). This
 way, without getting in the way it is always only a key press away.
 
@@ -1737,7 +1810,7 @@ Also use our delimiter for parens.
     - assign function name
     - where-is-internal - find key bindings for function
     - key-binding - find function for key binding
-*** TODO complete mouse/trackpad handling/switching
+*** DONE complete mouse/trackpad handling/switching
 *** DONE make window resize steps customizable, add center function
 *** DONE display-buffer
 **** DONE option close frame on quit instead of iconify
