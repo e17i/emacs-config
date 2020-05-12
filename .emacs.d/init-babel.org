@@ -1,3 +1,13 @@
+# -*- org-html-postamble-format:(("en" "<p class="author">Author: %a
+# (Reddit: <a href="https://www.reddit.com/user/e17i">u/e17i</a>)</p> <p>Made on
+# emacs org-mode</p>"));
+# org-html-postamble: t -*-
+#
+# #+HTML_HEAD: <link rel="stylesheet" type="text/css" href="chrome/rethink.css" />
+#+HTML_HEAD_EXTRA: <img src="image1.jpg"/><div style="padding:2vh"><a style="font-weight:900; text-decoration:none" href="/">Home</a></div>
+#+OPTIONS: toc:nil num:nil html-style:nil
+#+INFOJS_OPT: view:info toc:nil path:chrome/org-info.js
+#+AUTHOR: Jörg Kollmann
 #+TITLE: My Emacs init
 * Emacs Configuration
 
@@ -1473,12 +1483,12 @@ For this, set ~python-shell-interpreter~ to path of buildout powerscript exe and
 Also worth to remember the company backend completion on =C-M-i=.
 
 Note: ~elpy-enable~ adds to ~python-mode-hook~ only on first call. So if you
-re-evaluate [[custom.el]], remember to afterwards ~(setq elpy-enabled-p nil)~
+re-evaluate ~custom.el~, remember to afterwards ~(setq elpy-enabled-p nil)~
 and ~(elpy-enable)~.
 
 Because of this, provision of a function to reenable it after reloading
-[[custom.el]] has been proven to be handy. We enable elpy in [[init.el]] after loading
-[[custom.el]].
+~custom.el~ has been proven to be handy. We enable elpy in ~init.el~ after loading
+~custom.el~.
 
 #+BEGIN_SRC emacs-lisp
 (elpy-enable)
