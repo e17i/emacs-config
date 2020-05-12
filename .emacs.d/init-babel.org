@@ -1,4 +1,4 @@
-#+TITLE: Jörgs Emacs init
+#+TITLE: My Emacs init
 * Emacs Configuration
 
 This configuration consists of three parts. In the first one, I'm collecting
@@ -428,6 +428,13 @@ can jump to a specific window.
         (select-window scroll-window)
       (call-interactively #'other-window)))
   (selected-window))
+
+(defun find-other-window (arg)
+  "finds the current other-window without actually selecting it."
+  (interactive "P")
+  (with-selected-window (selected-window)
+    (call-interactively #'select-other-window)
+    (selected-window)))
 #+END_SRC
 
 The same for frames might also come in handy.
@@ -519,18 +526,26 @@ To make this work smoothly, we also change iconification of frames on close.
 *** Convenient error stepping
 
 Often I want to quickly navigate through a list of error messages or
-occurencies, jumping to the places the errors are indicating. There are
-different ways to archieve this. First of all, with =C-x C-f= you can activate
-~error-follow-minor-mode~, allowing to move the mark through the error buffer,
-letting the referenced source buffers follow you. But if you want to have the
-source buffer active, you would need to jump to the error buffer for each next
-step. To ease this, the following functions are introduced. While they follow
-the scheme of adding remote control functions for the other window, they
-also show a cool feature of setting a temporary keymap in place, allowing
-further navigation steps by using shortcuts. This way, the long key sequence
-of addressing the other window (=C-x 4=) and starting the goto sequence
-(=M-g=) needs to be casted only as an initiation. Afterwards, it gets really
-easy. This is quite convenient in the most different applications.
+occurencies, jumping to the places the errors are indicating. There
+are different ways to archieve this. First of all, with =C-x C-f= you
+can activate ~error-follow-minor-mode~, allowing to move the mark
+through the error buffer, letting the referenced source buffers follow
+you. But if you want to have the source buffer active, you would need
+to jump to the error buffer for each next step. To ease this, the
+following functions are introduced. While they follow the scheme of
+adding remote control functions for the other window, they also show a
+cool feature of setting a temporary keymap in place, allowing further
+navigation steps by using shortcuts. This way, the long key sequence
+of addressing the other window (=C-x 4=) and starting the goto
+sequence (=M-g=) needs to be casted only as an initiation. Afterwards,
+it gets really easy. This is quite convenient in the most different
+applications. Here is a pattern often used my me as an example. When
+using =multi-occur= to find a common regex within a project's files,
+arrange for a current file to be displayed within a (selected) main window and
+multi-occur in another window. Now just call =next-error-other-window=
+and navigate through the hits. This changes the current file buffer
+within the main window as you go, so you may edit away as this window
+is still selected.
 
 #+BEGIN_SRC emacs-lisp
 (require 'cl)
@@ -551,16 +566,16 @@ easy. This is quite convenient in the most different applications.
        map) 't)))
 
 (defun next-error-other-window (&optional arg)
-  "Visit next error message displayed in other window's buffer. With prefix arg, jump to nth error."
+  "Visit next error message displayed in other window's buffer. With prefix arg, jump to nth window."
   (interactive "P")
-  (with-current-buffer (window-buffer (next-window))
+  (with-current-buffer (window-buffer (call-interactively #'find-other-window))
     (next-error arg)
     (error-step)))
 
 (defun previous-error-other-window (&optional arg)
-  "Visit previous error message displayed in other window's buffer. With prefix arg, jump to nth error."
+  "Visit previous error message displayed in other window's buffer. With prefix arg, jump to nth window."
   (interactive "P")
-  (with-current-buffer (window-buffer (next-window))
+  (with-current-buffer (window-buffer (call-interactively #'find-other-window))
     (previous-error arg)
     (error-step)))
 #+END_SRC
@@ -990,7 +1005,7 @@ not shadow future default functionality here.
 We replace =C-x C-f= with ~find-file~, as the ~-at-point~ function is then
 still reachable through =M-n=. The old mapping of =C-c C-f= to
 ~find-file-at-point~ is removed, as it is now overlayed by org.
-Probably the idea of having =M-x= also on a /Control/ binding proves to be good.
+Probably the idea of having =M-x= also on a /Control/ binding proves to be practical.
 
 #+BEGIN_SRC emacs-lisp
 (global-set-key "\C-x\C-b" #'bs-show)	;; this used to be electric-buffer-list
@@ -999,7 +1014,7 @@ Probably the idea of having =M-x= also on a /Control/ binding proves to be good.
 (global-set-key [24 67108877] 'execute-extended-command) ;; C-x C-RET
 #+END_SRC
 
-Having the repeat commands more within reach also proves very helpful:
+Having the repeat commands more within reach also proves to be very helpful:
 
 #+BEGIN_SRC emacs-lisp
 (global-set-key "\C-x\C-z" #'repeat)
@@ -1080,6 +1095,7 @@ trackpad, as it is mapped to =S-wheel-left= / =right=).
 To revert yanks when hand on mouse, we place ~undo~ on =M-mouse-2=. Probably
 no more customizations to be done. Especially when using the trackpad, hands
 are already near keyboard.
+Should be activated by customizing into my-environment-mode.
 
 #+BEGIN_SRC emacs-lisp
 (defun mouse-undo ()
@@ -1221,7 +1237,8 @@ define such a key, then call =C-x ESC ESC= and copy the resulting parametrized
 command from minibuffer.
 Alternatively, call =M-: (read-key-sequence "> ")=.
 
-Now come the key bindings for convenient error navigation, as promised above.
+Now come the key bindings for convenient error navigation whose
+functions were defined above.
 
 #+BEGIN_SRC emacs-lisp
 (define-prefix-command 'other-goto-map)
