@@ -1,0 +1,2359 @@
+<?xml version="1.0" encoding="utf-8"?>
+<!DOCTYPE html PUBLIC "-//W3C//DTD XHTML 1.0 Strict//EN"
+"http://www.w3.org/TR/xhtml1/DTD/xhtml1-strict.dtd">
+<html xmlns="http://www.w3.org/1999/xhtml" lang="en" xml:lang="en">
+<head>
+<!-- 2020-05-12 Di. 18:06 -->
+<meta http-equiv="Content-Type" content="text/html;charset=utf-8" />
+<meta name="viewport" content="width=device-width, initial-scale=1" />
+<title>My Emacs init</title>
+<meta name="generator" content="Org mode" />
+<meta name="author" content="Jörg Kollmann" />
+<img src="image1.jpg"/><div style="padding:2vh"><a style="font-weight:900; text-decoration:none" href="/">Home</a></div>
+<script type="text/javascript" src="chrome/org-info.js">
+/**
+ *
+ * @source: chrome/org-info.js
+ *
+ * @licstart  The following is the entire license notice for the
+ *  JavaScript code in chrome/org-info.js.
+ *
+ * Copyright (C) 2012-2019 Free Software Foundation, Inc.
+ *
+ *
+ * The JavaScript code in this tag is free software: you can
+ * redistribute it and/or modify it under the terms of the GNU
+ * General Public License (GNU GPL) as published by the Free Software
+ * Foundation, either version 3 of the License, or (at your option)
+ * any later version.  The code is distributed WITHOUT ANY WARRANTY;
+ * without even the implied warranty of MERCHANTABILITY or FITNESS
+ * FOR A PARTICULAR PURPOSE.  See the GNU GPL for more details.
+ *
+ * As additional permission under GNU GPL version 3 section 7, you
+ * may distribute non-source (e.g., minimized or compacted) forms of
+ * that code without the copy of the GNU GPL normally required by
+ * section 4, provided you include this license notice and a URL
+ * through which recipients can access the Corresponding Source.
+ *
+ * @licend  The above is the entire license notice
+ * for the JavaScript code in chrome/org-info.js.
+ *
+ */
+</script>
+
+<script type="text/javascript">
+
+/*
+@licstart  The following is the entire license notice for the
+JavaScript code in this tag.
+
+Copyright (C) 2012-2019 Free Software Foundation, Inc.
+
+The JavaScript code in this tag is free software: you can
+redistribute it and/or modify it under the terms of the GNU
+General Public License (GNU GPL) as published by the Free Software
+Foundation, either version 3 of the License, or (at your option)
+any later version.  The code is distributed WITHOUT ANY WARRANTY;
+without even the implied warranty of MERCHANTABILITY or FITNESS
+FOR A PARTICULAR PURPOSE.  See the GNU GPL for more details.
+
+As additional permission under GNU GPL version 3 section 7, you
+may distribute non-source (e.g., minimized or compacted) forms of
+that code without the copy of the GNU GPL normally required by
+section 4, provided you include this license notice and a URL
+through which recipients can access the Corresponding Source.
+
+
+@licend  The above is the entire license notice
+for the JavaScript code in this tag.
+*/
+
+<!--/*--><![CDATA[/*><!--*/
+org_html_manager.set("TOC_DEPTH", "3");
+org_html_manager.set("LINK_HOME", "");
+org_html_manager.set("LINK_UP", "");
+org_html_manager.set("LOCAL_TOC", "1");
+org_html_manager.set("VIEW_BUTTONS", "0");
+org_html_manager.set("MOUSE_HINT", "underline");
+org_html_manager.set("FIXED_TOC", "0");
+org_html_manager.set("TOC", "0");
+org_html_manager.set("VIEW", "info");
+org_html_manager.setup();  // activate after the parameters are set
+/*]]>*///-->
+</script>
+<script type="text/javascript">
+/*
+@licstart  The following is the entire license notice for the
+JavaScript code in this tag.
+
+Copyright (C) 2012-2019 Free Software Foundation, Inc.
+
+The JavaScript code in this tag is free software: you can
+redistribute it and/or modify it under the terms of the GNU
+General Public License (GNU GPL) as published by the Free Software
+Foundation, either version 3 of the License, or (at your option)
+any later version.  The code is distributed WITHOUT ANY WARRANTY;
+without even the implied warranty of MERCHANTABILITY or FITNESS
+FOR A PARTICULAR PURPOSE.  See the GNU GPL for more details.
+
+As additional permission under GNU GPL version 3 section 7, you
+may distribute non-source (e.g., minimized or compacted) forms of
+that code without the copy of the GNU GPL normally required by
+section 4, provided you include this license notice and a URL
+through which recipients can access the Corresponding Source.
+
+
+@licend  The above is the entire license notice
+for the JavaScript code in this tag.
+*/
+<!--/*--><![CDATA[/*><!--*/
+ function CodeHighlightOn(elem, id)
+ {
+   var target = document.getElementById(id);
+   if(null != target) {
+     elem.cacheClassElem = elem.className;
+     elem.cacheClassTarget = target.className;
+     target.className = "code-highlighted";
+     elem.className   = "code-highlighted";
+   }
+ }
+ function CodeHighlightOff(elem, id)
+ {
+   var target = document.getElementById(id);
+   if(elem.cacheClassElem)
+     elem.className = elem.cacheClassElem;
+   if(elem.cacheClassTarget)
+     target.className = elem.cacheClassTarget;
+ }
+/*]]>*///-->
+</script>
+</head>
+<body>
+<div id="content">
+<h1 class="title">My Emacs init</h1>
+<div id="table-of-contents">
+<h2>Table of Contents</h2>
+<div id="text-table-of-contents">
+<ul>
+<li><a href="#org9cabbb0">Emacs Configuration</a>
+<ul>
+<li><a href="#orge2e6c7a">Lisp functions</a>
+<ul>
+<li><a href="#orgf539b1b">Initialization</a></li>
+<li><a href="#org41bd029">Handling of other window</a></li>
+<li><a href="#orga785a6f">Convenient error stepping</a></li>
+<li><a href="#org03c2c6c">Convenient Navigation Mode</a></li>
+<li><a href="#orgb7694ac">Frame and window size</a></li>
+<li><a href="#orgfcf3b9d">electric delimiter</a></li>
+</ul>
+</li>
+<li><a href="#orgbba4326">Environment Minor Mode</a>
+<ul>
+<li><a href="#org12ef20c">Internals</a></li>
+</ul>
+</li>
+<li><a href="#orgaf40aa6">Global key bindings</a>
+<ul>
+<li><a href="#org93fb758">Generic</a></li>
+<li><a href="#org25ebeec">Convenience for searching</a></li>
+<li><a href="#org6942f2d">Scrolling</a></li>
+<li><a href="#org54b7f66">Ace zapping</a></li>
+<li><a href="#org3e80259">Mouse handling</a></li>
+<li><a href="#org8ad8ff9">Keyboard handling</a></li>
+<li><a href="#orgf59dede">Window handling</a></li>
+<li><a href="#org144c635">Remote controlling other window</a></li>
+<li><a href="#org2b8871f">Remote controlling other frame</a></li>
+</ul>
+</li>
+<li><a href="#orge435ba7">Misc</a></li>
+<li><a href="#org8d9a442">Mode-specific customizations</a>
+<ul>
+<li><a href="#org593f181">dired</a></li>
+<li><a href="#orgb3b0cd6">Evil mode</a></li>
+<li><a href="#orga61fb7e">C++ mode customizations, in use for aeons now</a></li>
+<li><a href="#org9962b4f">Auto-fill-mode</a></li>
+<li><a href="#org74d5a67">python mode</a></li>
+<li><a href="#org2c725c1">React programming</a></li>
+<li><a href="#orgf1730f5">XML-mode</a></li>
+<li><a href="#org9988c8c">smartparens mode</a></li>
+<li><a href="#org4824b40">markdown mode</a></li>
+</ul>
+</li>
+<li><a href="#orga348b71">Disabled commands</a></li>
+<li><a href="#orgbb76f91">Todo</a>
+<ul>
+<li><a href="#org6a8a5b6"><span class="todo TODO">TODO</span> split custom.el into site specific customization and global custom selection to be merged/distributed</a></li>
+<li><a href="#org6c5eae0"><span class="todo TODO">TODO</span> read about tramp plugins</a></li>
+<li><a href="#orgbc76d1d"><span class="todo TODO">TODO</span> macro for command composition</a></li>
+<li><a href="#orgf8c7e82"><span class="done DONE">DONE</span> complete mouse/trackpad handling/switching</a></li>
+<li><a href="#orgcb0a9dc"><span class="done DONE">DONE</span> make window resize steps customizable, add center function</a></li>
+<li><a href="#org9648bfc"><span class="done DONE">DONE</span> display-buffer</a></li>
+<li><a href="#org2d9a66e"><span class="done DONE">DONE</span> find out about alist handling</a></li>
+<li><a href="#org0e72be4"><span class="done DONE">DONE</span> finetune nth-window and other window handling</a></li>
+<li><a href="#orgeabc7b5"><span class="done DONE">DONE</span> complete keyboard switching</a></li>
+<li><a href="#org34631a7"><span class="done DONE">DONE</span> cleanup misc, move to mode specific sections</a></li>
+<li><a href="#org867998c"><span class="done DONE">DONE</span> env-mode: use make-composed-keymap, set-keymap-parent</a></li>
+<li><a href="#org871eb5f"><span class="done DONE">DONE</span> think about movement/search placing point on beginning of adjacent object</a></li>
+</ul>
+</li>
+</ul>
+</li>
+</ul>
+</div>
+</div>
+<div id="outline-container-org9cabbb0" class="outline-2">
+<h2 id="org9cabbb0">Emacs Configuration</h2>
+<div class="outline-text-2" id="text-org9cabbb0">
+<p>
+This configuration consists of three parts. In the first one, I'm collecting
+all kinds of lisp functions. Some of them probably should be put into proper packages
+instead. The second part defines global key bindings. This is the main
+part, as the overall emacs behaviour is defined there.
+In the third part, configurations for the packages I use are placed.
+</p>
+
+<p>
+I'm not using <code>use-package</code>. I want to distribute my config over
+several machines, so I'm setting config defaults in this file. Each
+machine uses it's local <code>custom.el</code>, which is adopted by using the
+<code>customize</code> functions and may or may not overwrite the defaults
+defined here. To make this effective, the <code>custom.el</code> file is loaded
+after this one has been processed.
+</p>
+
+<p>
+Some nice customizations are still hidden in <code>custom.el</code> and probably
+should be moved here..
+</p>
+</div>
+
+<div id="outline-container-orge2e6c7a" class="outline-3">
+<h3 id="orge2e6c7a">Lisp functions</h3>
+<div class="outline-text-3" id="text-orge2e6c7a">
+</div>
+<div id="outline-container-orgf539b1b" class="outline-4">
+<h4 id="orgf539b1b">Initialization</h4>
+<div class="outline-text-4" id="text-orgf539b1b">
+<p>
+I like to have an easy way of setting and changing colors and
+transparency for all frames, this way having a consistent appearance
+on each machine.
+</p>
+
+<div class="org-src-container">
+<pre class="src src-emacs-lisp">(<span style="color: #a020f0;">defgroup</span> <span style="color: #228b22;">my-cust</span> nil <span style="color: #8b2252;">"my customizations"</span>)
+(<span style="color: #a020f0;">defcustom</span> <span style="color: #a0522d;">my-frame-transparency</span> 100
+  <span style="color: #8b2252;">"transparency used for all display frames."</span>
+  <span style="color: #483d8b;">:type</span> '(integer)
+  <span style="color: #483d8b;">:group</span> 'my-cust
+  <span style="color: #483d8b;">:set</span> (<span style="color: #a020f0;">lambda</span> (symb val)
+         (<span style="color: #a020f0;">setq</span> my-frame-transparency val)
+         (<span style="color: #a020f0;">dolist</span> (frame (frames-on-display-list))
+           (set-frame-parameter frame 'alpha `(,val . ,val)))))
+(<span style="color: #a020f0;">defcustom</span> <span style="color: #a0522d;">my-frame-background</span> <span style="color: #8b2252;">"Black"</span>
+  <span style="color: #8b2252;">"background color used for all display frames."</span>
+  <span style="color: #483d8b;">:type</span> '(string)
+  <span style="color: #483d8b;">:group</span> 'my-cust
+  <span style="color: #483d8b;">:set</span> (<span style="color: #a020f0;">lambda</span> (symb val)
+         (<span style="color: #a020f0;">setq</span> my-frame-background val)
+         (<span style="color: #a020f0;">dolist</span> (frame (frames-on-display-list))
+           (<span style="color: #a020f0;">with-selected-frame</span> frame
+             (set-background-color my-frame-background)))))
+(<span style="color: #a020f0;">defcustom</span> <span style="color: #a0522d;">my-frame-foreground</span> <span style="color: #8b2252;">"Green"</span>
+  <span style="color: #8b2252;">"foreground color used for all display frames."</span>
+  <span style="color: #483d8b;">:type</span> '(string)
+  <span style="color: #483d8b;">:group</span> 'my-cust
+  <span style="color: #483d8b;">:set</span> (<span style="color: #a020f0;">lambda</span> (symb val)
+         (<span style="color: #a020f0;">setq</span> my-frame-foreground val)
+         (<span style="color: #a020f0;">dolist</span> (frame (frames-on-display-list))
+           (<span style="color: #a020f0;">with-selected-frame</span> frame
+             (set-foreground-color my-frame-foreground)))))
+
+(add-hook 'after-make-frame-functions
+          (<span style="color: #a020f0;">lambda</span> (frame)
+            (set-frame-parameter frame 'alpha (cons my-frame-transparency my-frame-transparency))
+            (<span style="color: #a020f0;">with-selected-frame</span> frame
+              (set-background-color my-frame-background)
+              (set-foreground-color my-frame-foreground))))
+</pre>
+</div>
+</div>
+</div>
+
+<div id="outline-container-org41bd029" class="outline-4">
+<h4 id="org41bd029">Handling of other window</h4>
+<div class="outline-text-4" id="text-org41bd029">
+<p>
+A topic of long and outstanding troubles has been the question
+of seemingly eratically automatic selection of the <i>other window</i>.
+While this is no problem when there is only one window in the current
+frame, as soon as you craft a window configuration into your frame,
+often the wrong window is chosen when a buffer should be pushed into
+the <i>other window</i>.
+</p>
+
+<p>
+As it seems, this selection of the other window is actually a quite
+deterministic operation. Its frontend is <code>pop-to-buffer</code>, the
+implementation and documentation is in <code>display-buffer</code>. There, a
+range of <code>display-buffer-functions</code> can be combined at
+will, generating this behaviour.
+</p>
+
+<p>
+A first mitigation may be to sensibly change the
+<code>display-buffer-fallback-action</code>, overriding it in
+<code>display-buffer-base-action</code>. Here we just replace the
+<code>display-buffer-use-some-window</code> function which probably is the source of
+those erratic behaviour. Our replacement is a combination of
+<code>display-buffer-below-selected</code> and <code>display-buffer-at-bottom</code>, which on first
+view seems to be not such a bad selection for frames using a large screen
+space. This way, info/occur/magit windows which you want to pop up on
+the fly are put below the window you are working in currently. Other
+windows further down or at the sides are left untouched.
+</p>
+
+<p>
+But we also need to make sure windows are not splitted if too small. We also
+activate some further tweaks which are declared in the following sections.
+</p>
+
+<p>
+First of all, here is the configuration, including changes to
+<code>display-buffer-alist</code>, whose parts are introduced below.
+</p>
+
+<div class="org-src-container">
+<pre class="src src-emacs-lisp">(custom-set-variables
+ '(display-buffer-alist
+   '((dired-to-other-window maybe-make-dired-window-origin)
+     (dired-from-other-window
+      (display-dired-maybe-in-orig))
+     (<span style="color: #8b2252;">"\\*Occur\\*"</span> make-buffer-window-origin)
+     ((<span style="color: #a020f0;">lambda</span>
+        (buffer alist)
+        (match-current-buffer <span style="color: #8b2252;">"\\\\*Occur\\\\*"</span>))
+      display-buffer-in-orig)
+     (<span style="color: #8b2252;">"\\*Help\\*</span><span style="color: #8b2252; font-weight: bold;">\\</span><span style="color: #8b2252; font-weight: bold;">|</span><span style="color: #8b2252;">\\*Apropos\\*"</span>
+      (display-buffer-as-scroll-buffer display-buffer-dedicated-window display-buffer-reuse-help display-buffer-at-bottom)
+      (window-height . fit-window-to-buffer-max-half-frame))))
+ '(display-buffer-base-action
+   '((display-buffer-maybe-as-scroll-buffer display-buffer-dedicated-window display-buffer--maybe-same-window display-buffer-reuse-window display-buffer--maybe-pop-up-frame-or-window display-buffer-in-previous-window display-buffer-below-selected display-buffer-at-bottom display-buffer-pop-up-frame)))
+ '(window-min-height 8)
+ '(window-min-width 40))
+</pre>
+</div>
+
+<p>
+As a fallback we add a function to recursively edit with original behaviour.
+</p>
+
+<div class="org-src-container">
+<pre class="src src-emacs-lisp">(<span style="color: #a020f0;">defun</span> <span style="color: #0000ff;">edit-with-fallback-display</span> ()
+  <span style="color: #8b2252;">"reset `</span><span style="color: #008b8b;">display-buffer-base-action</span><span style="color: #8b2252;">' and edit recursively, to</span>
+<span style="color: #8b2252;">  have the original buffer sharing behaviour."</span>
+  (<span style="color: #a020f0;">interactive</span>)
+  (<span style="color: #a020f0;">let</span> ((display-buffer-base-action nil))
+    (recursive-edit)))
+</pre>
+</div>
+</div>
+
+<ul class="org-ul">
+<li><a id="org5f9c70a"></a>Help and Apropos buffers<br />
+<div class="outline-text-5" id="text-org5f9c70a">
+<p>
+All help or apropos buffers to be pushed into the other window,
+recognized by a regex, receive a special list if display actions and
+also attributes modifying the window size. We want to put those
+buffers into windows at bottom, where they are unobtrusive and can
+stay as long as we want. If such a window already exists, it should be
+reused. If a special dedicated window (see below) has been defined,
+that should be used instead. The given <code>display-height</code> attribute
+makes sure the window (also if reused) is shrunk to it's actual
+contents. If it needs to be widened instead, this is done at max to
+half of the frame size. This way, describing functions or variables
+can be repeated as often as wished and the description always goes
+into the same window, resizing it as needed.
+</p>
+
+<div class="org-src-container">
+<pre class="src src-emacs-lisp">(<span style="color: #a020f0;">defun</span> <span style="color: #0000ff;">window-apply-height-fnc</span> (window alist)
+  <span style="color: #8b2252;">"rudimentary alist parser just accepting a height fnc for now.."</span>
+  (<span style="color: #a020f0;">let</span> ((height (cdr (assq 'window-height alist))))
+    (<span style="color: #a020f0;">if</span> (functionp height)
+        (<span style="color: #a020f0;">ignore-errors</span> (funcall height window)))
+    window))
+
+(<span style="color: #a020f0;">defun</span> <span style="color: #0000ff;">window-update-buffer</span> (buffer window type alist)
+  <span style="color: #8b2252;">"display buffer in window, recording type then apply height"</span>
+  (<span style="color: #a020f0;">if</span> (window--display-buffer buffer window type alist)
+      (window-apply-height-fnc window alist)))
+
+(<span style="color: #a020f0;">defcustom</span> <span style="color: #a0522d;">help-buffer-regex</span> <span style="color: #8b2252;">"\\*Help\\*</span><span style="color: #8b2252; font-weight: bold;">\\</span><span style="color: #8b2252; font-weight: bold;">|</span><span style="color: #8b2252;">\\*Apropos\\*"</span>
+  <span style="color: #8b2252;">"regular expression defining which buffers should be recognized as help</span>
+<span style="color: #8b2252;">buffers in `</span><span style="color: #008b8b;">display-buffer-reuse-help</span><span style="color: #8b2252;">'."</span>
+  <span style="color: #483d8b;">:type</span> '(string)
+  <span style="color: #483d8b;">:group</span> 'my-cust)
+
+(<span style="color: #a020f0;">defun</span> <span style="color: #0000ff;">display-buffer-reuse-help</span> (buffer alist)
+  <span style="color: #8b2252;">"If a *Help* or *Apropos* window is live, try to reuse that."</span>
+  (<span style="color: #a020f0;">let</span> ((wnd (car (remove-if-not
+                   (<span style="color: #a020f0;">lambda</span> (w)
+                     (string-match help-buffer-regex
+                                   (buffer-name (window-buffer w))))
+                   (window-list)))))
+    (<span style="color: #a020f0;">if</span> (<span style="color: #a020f0;">and</span> wnd (window-live-p wnd))
+        (window-update-buffer buffer wnd 'reuse alist))))
+</pre>
+</div>
+
+<p>
+Now I'm defining a buffer specific <code>window-height</code> action attribute only for
+help and apropos buffers, specifying my custom function
+<code>fit-window-to-buffer-max-half-frame</code>, which probably may need more tweaking to use less
+than half frame height or also to use height of original window before split.
+</p>
+
+<div class="org-src-container">
+<pre class="src src-emacs-lisp">(<span style="color: #a020f0;">defun</span> <span style="color: #0000ff;">fit-window-to-buffer-max-half-frame</span> (<span style="color: #228b22;">&amp;optional</span> window)
+  <span style="color: #8b2252;">"fit window to buffer size, but use max half of current frame height."</span>
+  (<span style="color: #a020f0;">interactive</span>)
+  (<span style="color: #a020f0;">let</span> ((wnd (<span style="color: #a020f0;">or</span> window (selected-window)))
+        (max-height (/ (frame-height) 2)))
+    (fit-window-to-buffer window max-height)))
+</pre>
+</div>
+</div>
+</li>
+
+<li><a id="orgbee325c"></a>Dired and other file navigation buffers<br />
+<div class="outline-text-5" id="text-orgbee325c">
+<p>
+The same should work in a similar way for <code>dired</code> buffers. But here is
+more too do besides selecting a window for the dired buffer. If used
+in the same window (e.g. via <code>C-x C-j</code>) , nothing to be done. But when
+used in the other window (<code>C-x 4 C-j</code>), it should memorize its origin
+window and put view buffers sent to <i>subsequent</i> other windows there.
+So <code>dired</code> can be opened in the other window (or be left there to be
+reused later). When other files are selected and opened within the main
+window (<code>o</code> or <code>C-o</code>), jumping forth and back between main and dired
+window is easily possible.
+</p>
+
+<div class="org-src-container">
+<pre class="src src-emacs-lisp">(<span style="color: #a020f0;">defun</span> <span style="color: #0000ff;">set-orig-window</span> (window marker-or-buffer)
+  <span style="color: #8b2252;">"mark the given window as origin of operation specific to</span>
+<span style="color: #8b2252;">buffer, removing the mark from other windows this buffer was</span>
+<span style="color: #8b2252;">assgned to. This way, a dired buffer in other window can push its</span>
+<span style="color: #8b2252;">subsequent other window view buffers into the origin window."</span>
+  (<span style="color: #a020f0;">if</span> (not (eq (window-buffer window) marker-or-buffer))
+      (<span style="color: #a020f0;">progn</span>
+        (walk-windows (<span style="color: #a020f0;">lambda</span> (w)
+                        (<span style="color: #a020f0;">if</span> (eq marker-or-buffer
+                                (window-parameter w 'orig-window))
+                            (set-window-parameter w 'orig-window nil))))
+        (set-window-parameter window 'orig-window marker-or-buffer))))
+
+(<span style="color: #a020f0;">defun</span> <span style="color: #0000ff;">make-buffer-window-origin</span> (buffer alist)
+  <span style="color: #8b2252;">"use with a regex or matcher to memorize origin window. Then use</span>
+<span style="color: #8b2252;">`</span><span style="color: #008b8b;">display-buffer-in-orig</span><span style="color: #8b2252;">' with same regex to push buffers to origin."</span>
+  (set-orig-window (selected-window) buffer)
+  nil)
+
+(<span style="color: #a020f0;">defun</span> <span style="color: #0000ff;">maybe-make-buffer-window-origin</span> (buffer alist)
+  <span style="color: #8b2252;">"if action attribute inhibit-same-window is given, store originating window."</span>
+  (<span style="color: #a020f0;">if</span> (cdr (assq 'inhibit-same-window alist))
+      (make-buffer-window-origin buffer alist)))
+
+(<span style="color: #a020f0;">defun</span> <span style="color: #0000ff;">display-buffer-in-orig</span> (buffer alist)
+  <span style="color: #8b2252;">"if a live orig window is defined, unconditionally use that to</span>
+<span style="color: #8b2252;">display the buffer."</span>
+  (<span style="color: #a020f0;">let*</span> ((other-buffer (current-buffer))
+         (my-window (get-window-with-predicate
+                     (<span style="color: #a020f0;">lambda</span> (w)
+                       (eq other-buffer
+                           (window-parameter w 'orig-window))))))
+    (<span style="color: #a020f0;">if</span> (<span style="color: #a020f0;">and</span> my-window (window-live-p my-window))
+        (window-update-buffer buffer my-window 'reuse alist))))
+
+(<span style="color: #a020f0;">defun</span> <span style="color: #0000ff;">display-buffer-maybe-in-orig</span> (buffer alist)
+  <span style="color: #8b2252;">"if action attribute inhibit-same-window is given and a live orig window is</span>
+<span style="color: #8b2252;">defined, use that to display the buffer."</span>
+  (<span style="color: #a020f0;">if</span> (cdr (assq 'inhibit-same-window alist))
+      (display-buffer-in-orig buffer alist)))
+</pre>
+</div>
+
+<p>
+Helper function <code>dired-p</code> checks if a buffer has some <code>dired-mode</code>. The
+following two predicate functions check if the originating or the new buffer
+is a dired buffer.
+</p>
+
+<div class="org-src-container">
+<pre class="src src-emacs-lisp">(<span style="color: #a020f0;">defun</span> <span style="color: #0000ff;">dired-p</span> (buffer)
+  <span style="color: #8b2252;">"is buffer's major mode a dired mode?"</span>
+  (<span style="color: #a020f0;">let</span> ((mode (<span style="color: #a020f0;">with-current-buffer</span> buffer major-mode)))
+    (string-match <span style="color: #8b2252;">"dired-.*mode"</span> (symbol-name mode))))
+
+(<span style="color: #a020f0;">defun</span> <span style="color: #0000ff;">dired-to-other-window</span> (buffer alist)
+  <span style="color: #8b2252;">"match if new buffer is a dired buffer."</span>
+  (dired-p buffer))
+
+(<span style="color: #a020f0;">defun</span> <span style="color: #0000ff;">dired-from-other-window</span> (buffer alist)
+  <span style="color: #8b2252;">"match if current buffer is a dired buffer."</span>
+  (dired-p (current-buffer)))
+
+(<span style="color: #a020f0;">defun</span> <span style="color: #0000ff;">make-dired-window-origin</span> (buffer alist)
+  <span style="color: #8b2252;">"special case of `</span><span style="color: #008b8b;">make-buffer-window-origin</span><span style="color: #8b2252;">'. Use with a regex</span>
+<span style="color: #8b2252;">or matcher to memorize origin window. Then use</span>
+<span style="color: #8b2252;">`</span><span style="color: #008b8b;">display-buffer-in-orig</span><span style="color: #8b2252;">' with same regex to push dired buffers to</span>
+<span style="color: #8b2252;">origin."</span>
+  (set-orig-window (selected-window) <span style="color: #483d8b;">:dired</span>)
+  nil)
+
+(<span style="color: #a020f0;">defun</span> <span style="color: #0000ff;">maybe-make-dired-window-origin</span> (buffer alist)
+  <span style="color: #8b2252;">"if action attribute inhibit-same-window is given, store originating dired window."</span>
+  (<span style="color: #a020f0;">if</span> (cdr (assq 'inhibit-same-window alist))
+      (make-dired-window-origin buffer alist)))
+
+(<span style="color: #a020f0;">defun</span> <span style="color: #0000ff;">display-dired-in-orig</span> (buffer alist)
+  <span style="color: #8b2252;">"if a live orig window is defined, unconditionally use that to</span>
+<span style="color: #8b2252;">display the dired buffer."</span>
+  (<span style="color: #a020f0;">let</span> ((my-window (get-window-with-predicate
+                    (<span style="color: #a020f0;">lambda</span> (w)
+                      (eq <span style="color: #483d8b;">:dired</span> (window-parameter w 'orig-window))))))
+    (<span style="color: #a020f0;">if</span> (<span style="color: #a020f0;">and</span> my-window (window-live-p my-window))
+        (window-update-buffer buffer my-window 'reuse alist))))
+
+(<span style="color: #a020f0;">defun</span> <span style="color: #0000ff;">display-dired-maybe-in-orig</span> (buffer alist)
+  <span style="color: #8b2252;">"if action attribute inhibit-same-window is given and a live orig window is</span>
+<span style="color: #8b2252;">defined, use that to display the dired buffer."</span>
+  (<span style="color: #a020f0;">if</span> (cdr (assq 'inhibit-same-window alist))
+      (display-dired-in-orig buffer alist)))
+</pre>
+</div>
+
+<p>
+Here is a generalized matcher function, matching the current buffer.
+Different applications use different strategies to display their buffers, so
+you may need to use the <code>display-buffer</code>-variants with or withour <code>maybe</code>. See
+customization at the beginning for an example addressing occur, this
+way enabling using occur buffers in a similar way as dired.
+</p>
+
+<div class="org-src-container">
+<pre class="src src-emacs-lisp">(<span style="color: #a020f0;">defun</span> <span style="color: #0000ff;">match-current-buffer</span> (regex)
+  <span style="color: #8b2252;">"match if regex matches current buffer."</span>
+  (string-match regex (buffer-name (current-buffer))))
+</pre>
+</div>
+</div>
+</li>
+
+<li><a id="orgd2a293c"></a>Dedicated window<br />
+<div class="outline-text-5" id="text-orgd2a293c">
+<p>
+Use this to define a dedicated <i>other window</i>. Afterwards, the next
+operation selecting another window will choose the dedicated one.
+Optional arg allows to limit the dedication to the next <code>n</code> buffer
+pushs. So prefix <code>C-1</code> makes a one time dedication, <code>C-0</code> removes a
+dedication still lasting.
+</p>
+
+<p>
+I often use this to override the split threshold variables, first splitting
+in the direction I want, dedicating the new window and then calling
+info/occur/dired ot whatever and letting it put it's buffer into the
+other window.
+</p>
+
+<div class="org-src-container">
+<pre class="src src-emacs-lisp">(<span style="color: #a020f0;">defvar</span> <span style="color: #a0522d;">dedicated-other-window</span> nil)
+(<span style="color: #a020f0;">defvar</span> <span style="color: #a0522d;">dedication-count</span>)
+
+(<span style="color: #a020f0;">defun</span> <span style="color: #0000ff;">dedicate-window</span> (arg)
+  <span style="color: #8b2252;">"Dedicate the currently selected window as 'other' window. When</span>
+<span style="color: #8b2252;">called with a =C-0= prefix arg, releases the previously set</span>
+<span style="color: #8b2252;">window and reverts to the default window selection behaviour. Default is a</span>
+<span style="color: #8b2252;">one-time dedication, use =C-u= for unlimited."</span>
+  (<span style="color: #a020f0;">interactive</span> <span style="color: #8b2252;">"p"</span>)
+  (<span style="color: #a020f0;">setq</span> dedicated-other-window
+        (<span style="color: #a020f0;">if</span> (eq arg 0)
+            nil
+          (selected-window)))
+  (<span style="color: #a020f0;">setq</span> dedication-count
+        (<span style="color: #a020f0;">if</span> (eq 4 arg) nil arg))
+  (<span style="color: #a020f0;">if</span> dedicated-other-window
+      (message <span style="color: #8b2252;">"window dedicated"</span>)
+    (message <span style="color: #8b2252;">"dedication removed"</span>)))
+
+(<span style="color: #a020f0;">defun</span> <span style="color: #0000ff;">display-buffer-dedicated-window</span> (buffer alist)
+  <span style="color: #8b2252;">"Display pop-up-buffer in the dedicated other window, if one is</span>
+<span style="color: #8b2252;">selected. If none is selected, revert to the default behaviour."</span>
+  (<span style="color: #a020f0;">if</span> (<span style="color: #a020f0;">and</span> dedicated-other-window
+           (window-live-p dedicated-other-window))
+      (<span style="color: #a020f0;">prog1</span>
+          (window-update-buffer buffer dedicated-other-window 'reuse alist)
+        (<span style="color: #a020f0;">if</span> (<span style="color: #a020f0;">and</span> dedication-count (&gt; dedication-count 0))
+            (<span style="color: #a020f0;">setq</span> dedication-count (- dedication-count 1)))
+        (<span style="color: #a020f0;">if</span> (eq 0 dedication-count)
+            (<span style="color: #a020f0;">setq</span> dedicated-other-window nil)))))
+</pre>
+</div>
+</div>
+</li>
+
+<li><a id="org5b6a16c"></a>Other window functions<br />
+<div class="outline-text-5" id="text-org5b6a16c">
+<p>
+This sorted out, I'm adding some useful functions for handling the other
+window. Most of them are aimed at navigating text within the other
+window without leaving the current window.
+</p>
+
+<p>
+First, some functions making the behaviour of <code>scroll-other-window</code>
+and the <code>C-x4</code> functions more consistent. The other window should be remote
+controllable as long as it is visible. When removed and no new buffer
+pushed to another window, we will fall back to the remote controlling
+behaviour selecting the next window.
+</p>
+
+<div class="org-src-container">
+<pre class="src src-emacs-lisp">(<span style="color: #a020f0;">defun</span> <span style="color: #0000ff;">display-buffer-as-scroll-buffer</span> (buffer alist)
+  <span style="color: #8b2252;">"This action actually doesn't display a buffer, but records it</span>
+<span style="color: #8b2252;">as `</span><span style="color: #008b8b;">other-window-scroll-buffer</span><span style="color: #8b2252;">'. It always returns nil so it can</span>
+<span style="color: #8b2252;">be placed with highest priority."</span>
+  (<span style="color: #a020f0;">setq</span> other-window-scroll-buffer buffer)
+  nil)
+
+(<span style="color: #a020f0;">defun</span> <span style="color: #0000ff;">display-buffer-maybe-as-scroll-buffer</span> (buffer alist)
+  <span style="color: #8b2252;">"This action actually doesn't display a buffer, but records it as</span>
+<span style="color: #8b2252;">`</span><span style="color: #008b8b;">other-window-scroll-buffer</span><span style="color: #8b2252;">', if the inhibit-same-window attribute</span>
+<span style="color: #8b2252;">is given. It always returns nil so it can be placed with highest priority."</span>
+  (<span style="color: #a020f0;">if</span> (cdr (assq 'inhibit-same-window alist))
+      (display-buffer-as-scroll-buffer buffer alist)))
+
+(<span style="color: #a020f0;">defun</span> <span style="color: #0000ff;">scroll-buffer-window</span> ()
+  <span style="color: #8b2252;">"find window of `</span><span style="color: #008b8b;">other-window-scroll-buffer</span><span style="color: #8b2252;">', if live, or reset</span>
+<span style="color: #8b2252;">other-window-scroll-buffer to nil, letting the other-window</span>
+<span style="color: #8b2252;">functions fall back to default."</span>
+  (<span style="color: #a020f0;">let</span> ((scroll-window (get-buffer-window other-window-scroll-buffer)))
+    (<span style="color: #a020f0;">if</span> (<span style="color: #a020f0;">and</span> (buffer-live-p other-window-scroll-buffer)
+             (window-live-p scroll-window))
+        scroll-window
+      (<span style="color: #a020f0;">setq</span> other-window-scroll-buffer nil))))
+
+(<span style="color: #a020f0;">defun</span> <span style="color: #0000ff;">my-scroll-other-window</span> ()
+  <span style="color: #8b2252;">"just like `</span><span style="color: #008b8b;">scroll-other-window</span><span style="color: #8b2252;">', but don't pop up the window</span>
+<span style="color: #8b2252;">if not live."</span>
+  (<span style="color: #a020f0;">interactive</span>)
+  (scroll-buffer-window) <span style="color: #b22222;">; </span><span style="color: #b22222;">only for the side-effect of possibly resetting other-window-scroll-buffer</span>
+  (call-interactively #'scroll-other-window))
+
+(<span style="color: #a020f0;">defun</span> <span style="color: #0000ff;">my-scroll-other-window-down</span> ()
+  <span style="color: #8b2252;">"just like `</span><span style="color: #008b8b;">scroll-other-window-down</span><span style="color: #8b2252;">', but don't pop up the window</span>
+<span style="color: #8b2252;">if not live."</span>
+  (<span style="color: #a020f0;">interactive</span>)
+  (scroll-buffer-window) <span style="color: #b22222;">; </span><span style="color: #b22222;">only for the side-effect of possibly resetting other-window-scroll-buffer</span>
+  (call-interactively #'scroll-other-window-down))
+</pre>
+</div>
+
+<p>
+A macro defining remote controlling functions, used in the following definitions.
+</p>
+
+<div class="org-src-container">
+<pre class="src src-emacs-lisp">(<span style="color: #a020f0;">defmacro</span> <span style="color: #0000ff;">nth-window</span> (fname docstring <span style="color: #228b22;">&amp;rest</span> body)
+  <span style="color: #8b2252;">"Defines an interactive function performing the forms in BODY</span>
+<span style="color: #8b2252;"> in other window or window specified by prefix arg. Uses FNAME as</span>
+<span style="color: #8b2252;"> function name and describes it with DOCSTRING."</span>
+  `(<span style="color: #a020f0;">defun</span> ,fname (arg)
+     ,docstring
+     (<span style="color: #a020f0;">interactive</span> <span style="color: #8b2252;">"P"</span>)
+     (<span style="color: #a020f0;">save-selected-window</span>
+       (select-other-window arg)
+       ,@body)))
+</pre>
+</div>
+
+<p>
+..and a function coding the logic to find the current other window. The
+functions scrolling the other window (<code>C-M-v</code> etc) and my funtions
+modifying the other window should behave consistently. Nevertheless, I
+want my functions to behave like <code>C-x o</code>, where applying prefix args I
+can jump to a specific window.
+</p>
+
+<div class="org-src-container">
+<pre class="src src-emacs-lisp">(<span style="color: #a020f0;">defun</span> <span style="color: #0000ff;">select-other-window</span> (arg)
+  <span style="color: #8b2252;">"selects and returns the other window or window specified by prefix arg."</span>
+  (<span style="color: #a020f0;">interactive</span> <span style="color: #8b2252;">"P"</span>)
+  (<span style="color: #a020f0;">let</span> ((scroll-window (scroll-buffer-window)))
+    (<span style="color: #a020f0;">if</span> (<span style="color: #a020f0;">and</span> (eq arg nil)
+             other-window-scroll-buffer
+             scroll-window
+             (not (eq scroll-window (selected-window))))
+        (select-window scroll-window)
+      (call-interactively #'other-window)))
+  (selected-window))
+
+(<span style="color: #a020f0;">defun</span> <span style="color: #0000ff;">find-other-window</span> (arg)
+  <span style="color: #8b2252;">"finds the current other-window without actually selecting it."</span>
+  (<span style="color: #a020f0;">interactive</span> <span style="color: #8b2252;">"P"</span>)
+  (<span style="color: #a020f0;">with-selected-window</span> (selected-window)
+    (call-interactively #'select-other-window)
+    (selected-window)))
+</pre>
+</div>
+
+<p>
+The same for frames might also come in handy.
+</p>
+
+<div class="org-src-container">
+<pre class="src src-emacs-lisp">(<span style="color: #a020f0;">defmacro</span> <span style="color: #0000ff;">nth-frame</span> (fname docstring <span style="color: #228b22;">&amp;rest</span> body)
+  <span style="color: #8b2252;">"Defines an interactive function performing the forms in BODY</span>
+<span style="color: #8b2252;"> in other frame or frame specified by prefix arg. Uses FNAME as</span>
+<span style="color: #8b2252;"> function name and describes it with DOCSTRING."</span>
+  `(<span style="color: #a020f0;">defun</span> ,fname (arg)
+     ,docstring
+     (<span style="color: #a020f0;">interactive</span> <span style="color: #8b2252;">"p"</span>)
+     (<span style="color: #a020f0;">let</span> ((current (selected-frame)))
+       (other-frame arg)
+       ,@body
+       (select-frame-set-input-focus current))))
+</pre>
+</div>
+</div>
+</li>
+
+<li><a id="orga6a98d5"></a>Other window applications<br />
+<div class="outline-text-5" id="text-orga6a98d5">
+<p>
+And now some other-window-functions. The last one is generic: it allows to
+jump to a window, work there and afterwards return. It also allows nested
+jumps and returning with <code>C-M-c</code> or <code>C-]</code>.
+</p>
+
+<div class="org-src-container">
+<pre class="src src-emacs-lisp">(<span style="color: #a020f0;">nth-window</span> go-back-other-window
+  <span style="color: #8b2252;">"Go back to previous help topic in other window."</span>
+  (help-go-back))
+
+(<span style="color: #a020f0;">nth-window</span> quit-restore-other-window
+  <span style="color: #8b2252;">"Quit other window and deal with its buffer, possibly restoring</span>
+<span style="color: #8b2252;">      the buffer previously displayed in other window."</span>
+  (quit-restore-window (selected-window)))
+
+(<span style="color: #a020f0;">nth-window</span> shrink-other-window-if-larger-than-buffer
+  <span style="color: #8b2252;">"Shrink height of other window if its buffer doesn't need so many lines."</span>
+  (shrink-window-if-larger-than-buffer))
+
+(<span style="color: #a020f0;">nth-window</span> beginning-of-other-window
+  <span style="color: #8b2252;">"Like `</span><span style="color: #008b8b;">beginning-of-buffer-other-window</span><span style="color: #8b2252;">', but use prefix arg to select window."</span>
+  (beginning-of-buffer))
+
+(<span style="color: #a020f0;">nth-window</span> end-of-other-window
+  <span style="color: #8b2252;">"Like `</span><span style="color: #008b8b;">end-of-buffer-other-window</span><span style="color: #8b2252;">', but use prefix arg to select window."</span>
+  (end-of-buffer))
+
+(<span style="color: #a020f0;">nth-window</span> kill-other-buffer-and-window
+  <span style="color: #8b2252;">"kill buffer in other window and delete that window."</span>
+  (kill-buffer-and-window))
+
+(<span style="color: #a020f0;">nth-window</span> edit-other-window
+  <span style="color: #8b2252;">"recursively edit in other buffer, allowing to return later. Save</span>
+<span style="color: #8b2252;">`</span><span style="color: #008b8b;">other-window-scroll-buffer</span><span style="color: #8b2252;">', reverting it after finishing."</span>
+  (<span style="color: #a020f0;">let</span> ((other-window-scroll-buffer
+         (<span style="color: #a020f0;">if</span> (eq (scroll-buffer-window) (selected-window))
+             nil
+           other-window-scroll-buffer)))
+    (recursive-edit)))
+</pre>
+</div>
+</div>
+</li>
+
+<li><a id="org2d014b7"></a>Push buffer to frame<br />
+<div class="outline-text-5" id="text-org2d014b7">
+<p>
+Sometimes, auxiliary buffers to be displayed in the other window are
+eratically pushed into some well arranged window. While this can be configured
+through action variables used by <code>display-buffer</code>, this is a complex and
+error-prone configuration. To mitigate, use this function to push a buffer into its
+own frame and revert the previously crafted window arrangement.
+</p>
+
+<p>
+This also calls a little bit for some further 'remote control other frame'
+functions..
+</p>
+
+<div class="org-src-container">
+<pre class="src src-emacs-lisp">(<span style="color: #a020f0;">defun</span> <span style="color: #0000ff;">push-buffer-to-frame</span> ()
+  <span style="color: #8b2252;">"push current window buffer to own frame and revert current window to previous frame."</span>
+  (<span style="color: #a020f0;">interactive</span>)
+  (<span style="color: #a020f0;">let</span> ((current (current-buffer))
+        (selected (selected-window)))
+    (<span style="color: #a020f0;">if</span> (display-buffer-other-frame current)
+        (quit-restore-window selected))))
+</pre>
+</div>
+
+<p>
+To make this work smoothly, we also change iconification of frames on close.
+</p>
+
+<div class="org-src-container">
+<pre class="src src-emacs-lisp">(custom-set-variables
+ '(frame-auto-hide-function #'delete-frame))
+</pre>
+</div>
+</div>
+</li>
+</ul>
+</div>
+
+<div id="outline-container-orga785a6f" class="outline-4">
+<h4 id="orga785a6f">Convenient error stepping</h4>
+<div class="outline-text-4" id="text-orga785a6f">
+<p>
+Often I want to quickly navigate through a list of error messages or
+occurencies, jumping to the places the errors are indicating. There
+are different ways to archieve this. First of all, with <code>C-x C-f</code> you
+can activate <code>error-follow-minor-mode</code>, allowing to move the mark
+through the error buffer, letting the referenced source buffers follow
+you. But if you want to have the source buffer active, you would need
+to jump to the error buffer for each next step. To ease this, the
+following functions are introduced. While they follow the scheme of
+adding remote control functions for the other window, they also show a
+cool feature of setting a temporary keymap in place, allowing further
+navigation steps by using shortcuts. This way, the long key sequence
+of addressing the other window (<code>C-x 4</code>) and starting the goto
+sequence (<code>M-g</code>) needs to be casted only as an initiation. Afterwards,
+it gets really easy. This is quite convenient in the most different
+applications. Here is a pattern often used my me as an example. When
+using <code>multi-occur</code> to find a common regex within a project's files,
+arrange for a current file to be displayed within a (selected) main window and
+multi-occur in another window. Now just call <code>next-error-other-window</code>
+and navigate through the hits. This changes the current file buffer
+within the main window as you go, so you may edit away as this window
+is still selected.
+</p>
+
+<div class="org-src-container">
+<pre class="src src-emacs-lisp">(<span style="color: #a020f0;">require</span> '<span style="color: #008b8b;">cl</span>)
+
+(<span style="color: #a020f0;">defun</span> <span style="color: #0000ff;">error-step</span> ()
+  (<span style="color: #a020f0;">macrolet</span> ((step-msg ()
+                       '(message <span style="color: #8b2252;">"Use n,p,&lt; to navigate further"</span>)))
+    (step-msg)
+    (set-transient-map
+     (<span style="color: #a020f0;">let</span> ((map (make-sparse-keymap)))
+       (<span style="color: #a020f0;">dolist</span> (modk '(() (meta)))
+         (define-key map (vector (append modk '(?n)))
+           (<span style="color: #a020f0;">lambda</span> () (<span style="color: #a020f0;">interactive</span>) (next-error) (step-msg)))
+         (define-key map (vector (append modk '(?&lt;)))
+           (<span style="color: #a020f0;">lambda</span> () (<span style="color: #a020f0;">interactive</span>) (first-error) (step-msg)))
+         (define-key map (vector (append modk '(?p)))
+           (<span style="color: #a020f0;">lambda</span> () (<span style="color: #a020f0;">interactive</span>) (previous-error) (step-msg))))
+       map) <span style="color: #ff0000; font-weight: bold;">'t)))</span>
+
+(<span style="color: #a020f0;">defun</span> <span style="color: #0000ff;">next-error-other-window</span> (<span style="color: #228b22;">&amp;optional</span> arg)
+  <span style="color: #8b2252;">"Visit next error message displayed in other window's buffer. With prefix arg, jump to nth window."</span>
+  (<span style="color: #a020f0;">interactive</span> <span style="color: #8b2252;">"P"</span>)
+  (<span style="color: #a020f0;">with-current-buffer</span> (window-buffer (call-interactively #'find-other-window))
+    (next-error arg)
+    (error-step)))
+
+(<span style="color: #a020f0;">defun</span> <span style="color: #0000ff;">previous-error-other-window</span> (<span style="color: #228b22;">&amp;optional</span> arg)
+  <span style="color: #8b2252;">"Visit previous error message displayed in other window's buffer. With prefix arg, jump to nth window."</span>
+  (<span style="color: #a020f0;">interactive</span> <span style="color: #8b2252;">"P"</span>)
+  (<span style="color: #a020f0;">with-current-buffer</span> (window-buffer (call-interactively #'find-other-window))
+    (previous-error arg)
+    (error-step)))
+</pre>
+</div>
+</div>
+</div>
+
+<div id="outline-container-org03c2c6c" class="outline-4">
+<h4 id="org03c2c6c">Convenient Navigation Mode</h4>
+<div class="outline-text-4" id="text-org03c2c6c">
+<p>
+This is another feature in the spirit of previous means of other
+window handling, activating some kind of temporary navigation mode. Using
+this, you can conveniently navigate, scroll, set marks and jump to previous
+mark positions in the other window, without actually leaving the
+current window. Features include navigating up and down of the point,
+scrolling up and down, jumping to begin and end of buffer, pagewise up and
+down. Most of these can be combined with a numeric argument. The mode is
+cancelled by using any other key.
+</p>
+
+<div class="org-src-container">
+<pre class="src src-emacs-lisp">(<span style="color: #a020f0;">defun</span> <span style="color: #0000ff;">navigate-buffer</span> (<span style="color: #228b22;">&amp;optional</span> window)
+  <span style="color: #8b2252;">"Enter a temporary buffer navigation mode. WINDOW specifies an optional window pointer,</span>
+<span style="color: #8b2252;">allowing to specify a remote window to be controlled."</span>
+  (<span style="color: #a020f0;">lexical-let</span> ((arg-acc 0) (arg-neg nil) (consumed nil)
+                (window (<span style="color: #a020f0;">or</span> window (selected-window))))
+    (<span style="color: #a020f0;">labels</span> ((set-consumed () (<span style="color: #a020f0;">setq</span> consumed 't))
+             (acc-reset ()
+                        (<span style="color: #a020f0;">if</span> consumed
+                            (<span style="color: #a020f0;">setq</span> arg-acc 0 arg-neg nil consumed nil)))
+             (get-arg-acc (<span style="color: #228b22;">&amp;optional</span> default)
+                          (<span style="color: #a020f0;">let</span> ((res (<span style="color: #a020f0;">if</span> (&gt; arg-acc 0)
+                                         (* arg-acc (<span style="color: #a020f0;">if</span> arg-neg -1 1))
+                                       default)))
+                            res))
+             (acc-status () (message <span style="color: #8b2252;">"navigate ([-,0-9] n,p,N,P,v,V,&lt;,&gt;,[,],l, ) %c %d"</span>
+                                     (<span style="color: #a020f0;">if</span> arg-neg arg-neg '? ) arg-acc))
+             (arg-negate ()
+                         (<span style="color: #a020f0;">setq</span> arg-neg (<span style="color: #a020f0;">if</span> arg-neg nil '?-))
+                         (acc-status))
+             (arg-accumulate (num)
+                             (<span style="color: #a020f0;">setq</span> arg-acc (+ (* arg-acc 10) num))
+                             (acc-status)))
+      (<span style="color: #a020f0;">macrolet</span> ((with-window (<span style="color: #228b22;">&amp;rest</span> body)
+                              `(<span style="color: #a020f0;">lambda</span> () (<span style="color: #a020f0;">interactive</span>)
+                                 (set-consumed)
+                                 (<span style="color: #a020f0;">with-selected-window</span> window
+                                   ,@body
+                                   (acc-status)))))
+        (acc-status)
+        (set-transient-map
+         (<span style="color: #a020f0;">let</span> ((map (make-sparse-keymap)))
+           (define-key map [?-] (<span style="color: #a020f0;">lambda</span> () (<span style="color: #a020f0;">interactive</span>) (acc-reset) (arg-negate)))
+           (<span style="color: #a020f0;">dolist</span> (num '(?0 ?1 ?2 ?3 ?4 ?5 ?6 ?7 ?8 ?9))
+             (define-key map (vector num)
+               (<span style="color: #a020f0;">lambda</span> ()
+                 (<span style="color: #a020f0;">interactive</span>)
+                 (acc-reset)
+                 (<span style="color: #a020f0;">let*</span> ((ev last-command-event)
+                        (base (event-basic-type ev)))
+                   (arg-accumulate (- base 48))))))
+           (define-key map <span style="color: #8b2252;">" "</span> (with-window
+                                (<span style="color: #a020f0;">if</span> (eq arg-acc 0)
+                                    (<span style="color: #a020f0;">progn</span> (set-mark-command nil)(deactivate-mark))
+                                  (set-mark-command (get-arg-acc)))))
+           (define-key map <span style="color: #8b2252;">"n"</span> (with-window (next-line (get-arg-acc 1))))
+           (define-key map <span style="color: #8b2252;">"p"</span> (with-window (previous-line (get-arg-acc 1))))
+           (define-key map <span style="color: #8b2252;">"/"</span> (with-window (isearch-forward))) <span style="color: #b22222;">;</span><span style="color: #b22222;">not documented</span>
+           (define-key map <span style="color: #8b2252;">"l"</span> (with-window (recenter-top-bottom (get-arg-acc))))
+           (define-key map <span style="color: #8b2252;">"r"</span> (with-window (move-to-window-line-top-bottom (get-arg-acc))))
+           (define-key map <span style="color: #8b2252;">"&lt;"</span> (with-window (beginning-of-buffer (get-arg-acc))))
+           (define-key map <span style="color: #8b2252;">"&gt;"</span> (with-window (end-of-buffer (get-arg-acc))))
+           (define-key map <span style="color: #8b2252;">"]"</span> (with-window (forward-paragraph (get-arg-acc))))
+           (define-key map <span style="color: #8b2252;">"["</span> (with-window (backward-paragraph (get-arg-acc))))
+           (define-key map <span style="color: #8b2252;">"N"</span> (with-window (scroll-up-line (get-arg-acc 1))))
+           (define-key map <span style="color: #8b2252;">"P"</span> (with-window (scroll-down-line (get-arg-acc 1))))
+           (define-key map <span style="color: #8b2252;">"v"</span> (with-window (scroll-up-command (get-arg-acc))))
+           (define-key map <span style="color: #8b2252;">"V"</span> (with-window (scroll-down-command (get-arg-acc))))
+         map) <span style="color: #ff0000; font-weight: bold;">'t)))))</span>
+
+(<span style="color: #a020f0;">defun</span> <span style="color: #0000ff;">navigate-window</span> ()
+  <span style="color: #8b2252;">"like `</span><span style="color: #008b8b;">navigate-other-window</span><span style="color: #8b2252;">', but always use current window."</span>
+  (<span style="color: #a020f0;">interactive</span>)
+  (navigate-buffer))
+
+(<span style="color: #a020f0;">nth-window</span> navigate-other-window
+  <span style="color: #8b2252;">"Enter a temporary buffer navigation mode, allowing some window to be</span>
+<span style="color: #8b2252;">controlled remotely. Default is the other window. Optional argument</span>
+<span style="color: #8b2252;">selects the nth window. This allows moving around some window without</span>
+<span style="color: #8b2252;">de-selecting the current window, enabling a very convenient means of</span>
+<span style="color: #8b2252;">temporarily moving around. </span>
+
+<span style="color: #8b2252;">Keys are:</span>
+<span style="color: #8b2252;">  -, 0-9: set an argument to following commands, which stays in effect until</span>
+<span style="color: #8b2252;">          reset (e.g. by pressing 0)</span>
+<span style="color: #8b2252;">  space: set a mark; with arg jump to mark</span>
+<span style="color: #8b2252;">  n, p: move point to next/previous line</span>
+<span style="color: #8b2252;">  l: recenter buffer to point</span>
+<span style="color: #8b2252;">  r: move point to window center</span>
+<span style="color: #8b2252;">  &lt;, &gt;: move point to beginning/end of buffer</span>
+<span style="color: #8b2252;">  [, ]: move point forward/backward in paragraphs</span>
+<span style="color: #8b2252;">  N, P: scroll up/down</span>
+<span style="color: #8b2252;">  v, V: pagewise scroll up/down"</span>
+  (navigate-buffer))
+</pre>
+</div>
+</div>
+</div>
+
+<div id="outline-container-orgb7694ac" class="outline-4">
+<h4 id="orgb7694ac">Frame and window size</h4>
+<div class="outline-text-4" id="text-orgb7694ac">
+<p>
+And another temporary pseudo mode, this time interactively resizing windows.
+</p>
+
+<div class="org-src-container">
+<pre class="src src-emacs-lisp">(<span style="color: #a020f0;">defun</span> <span style="color: #0000ff;">resize-window</span> ()
+  <span style="color: #8b2252;">"Resize current window interactively using continuous key presses.</span>
+<span style="color: #8b2252;">Keys supported:</span>
+
+<span style="color: #8b2252;"> - shrink window vertically</span>
+<span style="color: #8b2252;"> + enlarge window vertically</span>
+<span style="color: #8b2252;"> { shrink window horizontally</span>
+<span style="color: #8b2252;"> } enlarge window horizontally</span>
+<span style="color: #8b2252;"> 0 balance all frames window sizes"</span>
+  (<span style="color: #a020f0;">interactive</span>)
+  (<span style="color: #a020f0;">macrolet</span> ((msg ()
+                  '(message <span style="color: #8b2252;">"resize window (-,+,{,},0)"</span>))
+             (lmb (fnc)
+                  `(<span style="color: #a020f0;">lambda</span> () (<span style="color: #a020f0;">interactive</span>)
+                     (msg)
+                     ,fnc)))
+    (msg)
+    (set-transient-map
+     (<span style="color: #a020f0;">let</span> ((tmap (make-sparse-keymap)))
+       (define-key tmap <span style="color: #8b2252;">"0"</span> (lmb (balance-windows)))
+       (define-key tmap <span style="color: #8b2252;">"-"</span> (lmb (shrink-window 1)))
+       (define-key tmap <span style="color: #8b2252;">"+"</span> (lmb (enlarge-window 1)))
+       (define-key tmap <span style="color: #8b2252;">"="</span> (lmb (enlarge-window 1))) <span style="color: #b22222;">; </span><span style="color: #b22222;">easy access on us keyboard</span>
+       (define-key tmap <span style="color: #8b2252;">"^"</span> (lmb (enlarge-window 1))) <span style="color: #b22222;">; </span><span style="color: #b22222;">reuse entry key</span>
+       (define-key tmap <span style="color: #8b2252;">"&amp;"</span> (lmb (enlarge-window 1))) <span style="color: #b22222;">; </span><span style="color: #b22222;">german keyboard</span>
+       (define-key tmap <span style="color: #8b2252;">"{"</span> (lmb (shrink-window-horizontally 1)))
+       (define-key tmap <span style="color: #8b2252;">"&#220;"</span> (lmb (shrink-window-horizontally 1))) <span style="color: #b22222;">; </span><span style="color: #b22222;">german keyboard, here "U</span>
+       (define-key tmap <span style="color: #8b2252;">"}"</span> (lmb (enlarge-window-horizontally 1)))
+       (define-key tmap <span style="color: #8b2252;">"*"</span> (lmb (enlarge-window-horizontally 1))) <span style="color: #b22222;">; </span><span style="color: #b22222;">german keyboard</span>
+       tmap) <span style="color: #ff0000; font-weight: bold;">'t)))</span>
+</pre>
+</div>
+
+<p>
+The following used to be a pseudo frame maximizing function for Mac,
+which is no longer needed, since macos supports native full screen
+modes. Instead we build a configurable solution toggling through
+normal, maximized and visually attractive. "Visually attractive" would
+then be something like "leave a small configurable space outside the
+frame and use the rest of screen". For this, we use a customizable
+variable constructing a list of frame styling functions. The functions
+receive an argument list of (FRAME MAX-LINES MAX-COLS).
+</p>
+
+<div class="org-src-container">
+<pre class="src src-emacs-lisp">(<span style="color: #a020f0;">defcustom</span> <span style="color: #a0522d;">my-frame-stylings</span> nil
+  <span style="color: #8b2252;">"styling functions used when toggling display frame size."</span>
+  <span style="color: #483d8b;">:type</span> '(repeat function)
+  <span style="color: #483d8b;">:group</span> 'my-cust)
+
+(<span style="color: #a020f0;">defun</span> <span style="color: #0000ff;">switch-frame</span> ()
+  <span style="color: #8b2252;">"Set frame to reasonable position and size based on some heuristics.</span>
+<span style="color: #8b2252;">  Alternatively, toggles size to maximized."</span>
+  (<span style="color: #a020f0;">interactive</span>)
+  (<span style="color: #a020f0;">let</span> ((maximized (frame-parameter nil 'fullscreen))
+        (confectioned (frame-parameter nil 'my-confectioned)))
+    (<span style="color: #a020f0;">cond</span>
+     ((eq confectioned 't)
+      (<span style="color: #a020f0;">let</span> ((geom (frame-parameter nil 'my-geometry)))
+        (set-frame-parameter nil 'my-confectioned nil)
+        (set-frame-width nil (cadr geom))
+        (set-frame-height nil (caddr geom))
+        (set-frame-position nil (caar geom) (cdar geom))))
+     ((eq maximized 'maximized)
+      (<span style="color: #a020f0;">let</span> ((max-lines (frame-parameter nil 'height))
+            (max-cols (frame-parameter nil 'width)))
+        (set-frame-parameter nil 'fullscreen nil)
+        (set-frame-parameter nil 'my-confectioned 't)
+        (<span style="color: #a020f0;">dolist</span> (fnc my-frame-stylings)
+                (funcall fnc (selected-frame) max-lines max-cols))))
+     ((eq maximized nil)
+      (set-frame-parameter nil 'my-geometry
+                           (list (frame-position)
+                                 (frame-width)
+                                 (frame-height)))
+      (set-frame-parameter nil 'fullscreen 'maximized)))))
+
+(<span style="color: #a020f0;">defun</span> <span style="color: #0000ff;">frame-width-below-threshold</span> (frame lines cols)
+  (set-frame-width frame (- split-width-threshold 1)))
+
+(<span style="color: #a020f0;">defun</span> <span style="color: #0000ff;">frame-height-dec</span> (frame lines cols)
+  (set-frame-height frame (- lines 1)))
+
+(<span style="color: #a020f0;">defun</span> <span style="color: #0000ff;">frame-to-left</span> (frame lines cols)
+  (set-frame-position frame 0
+                      (cdr (frame-position frame))))
+
+(<span style="color: #a020f0;">defun</span> <span style="color: #0000ff;">frame-to-top</span> (frame lines cols)
+  (set-frame-position frame
+                      (car (frame-position frame))
+                      0))
+</pre>
+</div>
+
+<p>
+Here we toggle native fullscreen, removing all frame decorations and
+transparency.
+</p>
+
+<div class="org-src-container">
+<pre class="src src-emacs-lisp">(<span style="color: #a020f0;">defcustom</span> <span style="color: #a0522d;">enter-maximize-frame-hook</span>
+  '((<span style="color: #a020f0;">lambda</span> nil
+    (display-time-mode 1))
+  (<span style="color: #a020f0;">lambda</span> nil
+    (switch-frame-transparency nil)))
+  <span style="color: #8b2252;">"hook executed when maximizing a frame"</span>
+  <span style="color: #483d8b;">:type</span> '(repeat function)
+  <span style="color: #483d8b;">:group</span> 'my-cust)
+
+(<span style="color: #a020f0;">defcustom</span> <span style="color: #a0522d;">exit-maximize-frame-hook</span>
+  '((<span style="color: #a020f0;">lambda</span> nil
+    (display-time-mode 0))
+  (<span style="color: #a020f0;">lambda</span> nil
+    (switch-frame-transparency 't)))
+  <span style="color: #8b2252;">"hook executed when normalizing a frame"</span>
+  <span style="color: #483d8b;">:type</span> '(repeat function)
+  <span style="color: #483d8b;">:group</span> 'my-cust)
+
+(<span style="color: #a020f0;">defun</span> <span style="color: #0000ff;">toggle-maximize-frame</span> ()
+  <span style="color: #8b2252;">"Toggle fullscreen and switch off menu bar and scroll bar."</span>
+  (<span style="color: #a020f0;">interactive</span>)
+  (<span style="color: #a020f0;">let</span> ((fullscreen (frame-parameter nil 'fullscreen)))
+    (<span style="color: #a020f0;">cond</span>
+     ((memq fullscreen '(fullscreen fullboth))
+      (<span style="color: #a020f0;">dolist</span> (fnc exit-maximize-frame-hook)
+        (funcall fnc))
+      (toggle-frame-fullscreen))
+     ((eq fullscreen nil)
+      (<span style="color: #a020f0;">dolist</span> (fnc enter-maximize-frame-hook)
+        (funcall fnc))
+      (toggle-frame-fullscreen)))))
+
+(<span style="color: #a020f0;">defun</span> <span style="color: #0000ff;">switch-frame-transparency</span> (state)
+  (<span style="color: #a020f0;">cond</span>
+   (state
+    (apply (get 'my-frame-transparency 'custom-set) 'my-frame-transparency
+           (frame-parameter nil 'my-transparency) nil)
+    (set-frame-parameter nil 'my-transparency nil))
+   ('t
+    (set-frame-parameter nil 'my-transparency my-frame-transparency)
+    (apply (get 'my-frame-transparency 'custom-set) 'my-frame-transparency 100 nil))))
+</pre>
+</div>
+</div>
+</div>
+
+<div id="outline-container-orgfcf3b9d" class="outline-4">
+<h4 id="orgfcf3b9d">electric delimiter</h4>
+<div class="outline-text-4" id="text-orgfcf3b9d">
+<p>
+Often I want to put some text into delimiters after writing it, for example a
+string or an argument list. So the reverse of a splicing operation is needed.
+Here, you can select a region and delimit it using a character. In the special
+case of the character being an opening type of brace, automatically selects
+the corresponding closing brace. When called with prefix arg, the region is
+newly indented after delimiting.
+</p>
+
+<div class="org-src-container">
+<pre class="src src-emacs-lisp">(<span style="color: #a020f0;">defun</span> <span style="color: #0000ff;">my-delimit-region</span> (point mark pre bd)
+  <span style="color: #8b2252;">"Frame region with delimiters. If delim is an opening type of</span>
+<span style="color: #8b2252;">brace, automatically use the corresponding closing delimiter,</span>
+<span style="color: #8b2252;">otherwise use the same char for both sides. If called</span>
+<span style="color: #8b2252;">interactively, take next key press as opening delimiter. If</span>
+<span style="color: #8b2252;">called with prefix arg, the region is newly indented after</span>
+<span style="color: #8b2252;">delimiting."</span>
+  (<span style="color: #a020f0;">interactive</span> <span style="color: #8b2252;">"r\nP\nc"</span>)
+  (<span style="color: #a020f0;">let</span> ((ed (<span style="color: #a020f0;">case</span> bd
+              ((?\() ?\))
+              ((?\[) ?\])
+              ((?{) ?})
+              ((?&lt;) ?&gt;)
+              (t bd))))
+    (<span style="color: #a020f0;">save-excursion</span>
+      (goto-char mark)
+      (insert ed))
+    (<span style="color: #a020f0;">save-excursion</span>
+      (goto-char point)
+      (insert bd))
+    (<span style="color: #a020f0;">if</span> pre (indent-region point mark))))
+</pre>
+</div>
+</div>
+</div>
+</div>
+
+<div id="outline-container-orgbba4326" class="outline-3">
+<h3 id="orgbba4326">Environment Minor Mode</h3>
+<div class="outline-text-3" id="text-orgbba4326">
+<p>
+We want to easily be able to switch between different environments. For
+example, when using a notebook in mobile or in docked mode, you may
+have a mouse or trackpad, apple or pc keyboard at hand. Each of
+them needs other custom configurations, which should be easily
+switable when changing the environment. This is implemented in a global minor mode,
+binding a hot key as environment toggle. Each environment is designated by an
+id character shown in the mode line and a list of actions. Each action has
+enter and exit functions to setup and leave the corresponding action. This
+way, actions can be defined in terms of (lambda) functions. Also an action can
+be part of different environments.
+After customizing the mode, use <code>C-c C-\</code> to toggle through environments.
+</p>
+
+<div class="org-src-container">
+<pre class="src src-emacs-lisp">(<span style="color: #a020f0;">defgroup</span> <span style="color: #228b22;">my-environment</span> nil <span style="color: #8b2252;">"my environments"</span>)
+
+(<span style="color: #a020f0;">defcustom</span> <span style="color: #a0522d;">my-env-actions</span> nil
+  <span style="color: #8b2252;">"list of actions. Each element has the form (symb enter-fnc</span>
+<span style="color: #8b2252;">exit-fnc), where symb is a symbol used to address this definition, enter-fnc</span>
+<span style="color: #8b2252;">and exit-fnc are functions to setup and leave the corresponding state."</span>
+  <span style="color: #483d8b;">:type</span> '(repeat (list symbol function function))
+  <span style="color: #483d8b;">:group</span> 'my-environment)
+
+(<span style="color: #a020f0;">defcustom</span> <span style="color: #a0522d;">my-env-definitions</span> nil
+  <span style="color: #8b2252;">"list of environments to toggle through. Each definition has the form (id</span>
+<span style="color: #8b2252;">(list of symbols)), where id is a character shown in the mode</span>
+<span style="color: #8b2252;">line describing the current environment. Then follows a list of</span>
+<span style="color: #8b2252;">action symbols. Each of these actions is entered when</span>
+<span style="color: #8b2252;">environment is toggled on and exited when another environment</span>
+<span style="color: #8b2252;">is selected. If only one env is defined, toggles between this</span>
+<span style="color: #8b2252;">only, so you should probably at least define a second env with</span>
+<span style="color: #8b2252;">a default N id and no actions."</span>
+  <span style="color: #483d8b;">:type</span> '(repeat (list character (repeat symbol)))
+  <span style="color: #483d8b;">:group</span> 'my-environment)
+
+(<span style="color: #a020f0;">defun</span> <span style="color: #0000ff;">my-env-init-keymap</span> ()
+  <span style="color: #8b2252;">"setup a keymap for my-environment-mode, inserting the env toggle hot key."</span>
+  (define-prefix-command 'my-env-map)
+  (<span style="color: #a020f0;">let</span> ((kmap (make-sparse-keymap)))
+    (define-key kmap <span style="color: #8b2252;">"\C-c"</span> my-env-map)
+    (define-key my-env-map <span style="color: #8b2252;">"&#28;"</span> #'toggle-my-environment)
+    kmap))
+
+(<span style="color: #a020f0;">defun</span> <span style="color: #0000ff;">my-env-add-map</span> (kmap)
+  <span style="color: #8b2252;">"Use this function in your enter action definitions to add sparse keymaps to the current environment."</span>
+  (<span style="color: #a020f0;">pushnew</span> kmap my-env-maps))
+
+(<span style="color: #a020f0;">defun</span> <span style="color: #0000ff;">my-env-remove-map</span> (kmap)
+  <span style="color: #8b2252;">"Use this function in your exit action definitions to remove sparse keymaps from the current environment."</span>
+  (<span style="color: #a020f0;">setq</span> my-env-maps (remote-if (<span style="color: #a020f0;">lambda</span> (elem)
+                                 (eq elem kmap))
+                               my-env-maps)))
+
+(<span style="color: #a020f0;">define-minor-mode</span> <span style="color: #0000ff;">my-environment-mode</span>
+  <span style="color: #8b2252;">"Minor mode supporting easy switching between different environments. For</span>
+<span style="color: #8b2252;">example, using a notebook in mobile or in docked mode may mean using mouse or</span>
+<span style="color: #8b2252;">trackpad, apple or pc keyboard.</span>
+
+<span style="color: #8b2252;">\\{my-environment-mode-map}"</span>
+  nil
+  <span style="color: #8b2252;">" [N]"</span>
+  (my-env-init-keymap)
+  <span style="color: #483d8b;">:group</span> 'my-environment
+  <span style="color: #483d8b;">:global</span> 't
+  <span style="color: #483d8b;">:after-hook</span> (toggle-my-environment))
+</pre>
+</div>
+
+<p>
+You may add key definitions in enter action
+functions with <code>my-env-add-map</code>.
+To remove them on exit, if you dont declare an exit function, as a convenience
+use <code>my-env-reset-keymap</code>.
+</p>
+
+<div class="org-src-container">
+<pre class="src src-emacs-lisp">(<span style="color: #a020f0;">defun</span> <span style="color: #0000ff;">my-env-reset-keymap</span> ()
+  <span style="color: #8b2252;">"If your enter function added to the minor mode or my-env keymaps, your exit</span>
+<span style="color: #8b2252;">function should call this function to reset it."</span>
+  (<span style="color: #a020f0;">setq</span> my-env-maps nil))
+</pre>
+</div>
+</div>
+
+<div id="outline-container-org12ef20c" class="outline-4">
+<h4 id="org12ef20c">Internals</h4>
+<div class="outline-text-4" id="text-org12ef20c">
+<div class="org-src-container">
+<pre class="src src-emacs-lisp">(<span style="color: #a020f0;">defvar</span> <span style="color: #a0522d;">my-env-action</span> nil) <span style="color: #b22222;">; </span><span style="color: #b22222;">current env cell. car is the env, cdr the next cell..</span>
+
+(<span style="color: #a020f0;">defvar</span> <span style="color: #a0522d;">my-env-maps</span> nil) <span style="color: #b22222;">; </span><span style="color: #b22222;">list of maps to combine into current env</span>
+</pre>
+</div>
+
+<div class="org-src-container">
+<pre class="src src-emacs-lisp">(<span style="color: #a020f0;">defun</span> <span style="color: #0000ff;">my-env-update-parent-map</span> ()
+  <span style="color: #8b2252;">"creates a parent for the minor mode composing all current action maps."</span>
+  (set-keymap-parent my-environment-mode-map (make-composed-keymap my-env-maps)))
+
+(<span style="color: #a020f0;">defun</span> <span style="color: #0000ff;">my-env-enter-action</span> (action)
+  <span style="color: #8b2252;">"calls the enter definition of given action if provided."</span>
+  (<span style="color: #a020f0;">let</span> ((aclist (remove-if-not (<span style="color: #a020f0;">lambda</span> (elem)
+                                 (eq action (car elem)))
+                               my-env-actions)))
+    (<span style="color: #a020f0;">if</span> (<span style="color: #a020f0;">and</span> aclist (cadar aclist))
+        (funcall (cadar aclist)))))
+
+(<span style="color: #a020f0;">defun</span> <span style="color: #0000ff;">my-env-exit-action</span> (action)
+  <span style="color: #8b2252;">"calls the exit definition of given action if provided."</span>
+  (<span style="color: #a020f0;">let</span> ((aclist (remove-if-not (<span style="color: #a020f0;">lambda</span> (elem)
+                                 (eq action (car elem)))
+                               my-env-actions)))
+    (<span style="color: #a020f0;">if</span> (<span style="color: #a020f0;">and</span> aclist (caddar aclist))
+        (funcall (caddar aclist)))))
+
+(<span style="color: #a020f0;">defun</span> <span style="color: #0000ff;">toggle-my-environment</span> ()
+  <span style="color: #8b2252;">"toggles activation of next environment. If only one env is defined, toggles</span>
+<span style="color: #8b2252;">between this only, so you should probably at least define a second env with a</span>
+<span style="color: #8b2252;">default N id and no actions."</span>
+  (<span style="color: #a020f0;">interactive</span>)
+  (<span style="color: #a020f0;">let</span> ((current my-env-action)
+        (next
+         (<span style="color: #a020f0;">if</span> (not my-env-action)
+             my-env-definitions
+           (<span style="color: #a020f0;">let</span> ((next-first
+                  (cdr my-env-action)))
+             (<span style="color: #a020f0;">if</span> (not next-first)
+                 my-env-definitions
+               next-first)))))
+    (<span style="color: #a020f0;">if</span> current
+        (<span style="color: #a020f0;">let</span> ((env (car current)))
+          (<span style="color: #a020f0;">dolist</span> (action (cadr env))
+            (my-env-exit-action action))))
+    (<span style="color: #a020f0;">if</span> next
+        (<span style="color: #a020f0;">let</span> ((env (car next)))
+          (<span style="color: #a020f0;">dolist</span> (action (cadr env))
+            (my-env-enter-action action))
+          (my-env-update-parent-map)
+          (my-env-update-lighter (format <span style="color: #8b2252;">" [%c]"</span> (car env)))))
+    (<span style="color: #a020f0;">setq</span> my-env-action next)))
+
+(<span style="color: #a020f0;">defun</span> <span style="color: #0000ff;">my-env-update-lighter</span> (lighter)
+  <span style="color: #8b2252;">"update the lighter of minor mode to reflect the selected environment."</span>
+  (setcar
+   (cdar (remove-if-not (<span style="color: #a020f0;">lambda</span> (elem)
+                          (eq (car elem) 'my-environment-mode))
+                        minor-mode-alist))
+   lighter)
+  (force-mode-line-update 't))
+</pre>
+</div>
+</div>
+</div>
+</div>
+
+<div id="outline-container-orgaf40aa6" class="outline-3">
+<h3 id="orgaf40aa6">Global key bindings</h3>
+<div class="outline-text-3" id="text-orgaf40aa6">
+</div>
+<div id="outline-container-org93fb758" class="outline-4">
+<h4 id="org93fb758">Generic</h4>
+<div class="outline-text-4" id="text-org93fb758">
+<p>
+Some convenience keys for handling buffers and files. Use caution and check to
+not shadow future default functionality here.
+We replace <code>C-x C-f</code> with <code>find-file</code>, as the <code>-at-point</code> function is then
+still reachable through <code>M-n</code>. The old mapping of <code>C-c C-f</code> to
+<code>find-file-at-point</code> is removed, as it is now overlayed by org.
+Probably the idea of having <code>M-x</code> also on a <i>Control</i> binding proves to be practical.
+</p>
+
+<div class="org-src-container">
+<pre class="src src-emacs-lisp">(global-set-key <span style="color: #8b2252;">"\C-x\C-b"</span> #'bs-show)   <span style="color: #b22222;">;; </span><span style="color: #b22222;">this used to be electric-buffer-list</span>
+(global-set-key <span style="color: #8b2252;">"\C-x\C-f"</span> #'find-file)
+(global-set-key [3 67108919] #'toggle-my-environment)  <span style="color: #b22222;">;; </span><span style="color: #b22222;">make global to enable env switch on german kbd</span>
+(global-set-key [24 67108877] 'execute-extended-command) <span style="color: #b22222;">;; </span><span style="color: #b22222;">C-x C-RET</span>
+</pre>
+</div>
+
+<p>
+Having the repeat commands more within reach also proves to be very helpful:
+</p>
+
+<div class="org-src-container">
+<pre class="src src-emacs-lisp">(global-set-key <span style="color: #8b2252;">"\C-x\C-z"</span> #'repeat)
+(global-set-key [201326651] #'repeat-complex-command)  <span style="color: #b22222;">;; </span><span style="color: #b22222;">C-M-;</span>
+(global-set-key [201326650] #'repeat-complex-command) <span style="color: #b22222;">;; </span><span style="color: #b22222;">C-M-:</span>
+</pre>
+</div>
+
+<p>
+And my delimiting function:
+</p>
+
+<div class="org-src-container">
+<pre class="src src-emacs-lisp">(global-set-key <span style="color: #8b2252;">"\C-cF"</span> #'my-delimit-region)
+</pre>
+</div>
+</div>
+</div>
+
+<div id="outline-container-org25ebeec" class="outline-4">
+<h4 id="org25ebeec">Convenience for searching</h4>
+<div class="outline-text-4" id="text-org25ebeec">
+<p>
+This one really is a small hidden diamond. Often you want to finish a
+search leaving the point on the first character of the string found.
+As each search also positions the mark at it's origin, by executing
+adjacent searches you can easily select a region. This enables using
+isearch as a convenient tool not only for navigating, but also for
+selecting or killing. This is enabled here on <code>C-return</code>. So you start
+a search, typing ahead until you reach the desired location, <code>C-RET</code>
+and hit the desired spot. Repeating it selects the region between both
+spots. Make it visible with <code>C-x C-x</code>.
+</p>
+
+<div class="org-src-container">
+<pre class="src src-emacs-lisp">(define-key isearch-mode-map (kbd <span style="color: #8b2252;">"&lt;C-return&gt;"</span>)
+  (<span style="color: #a020f0;">lambda</span> () (<span style="color: #a020f0;">interactive</span>)
+    (isearch-repeat (<span style="color: #a020f0;">if</span> isearch-forward
+                        'backward
+                      'forward))
+    (isearch-exit)))
+</pre>
+</div>
+</div>
+</div>
+
+<div id="outline-container-org6942f2d" class="outline-4">
+<h4 id="org6942f2d">Scrolling</h4>
+<div class="outline-text-4" id="text-org6942f2d">
+<p>
+Convenience keys for buffer scrolling. Enables up/down also with <i>Meta</i>
+modifier. Together with <i>Shift</i> this enables scrolling. This way you can very
+conveniently move the pointer and scroll by just adding/releasing the <i>Shift</i>
+modifier. When <code>visual-line-mode</code> is activated, the <i>Meta</i> keys act on the
+logical lines.
+</p>
+
+<div class="org-src-container">
+<pre class="src src-emacs-lisp">(global-set-key <span style="color: #8b2252;">"\M-p"</span> #'previous-logical-line)
+(global-set-key <span style="color: #8b2252;">"\M-n"</span> #'next-logical-line)
+(global-set-key <span style="color: #8b2252;">"\M-P"</span> #'scroll-down-line)
+(global-set-key <span style="color: #8b2252;">"\M-N"</span> #'scroll-up-line)
+(global-set-key [end] #'move-end-of-line)
+(global-set-key [home] #'move-beginning-of-line)
+</pre>
+</div>
+</div>
+</div>
+
+<div id="outline-container-org54b7f66" class="outline-4">
+<h4 id="org54b7f66">Ace zapping</h4>
+<div class="outline-text-4" id="text-org54b7f66">
+<p>
+Ace enables some more vi-style jumping and zapping (see <code>M-z</code> for the basic
+<code>zap-to-char</code> function).
+</p>
+
+<div class="org-src-container">
+<pre class="src src-emacs-lisp">(global-set-key <span style="color: #8b2252;">"\M-J"</span> #'ace-jump-char-mode)
+<span style="color: #b22222;">;;;</span><span style="color: #b22222;">(global-set-key "\C-x\C-j" #'ace-jump-mode-pop-mark) ;; this is dired-jump</span>
+(global-set-key <span style="color: #8b2252;">"\M-Z"</span> #'zzz-up-to-char)
+</pre>
+</div>
+</div>
+</div>
+
+<div id="outline-container-org3e80259" class="outline-4">
+<h4 id="org3e80259">Mouse handling</h4>
+<div class="outline-text-4" id="text-org3e80259">
+<p>
+Mouse keys: remember basic mouse button handling in emacs: left - set pointer,
+double left - select word, triple left - select line, drag - select, drag
+after double - select words, right - define region and save to kill ring,
+right after double click - define region up to next word, double right - kill
+to kill ring, middle - yank to click position.
+</p>
+
+<p>
+Additionally, you can double click on delimiters like parens or quotes to
+select the delimited text. Finally, we activated the drag and drop feature.
+</p>
+
+<p>
+<code>mouse-wheel-mode</code> also enables mouse wheel scrolling. With <i>Meta</i>,
+enables scroll turbo; with <i>shift</i>, scale text (seems to work only on
+trackpad, as it is mapped to <code>S-wheel-left</code> / <code>right</code>).
+</p>
+
+<p>
+To revert yanks when hand on mouse, we place <code>undo</code> on <code>M-mouse-2</code>. Probably
+no more customizations to be done. Especially when using the trackpad, hands
+are already near keyboard.
+Should be activated by customizing into my-environment-mode.
+</p>
+
+<div class="org-src-container">
+<pre class="src src-emacs-lisp">(<span style="color: #a020f0;">defun</span> <span style="color: #0000ff;">mouse-undo</span> ()
+  <span style="color: #8b2252;">"undo with mouse button."</span>
+  (<span style="color: #a020f0;">let</span> ((kmap (make-sparse-keymap)))
+    (define-key kmap (kbd <span style="color: #8b2252;">"&lt;M-mouse-2&gt;"</span>) #'undo)
+    (my-env-add-map kmap)))
+</pre>
+</div>
+
+<p>
+When using a mouse wheel, we also want to use the text size zooming feature which
+in wheel-mode apparently works only with trackpad.
+</p>
+
+<div class="org-src-container">
+<pre class="src src-emacs-lisp">(<span style="color: #a020f0;">defun</span> <span style="color: #0000ff;">my-wheel-zoom</span> ()
+  (<span style="color: #a020f0;">let</span> ((kmap (make-sparse-keymap)))
+    (define-key kmap (kbd <span style="color: #8b2252;">"&lt;S-wheel-down&gt;"</span>) #'text-scale-increase)
+    (define-key kmap (kbd <span style="color: #8b2252;">"&lt;S-wheel-up&gt;"</span>) #'text-scale-decrease)
+    (my-env-add-map kmap)))
+</pre>
+</div>
+</div>
+</div>
+
+<div id="outline-container-org8ad8ff9" class="outline-4">
+<h4 id="org8ad8ff9">Keyboard handling</h4>
+<div class="outline-text-4" id="text-org8ad8ff9">
+<p>
+On a us keyboard, we also want to be able to use german umlauts. This is
+possible quite easily, courtesy of mule. <code>C-\</code> switches the default input
+method on and off, so zou can activate it on your finger tips. Additionally,
+select the default input method with <code>C-x RET C-\</code>. Practical are
+<i>german-postfix</i> (ae), <i>german-prefix</i> ("a) or <i>german</i> - the latter
+activating a complete german keymapping, which is probably not too useful on a
+us keyboard. Input methods are described by <code>C-h I</code>.
+</p>
+
+<p>
+On a german keyboard, we want some of the more obscure mappings to be within
+easier reach. This is done here for combinations otherwise unmapped.
+Should be activated by customizing into my-environment-mode.
+Augment as needed..
+</p>
+
+<div class="org-src-container">
+<pre class="src src-emacs-lisp">(<span style="color: #a020f0;">defun</span> <span style="color: #0000ff;">activate-german-keymap</span> ()
+  <span style="color: #8b2252;">"activate some generic mappings to be reachable in usual places on german keyboard."</span>
+  (<span style="color: #a020f0;">let</span> ((kmap (make-sparse-keymap)))
+    (define-key kmap <span style="color: #8b2252;">"\242"</span> #'mark-word) <span style="color: #b22222;">; </span><span style="color: #b22222;">M-@, here M-"</span>
+    (define-key kmap <span style="color: #8b2252;">"\246"</span> #'delete-indentation) <span style="color: #b22222;">; </span><span style="color: #b22222;">M-^, here M-&amp;</span>
+    (define-key kmap <span style="color: #8b2252;">"\C-x&amp;"</span> #'enlarge-window) <span style="color: #b22222;">; </span><span style="color: #b22222;">C-x ^, here C-x &amp;</span>
+    (define-key kmap <span style="color: #8b2252;">"\C-x*"</span> #'enlarge-window-horizontally) <span style="color: #b22222;">; </span><span style="color: #b22222;">C-x }</span>
+    (define-key kmap <span style="color: #8b2252;">"\C-x&#220;"</span> #'shrink-window-horizontally)  <span style="color: #b22222;">; </span><span style="color: #b22222;">C-x {</span>
+    (define-key kmap [3 67108919] #'toggle-my-environment)
+    (my-env-add-map kmap)))
+</pre>
+</div>
+</div>
+
+<ul class="org-ul">
+<li><a id="orgb63de73"></a>Modifiers<br />
+<div class="outline-text-5" id="text-orgb63de73">
+<p>
+The <i>Meta</i> key should always be directly left and right of the space
+bar. At least on the right side, there should be an <i>Alt</i> key.
+<i>Control</i> should be also on the shift lock (defined on os level).
+Additional keys may be mapped to <i>super</i>. Uses of <i>super</i> and <i>hyper</i>
+are to be explored.
+</p>
+
+<p>
+On an Apple keyboard, we want to use the command keys as <i>Meta</i>, the
+right alt as option, control as such and probably the left alt as
+<i>super</i>. Btw, note you can get the <i>tilde</i> with <code>S-A-8</code>.
+</p>
+
+<div class="org-src-container">
+<pre class="src src-emacs-lisp">(<span style="color: #a020f0;">defun</span> <span style="color: #0000ff;">on-apple-keyboard</span> ()
+  (custom-set-variables
+   '(ns-control-modifier 'control)
+   '(ns-alternate-modifier 'super)
+   '(ns-right-alternate-modifier 'alternate)
+   '(ns-command-modifier 'meta)
+   '(ns-right-command-modifier 'meta)))
+</pre>
+</div>
+
+<p>
+Similarly, on a PC keyboard, the left alt is <i>Meta</i>, the right als
+used as <i>AltGr</i>.
+</p>
+
+<div class="org-src-container">
+<pre class="src src-emacs-lisp">(<span style="color: #a020f0;">defun</span> <span style="color: #0000ff;">on-pc-keyboard</span> ()
+  (custom-set-variables
+   '(ns-control-modifier 'control)
+   '(ns-alternate-modifier 'meta)
+   '(ns-right-alternate-modifier 'alternate)
+   '(ns-command-modifier 'super)
+   '(ns-right-command-modifier 'meta)))
+</pre>
+</div>
+</div>
+</li>
+</ul>
+</div>
+
+<div id="outline-container-orgf59dede" class="outline-4">
+<h4 id="orgf59dede">Window handling</h4>
+<div class="outline-text-4" id="text-orgf59dede">
+<p>
+We overrule <code>C-x ^</code> to use our window resizing method.
+</p>
+
+<div class="org-src-container">
+<pre class="src src-emacs-lisp">(global-set-key [remap enlarge-window] #'resize-window)
+</pre>
+</div>
+
+<p>
+And upgrade fullscreen experience. Use <code>M-F10</code> to toggle between maximized
+and a size comprised of almost full height and a width just below
+<code>split-width-threshold</code>; <code>M-F11</code> to toggle fullscreen including no window
+decorations.
+</p>
+
+<div class="org-src-container">
+<pre class="src src-emacs-lisp">(global-set-key [remap toggle-frame-fullscreen] #'toggle-maximize-frame)
+(global-set-key [remap toggle-frame-maximized] #'switch-frame)
+(global-set-key (kbd <span style="color: #8b2252;">"&lt;M-f11&gt;"</span>) #'toggle-maximize-frame)
+</pre>
+</div>
+</div>
+</div>
+
+<div id="outline-container-org144c635" class="outline-4">
+<h4 id="org144c635">Remote controlling other window</h4>
+<div class="outline-text-4" id="text-org144c635">
+<p>
+As I got quite used to remote control the other window using <code>C-x 4</code> keys, 
+I'm adding a few ones which I missed so far.
+</p>
+
+<div class="org-src-container">
+<pre class="src src-emacs-lisp">(global-set-key <span style="color: #8b2252;">"\C-x4q"</span> #'quit-restore-other-window)
+(global-set-key <span style="color: #8b2252;">"\C-x4l"</span> #'go-back-other-window)
+(global-set-key <span style="color: #8b2252;">"\C-x4-"</span> #'shrink-other-window-if-larger-than-buffer)
+(global-set-key <span style="color: #8b2252;">"\C-x4s"</span> #'dedicate-window)
+(global-set-key <span style="color: #8b2252;">"\C-x4e"</span> #'edit-other-window)
+(global-set-key <span style="color: #8b2252;">"\C-x4k"</span> #'kill-other-buffer-and-window)
+(global-set-key <span style="color: #8b2252;">"\C-x40"</span> #'kill-buffer-and-window)
+</pre>
+</div>
+
+<p>
+Note the window size changing keys, <code>C-x ^</code> to enlarge (also negative) and
+<code>C-x -</code> to shrink if buffer is smaller than window are a little bit asymetric.
+While the enlargement key can be used to enlarge and shrink the current
+window, the shrink key works only in one direction. So here we define an
+adjacent key for the other window. For rescue, there is always <code>C-x +</code> to
+balance windows.
+</p>
+
+<p>
+We also want to jump to beginning/end in other window by <code>C-M-&lt;</code> and <code>C-M-&gt;</code>
+(cf. <code>C-M-v</code> and <code>C-M-V</code> to scroll pagewise in other window).
+</p>
+
+<div class="org-src-container">
+<pre class="src src-emacs-lisp">(global-set-key [201326652] #'beginning-of-other-window)
+(global-set-key [201326654] #'end-of-other-window)
+(global-set-key <span style="color: #8b2252;">"\C-x4&lt;"</span> #'beginning-of-other-window)
+(global-set-key <span style="color: #8b2252;">"\C-x4&gt;"</span> #'end-of-other-window)
+(global-set-key [remap scroll-other-window] #'my-scroll-other-window)
+(global-set-key [remap scroll-other-window-down] #'my-scroll-other-window-down)
+</pre>
+</div>
+
+<p>
+How to get these codes? Call <code>M-x global-set-key RET C-M-&lt; beg</code>.. to manually
+define such a key, then call <code>C-x ESC ESC</code> and copy the resulting parametrized
+command from minibuffer.
+Alternatively, call <code>M-: (read-key-sequence "&gt; ")</code>.
+</p>
+
+<p>
+Now come the key bindings for convenient error navigation whose
+functions were defined above.
+</p>
+
+<div class="org-src-container">
+<pre class="src src-emacs-lisp">(define-prefix-command 'other-goto-map)
+(global-set-key <span style="color: #8b2252;">"\C-x4\M-g"</span> 'other-goto-map)
+(define-key other-goto-map <span style="color: #8b2252;">"\M-n"</span> #'next-error-other-window)
+(define-key other-goto-map <span style="color: #8b2252;">"\M-p"</span> #'previous-error-other-window)
+</pre>
+</div>
+
+<p>
+Here we bind the temporary navigation mode to some useful keys for current and
+other window.
+</p>
+
+<div class="org-src-container">
+<pre class="src src-emacs-lisp">(global-set-key <span style="color: #8b2252;">"\C-x\C-v"</span> #'navigate-window)
+(global-set-key <span style="color: #8b2252;">"\C-x4v"</span> #'navigate-other-window)
+</pre>
+</div>
+</div>
+</div>
+
+<div id="outline-container-org2b8871f" class="outline-4">
+<h4 id="org2b8871f">Remote controlling other frame</h4>
+<div class="outline-text-4" id="text-org2b8871f">
+<p>
+Push current window buffer to own frame and revert current window to previous frame.
+</p>
+
+<div class="org-src-container">
+<pre class="src src-emacs-lisp">(global-set-key <span style="color: #8b2252;">"\C-x5p"</span> #'push-buffer-to-frame)
+</pre>
+</div>
+</div>
+</div>
+</div>
+
+<div id="outline-container-orge435ba7" class="outline-3">
+<h3 id="orge435ba7">Misc</h3>
+<div class="outline-text-3" id="text-orge435ba7">
+<p>
+How emacs finds its tools:
+</p>
+
+<div class="org-src-container">
+<pre class="src src-emacs-lisp">(setenv <span style="color: #8b2252;">"PATH"</span> (concat <span style="color: #8b2252;">"/opt/local/bin:/opt/local/sbin:"</span> (getenv <span style="color: #8b2252;">"PATH"</span>)))
+</pre>
+</div>
+
+<p>
+Load and enable different additional packages
+</p>
+
+<div class="org-src-container">
+<pre class="src src-emacs-lisp">(<span style="color: #a020f0;">setq</span> org-element-use-cache nil)  <span style="color: #b22222;">;; </span><span style="color: #b22222;">temporarily disable org element cache</span>
+(load-library <span style="color: #8b2252;">"realgud"</span>)
+(load-library <span style="color: #8b2252;">"evil"</span>)
+(<span style="color: #a020f0;">require</span> '<span style="color: #008b8b;">wdired</span>)  <span style="color: #b22222;">;; </span><span style="color: #b22222;">edit dired buffers with C-x C-q</span>
+(load <span style="color: #8b2252;">"dired-x.el"</span>) <span style="color: #b22222;">;; </span><span style="color: #b22222;">also enable C-x C-j</span>
+(<span style="color: #a020f0;">require</span> '<span style="color: #008b8b;">helm-config</span>)
+(<span style="color: #a020f0;">require</span> '<span style="color: #008b8b;">ox-rst</span>)
+(global-undo-tree-mode)
+(global-magit-file-mode t)
+(which-key-mode 1)  <span style="color: #b22222;">;; </span><span style="color: #b22222;">not only for spacemacs..</span>
+</pre>
+</div>
+
+<p>
+Accept simplified answers.
+</p>
+
+<div class="org-src-container">
+<pre class="src src-emacs-lisp">(fset 'yes-or-no-p 'y-or-n-p)
+</pre>
+</div>
+</div>
+</div>
+
+<div id="outline-container-org8d9a442" class="outline-3">
+<h3 id="org8d9a442">Mode-specific customizations</h3>
+<div class="outline-text-3" id="text-org8d9a442">
+</div>
+<div id="outline-container-org593f181" class="outline-4">
+<h4 id="org593f181">dired</h4>
+<div class="outline-text-4" id="text-org593f181">
+<p>
+Enable simple access to  <code>ediff</code> within <code>dired</code>. Select two files with
+mark and point, then press <code>=</code> to compare.
+</p>
+
+<div class="org-src-container">
+<pre class="src src-emacs-lisp">(define-key dired-mode-map <span style="color: #8b2252;">"="</span>
+  (<span style="color: #a020f0;">lambda</span> ()
+    <span style="color: #8b2252;">"ediff file at mark and file at point."</span>
+    (<span style="color: #a020f0;">interactive</span>)
+    (<span style="color: #a020f0;">let</span> ((file (dired-get-filename))
+          (prev (<span style="color: #a020f0;">if</span> mark-active 
+                    (<span style="color: #a020f0;">save-excursion</span> (goto-char (mark t))(dired-get-filename))
+                  nil)))
+      (<span style="color: #a020f0;">if</span> (<span style="color: #a020f0;">and</span> file prev)
+          (ediff-files prev file)))))
+</pre>
+</div>
+</div>
+</div>
+
+<div id="outline-container-orgb3b0cd6" class="outline-4">
+<h4 id="orgb3b0cd6">Evil mode</h4>
+<div class="outline-text-4" id="text-orgb3b0cd6">
+</div>
+<ul class="org-ul">
+<li><a id="org81ff1a1"></a>Evil defines<br />
+<div class="outline-text-5" id="text-org81ff1a1">
+<p>
+Here we implement some kind of <code>.vimrc</code> initialization.
+This is also an example of defining an evil leader key and some adjacent keymaps.
+Inspired by spacemacs, we experiment with rebinding the <code>C-x</code> and <code>C-c</code> maps.
+They are accessable by <code>SPC x</code> and <code>SPC c</code>, while the <code>C-x</code> map is also parent
+of leader map. This way, all unambiguous key commands should be directly
+accessable by <code>SPC</code>. Lets see how this works out.
+</p>
+
+<div class="org-src-container">
+<pre class="src src-emacs-lisp">(<span style="color: #a020f0;">defun</span> <span style="color: #0000ff;">evil-rc</span> ()
+  <span style="color: #8b2252;">"evil local init/customization"</span>
+  (define-prefix-command 'leader-map)
+
+  (define-key evil-normal-state-map <span style="color: #8b2252;">" "</span> leader-map)
+  <span style="color: #b22222;">;; </span><span style="color: #b22222;">yes, we really want to scroll up in evil mode</span>
+  (define-key evil-normal-state-map <span style="color: #8b2252;">"\C-u"</span> #'evil-scroll-up)
+
+  (define-key leader-map <span style="color: #8b2252;">"#"</span> #'list-buffers)
+  (define-key leader-map <span style="color: #8b2252;">"l"</span> #'global-linum-mode)
+
+  (define-key leader-map <span style="color: #8b2252;">"x"</span> (key-binding <span style="color: #8b2252;">"\C-x"</span>))
+  (set-keymap-parent leader-map (key-binding <span style="color: #8b2252;">"\C-x"</span>))
+  (define-key leader-map <span style="color: #8b2252;">"c"</span> (key-binding <span style="color: #8b2252;">"\C-c"</span>))
+  (def-evil-scroll-state))
+</pre>
+</div>
+</div>
+</li>
+
+<li><a id="orgeba2baa"></a>experimental evil scroll mode<br />
+<div class="outline-text-5" id="text-orgeba2baa">
+<p>
+Example of defining an own evil mode. Motivated by the convenient navigation
+mode (<a href="#org03c2c6c">Convenient Navigation Mode</a>) and a vi configuration mapping j to jzz, k
+to kzz, this allows probably easier scrolling in evil.
+</p>
+
+<div class="org-src-container">
+<pre class="src src-emacs-lisp">(<span style="color: #a020f0;">defun</span> <span style="color: #0000ff;">def-evil-scroll-state</span> ()
+  (<span style="color: #a020f0;">evil-define-state</span> <span style="color: #0000ff;">scroll</span> <span style="color: #8b2252;">"scroll-state"</span>
+    <span style="color: #483d8b;">:tag</span> <span style="color: #8b2252;">" &lt;S&gt;"</span>
+    <span style="color: #483d8b;">:message</span> <span style="color: #8b2252;">"-- SCROLL --"</span>
+    <span style="color: #483d8b;">:suppress-keymap</span> 't)
+  (define-key evil-scroll-state-map <span style="color: #8b2252;">"0"</span> #'digit-argument)
+  (define-key evil-scroll-state-map <span style="color: #8b2252;">"1"</span> #'digit-argument)
+  (define-key evil-scroll-state-map <span style="color: #8b2252;">"2"</span> #'digit-argument)
+  (define-key evil-scroll-state-map <span style="color: #8b2252;">"3"</span> #'digit-argument)
+  (define-key evil-scroll-state-map <span style="color: #8b2252;">"4"</span> #'digit-argument)
+  (define-key evil-scroll-state-map <span style="color: #8b2252;">"5"</span> #'digit-argument)
+  (define-key evil-scroll-state-map <span style="color: #8b2252;">"6"</span> #'digit-argument)
+  (define-key evil-scroll-state-map <span style="color: #8b2252;">"7"</span> #'digit-argument)
+  (define-key evil-scroll-state-map <span style="color: #8b2252;">"8"</span> #'digit-argument)
+  (define-key evil-scroll-state-map <span style="color: #8b2252;">"9"</span> #'digit-argument)
+  (define-key evil-scroll-state-map (kbd <span style="color: #8b2252;">"&lt;return&gt;"</span>) #'evil-ret)
+  (define-key evil-scroll-state-map <span style="color: #8b2252;">"j"</span> (<span style="color: #a020f0;">lambda</span> nil
+                                          (<span style="color: #a020f0;">interactive</span>)
+                                          (call-interactively #'evil-next-line)
+                                          (evil-scroll-line-to-center nil)))
+  (define-key evil-scroll-state-map <span style="color: #8b2252;">"k"</span> (<span style="color: #a020f0;">lambda</span> nil
+                                          (<span style="color: #a020f0;">interactive</span>)
+                                          (call-interactively #'evil-previous-line)
+                                          (evil-scroll-line-to-center nil)))
+  (define-key evil-scroll-state-map (kbd <span style="color: #8b2252;">"&lt;escape&gt;"</span>) 'evil-normal-state)
+  (define-key evil-scroll-state-map <span style="color: #8b2252;">"\C-\M-z"</span> 'evil-emacs-state)
+  (define-key leader-map <span style="color: #8b2252;">"s"</span> 'evil-scroll-state))
+</pre>
+</div>
+</div>
+</li>
+
+<li><a id="orgf693851"></a>Evil Emacs config<br />
+<div class="outline-text-5" id="text-orgf693851">
+<p>
+When using evil-mode, we set <code>evil-exit-emacs-state</code> to <code>C-M-z</code>, as I'm used to
+<code>suspend-frame</code>. Additionally, always enter evil mode in emacs state (see custom). This
+way, without getting in the way it is always only a key press away.
+</p>
+
+<div class="org-src-container">
+<pre class="src src-emacs-lisp">(<span style="color: #a020f0;">defun</span> <span style="color: #0000ff;">change-evil-emacs-state</span> (arg)
+  <span style="color: #8b2252;">"when ARG is true, set all live buffers to exit emacs-state. When nil, set</span>
+<span style="color: #8b2252;">all buffers to emacs-state."</span>
+  (<span style="color: #a020f0;">interactive</span> <span style="color: #8b2252;">"P"</span>)
+  (<span style="color: #a020f0;">setq</span> evil-default-state (<span style="color: #a020f0;">if</span> arg 'normal 'emacs))
+  (<span style="color: #a020f0;">dolist</span> (b (buffer-list))
+    (<span style="color: #a020f0;">with-current-buffer</span> b
+      (<span style="color: #a020f0;">if</span> arg
+          (evil-exit-emacs-state)
+        (evil-emacs-state)))))
+
+(<span style="color: #a020f0;">defun</span> <span style="color: #0000ff;">enter-evil</span> ()
+  <span style="color: #8b2252;">"enter evil. That is, switch all buffers to normal mode and set default mode to normal."</span>
+  (<span style="color: #a020f0;">interactive</span>)
+  (change-evil-emacs-state 't))
+
+(<span style="color: #a020f0;">defun</span> <span style="color: #0000ff;">exit-evil</span> ()
+  <span style="color: #8b2252;">"exit evil. That is, switch all buffers to emacs mode and set default mode to emacs."</span>
+  (<span style="color: #a020f0;">interactive</span>)
+  (change-evil-emacs-state nil))
+
+(define-key evil-emacs-state-map <span style="color: #8b2252;">"\C-z"</span> nil)
+(define-key evil-emacs-state-map <span style="color: #8b2252;">"\C-\M-z"</span> #'enter-evil)
+(define-key evil-normal-state-map <span style="color: #8b2252;">"\C-\M-z"</span> #'exit-evil)
+(advice-add #'evil-exit-emacs-state
+            <span style="color: #483d8b;">:before</span>
+            (<span style="color: #a020f0;">lambda</span> (<span style="color: #228b22;">&amp;optional</span> arg msg)
+              (message <span style="color: #8b2252;">"entering EVIL"</span>)
+              (evil-rc)))
+</pre>
+</div>
+
+<p>
+Now, after Initializing evil, we may probably also activate it in all buffers.
+</p>
+
+<div class="org-src-container">
+<pre class="src src-emacs-lisp">(evil-mode)
+(evil-rc)
+</pre>
+</div>
+</div>
+</li>
+</ul>
+</div>
+
+<div id="outline-container-orga61fb7e" class="outline-4">
+<h4 id="orga61fb7e">C++ mode customizations, in use for aeons now</h4>
+<div class="outline-text-4" id="text-orga61fb7e">
+<div class="org-src-container">
+<pre class="src src-emacs-lisp">(add-hook 'c-mode-common-hook
+          (<span style="color: #a020f0;">function</span>
+           (<span style="color: #a020f0;">lambda</span> ()
+             (c-toggle-auto-hungry-state 1)
+             (c-set-style <span style="color: #8b2252;">"Stroustrup"</span>)
+             (<span style="color: #a020f0;">setq</span> c-basic-offset 2)
+             (<span style="color: #a020f0;">setq</span> c-hanging-braces-alist '((brace-list-open)
+                                            (brace-list-close after)
+                                            (defun-open after)
+                                            (class-open after)
+                                            (inline-open after)
+                                            (substatement-open after))))))
+</pre>
+</div>
+</div>
+</div>
+
+<div id="outline-container-org9962b4f" class="outline-4">
+<h4 id="org9962b4f">Auto-fill-mode</h4>
+<div class="outline-text-4" id="text-org9962b4f">
+<div class="org-src-container">
+<pre class="src src-emacs-lisp">(add-hook 'fundamental-mode-hook
+         (<span style="color: #a020f0;">lambda</span> () (auto-fill-mode 1)))
+(add-hook 'text-mode-hook
+         (<span style="color: #a020f0;">lambda</span> () (auto-fill-mode 1)))
+(add-hook 'org-mode-hook
+         (<span style="color: #a020f0;">lambda</span> () (auto-fill-mode 1)))
+</pre>
+</div>
+</div>
+</div>
+
+<div id="outline-container-org74d5a67" class="outline-4">
+<h4 id="org74d5a67">python mode</h4>
+<div class="outline-text-4" id="text-org74d5a67">
+<p>
+We use hippie-expand mapped to <code>M-/</code>
+</p>
+
+<div class="org-src-container">
+<pre class="src src-emacs-lisp">(global-set-key [remap dabbrev-expand] #'hippie-expand)
+</pre>
+</div>
+
+<p>
+We want to use flycheck in python.
+</p>
+
+<div class="org-src-container">
+<pre class="src src-emacs-lisp">(<span style="color: #a020f0;">require</span> '<span style="color: #008b8b;">flycheck</span>)
+</pre>
+</div>
+
+<p>
+<code>elpy-mode</code> defines a bunch of useful support functions for navigating and
+indenting in python buffers. Notably <code>C-c C-d</code> documentation for item under
+point, <code>M-.</code> jump to definition of item under cursor, <code>M-*</code> pop back to where
+<code>M-.</code> was last invoked, <code>C-c C-o</code> show all python definitions of current
+buffer in occur view, <code>C-c C-z</code> switch to python shell.
+For this, set <code>python-shell-interpreter</code> to path of buildout powerscript exe and
+<code>python-shell-interpreter-args</code> to "" (see custom).
+Also worth to remember the company backend completion on <code>C-M-i</code>.
+</p>
+
+<p>
+Note: <code>elpy-enable</code> adds to <code>python-mode-hook</code> only on first call. So if you
+re-evaluate <code>custom.el</code>, remember to afterwards <code>(setq elpy-enabled-p nil)</code>
+and <code>(elpy-enable)</code>.
+</p>
+
+<p>
+Because of this, provision of a function to reenable it after reloading
+<code>custom.el</code> has been proven to be handy. We enable elpy in <code>init.el</code> after loading
+<code>custom.el</code>.
+</p>
+
+<div class="org-src-container">
+<pre class="src src-emacs-lisp">(elpy-enable)
+
+(<span style="color: #a020f0;">defun</span> <span style="color: #0000ff;">elpy-reenable</span> ()
+  <span style="color: #8b2252;">"make sure elpy is put into `</span><span style="color: #008b8b;">python-mode-hook</span><span style="color: #8b2252;">'."</span>
+  (<span style="color: #a020f0;">interactive</span>)
+  (<span style="color: #a020f0;">setq</span> elpy-enabled-p nil)
+  (elpy-enable))
+</pre>
+</div>
+
+<p>
+To navigate using more convenient keys, we put the block navigation moves
+(block in, block out, within block up and down) to <code>f</code>, <code>b</code>, <code>p</code> and <code>n</code>
+combined with <code>C-M</code>. Other useful functions already on convenient keys are
+<code>S-RET</code> open and indent line below, <code>C-S-RET</code> open and indent line above.
+Also the python indentation functions (<code>C-c &lt;</code> and <code>C-c &gt;</code>) are remapped to
+elpy. The <code>M-i</code> and <code>M-I</code> bindings first have to prove themselves.
+</p>
+
+<div class="org-src-container">
+<pre class="src src-emacs-lisp">(define-key elpy-mode-map <span style="color: #8b2252;">"\C-\M-p"</span> #'elpy-nav-backward-block)
+(define-key elpy-mode-map <span style="color: #8b2252;">"\C-\M-n"</span> #'elpy-nav-forward-block)
+(define-key elpy-mode-map <span style="color: #8b2252;">"\C-\M-f"</span> #'elpy-nav-forward-indent)
+(define-key elpy-mode-map <span style="color: #8b2252;">"\C-\M-b"</span> #'elpy-nav-backward-indent)
+(define-key elpy-mode-map <span style="color: #8b2252;">"\M-i"</span> #'elpy-nav-indent-shift-right)
+(define-key elpy-mode-map <span style="color: #8b2252;">"\M-I"</span> #'elpy-nav-indent-shift-left)
+(define-key elpy-mode-map [remap python-indent-shift-right] #'elpy-nav-indent-shift-right)
+(define-key elpy-mode-map [remap python-indent-shift-left] #'elpy-nav-indent-shift-left)
+</pre>
+</div>
+
+<p>
+The visibility toggling is on completely brain damaged keys, so we put at
+least the toggle at point function at <code>S-tab</code>, being as convenient as in org
+mode.
+</p>
+
+<div class="org-src-container">
+<pre class="src src-emacs-lisp"><span style="color: #b22222;">;; </span><span style="color: #b22222;">(w32-register-hot-key (kbd "&lt;M-tab&gt;")) ; example of hot key override, but not practical</span>
+(define-key elpy-mode-map (kbd <span style="color: #8b2252;">"&lt;S-tab&gt;"</span>) #'elpy-folding-toggle-at-point)
+</pre>
+</div>
+
+<p>
+Enable autopep8, but don't activate it on save. However, use <code>M-g M-n</code> and
+<code>M-g M-p</code> for flycheck next and flycheck previous error, which also show pep8 errors.
+</p>
+
+<div class="org-src-container">
+<pre class="src src-emacs-lisp">(<span style="color: #a020f0;">require</span> '<span style="color: #008b8b;">py-autopep8</span>)
+<span style="color: #b22222;">;;</span><span style="color: #b22222;">(add-hook 'elpy-mode-hook 'py-autopep8-enable-on-save)</span>
+(define-key elpy-mode-map [remap previous-error] #'flycheck-previous-error)
+(define-key elpy-mode-map [remap next-error] #'flycheck-next-error)
+</pre>
+</div>
+
+<p>
+elpy makes indentation levels visible columnwise, so we also highlight the
+current line of point.
+As this is not only for python, currently enabled only in customize.
+</p>
+
+<div class="org-src-container">
+<pre class="src src-emacs-lisp"><span style="color: #b22222;">;; </span><span style="color: #b22222;">(global-hl-line-mode)</span>
+</pre>
+</div>
+
+<p>
+The untabify-function defined here is disabled. Instead, we use custom
+variable <code>indent-tabs-mode</code>. Nevertheless, this may serve as an example, so it
+stays here. custom python mode hook also activates jedi and superword mode.
+</p>
+
+<div class="org-src-container">
+<pre class="src src-emacs-lisp"><span style="color: #b22222;">;; </span><span style="color: #b22222;">(defun python-mode-untabify ()</span>
+<span style="color: #b22222;">;;     </span><span style="color: #b22222;">(save-excursion</span>
+<span style="color: #b22222;">;;       </span><span style="color: #b22222;">(goto-char (point-min))</span>
+<span style="color: #b22222;">;;       </span><span style="color: #b22222;">(while (re-search-forward "[ \t]+$" nil t)</span>
+<span style="color: #b22222;">;;         </span><span style="color: #b22222;">(delete-region (match-beginning 0) (match-end 0)))</span>
+<span style="color: #b22222;">;;       </span><span style="color: #b22222;">(goto-char (point-min))</span>
+<span style="color: #b22222;">;;       </span><span style="color: #b22222;">(if (search-forward "\t" nil t)</span>
+<span style="color: #b22222;">;;           </span><span style="color: #b22222;">(untabify (1- (point)) (point-max))))</span>
+<span style="color: #b22222;">;;     </span><span style="color: #b22222;">nil)</span>
+
+<span style="color: #b22222;">;;</span><span style="color: #b22222;">(add-hook 'python-mode-hook</span>
+<span style="color: #b22222;">;;            </span><span style="color: #b22222;">'(lambda ()</span>
+<span style="color: #b22222;">;;               </span><span style="color: #b22222;">(make-local-variable 'write-contents-hooks)</span>
+<span style="color: #b22222;">;;               </span><span style="color: #b22222;">(add-hook 'write-contents-hooks 'python-mode-untabify)))</span>
+</pre>
+</div>
+</div>
+</div>
+
+<div id="outline-container-org2c725c1" class="outline-4">
+<h4 id="org2c725c1">React programming</h4>
+<div class="outline-text-4" id="text-org2c725c1">
+<p>
+Combine javascript and web-mode, supporting <code>jsx</code> templates within. This is
+probably outdated and should be re-evaluated. Is there already a real
+react-mode? Otherwise, combine it with more up-to-date html-mode?
+</p>
+
+<div class="org-src-container">
+<pre class="src src-emacs-lisp">(add-to-list 'auto-mode-alist '(<span style="color: #8b2252;">"\\.jsx\\'"</span> . web-mode))
+(add-hook 'web-mode-hook 'js2-minor-mode)
+</pre>
+</div>
+</div>
+</div>
+
+<div id="outline-container-orgf1730f5" class="outline-4">
+<h4 id="orgf1730f5">XML-mode</h4>
+<div class="outline-text-4" id="text-orgf1730f5">
+</div>
+<ul class="org-ul">
+<li><a id="orgfe04a23"></a>hiding of subtrees<br />
+<div class="outline-text-5" id="text-orgfe04a23">
+<p>
+Here we use <code>hs-mode</code>, enabling tag view toggling and tag level hiding. Also
+<code>S-mouse-2</code> can be used to toggle tag views.
+</p>
+
+<div class="org-src-container">
+<pre class="src src-emacs-lisp">(<span style="color: #a020f0;">setq</span> sgml-quick-keys t)
+(<span style="color: #a020f0;">require</span> '<span style="color: #008b8b;">hideshow</span>)
+(<span style="color: #a020f0;">require</span> '<span style="color: #008b8b;">sgml-mode</span>)
+(<span style="color: #a020f0;">require</span> '<span style="color: #008b8b;">nxml-mode</span>)
+
+(add-to-list 'hs-special-modes-alist
+             '(nxml-mode
+               <span style="color: #8b2252;">"&lt;!--</span><span style="color: #8b2252; font-weight: bold;">\\</span><span style="color: #8b2252; font-weight: bold;">|</span><span style="color: #8b2252;">&lt;[</span><span style="color: #8b2252;">^</span><span style="color: #8b2252;">/&gt;]*[</span><span style="color: #8b2252;">^</span><span style="color: #8b2252;">/]&gt;"</span>
+               <span style="color: #8b2252;">"--&gt;</span><span style="color: #8b2252; font-weight: bold;">\\</span><span style="color: #8b2252; font-weight: bold;">|</span><span style="color: #8b2252;">&lt;/[</span><span style="color: #8b2252;">^</span><span style="color: #8b2252;">/&gt;]*[</span><span style="color: #8b2252;">^</span><span style="color: #8b2252;">/]&gt;"</span>
+
+               <span style="color: #8b2252;">"&lt;!--"</span>
+               sgml-skip-tag-forward
+               nil))
+
+(add-hook 'nxml-mode-hook #'hs-minor-mode)
+
+(define-key nxml-mode-map (kbd <span style="color: #8b2252;">"C-c C-h"</span>) #'hs-toggle-hiding)
+(define-key nxml-mode-map (kbd <span style="color: #8b2252;">"C-c C-l"</span>) #'hs-hide-level)
+</pre>
+</div>
+</div>
+</li>
+
+<li><a id="orgcb27eac"></a>tagedit-mode<br />
+<div class="outline-text-5" id="text-orgcb27eac">
+<div class="org-src-container">
+<pre class="src src-emacs-lisp">(add-hook 'nxml-mode-hook #'sgml-electric-tag-pair-mode)
+</pre>
+</div>
+
+<div class="org-src-container">
+<pre class="src src-emacs-lisp">(eval-after-load <span style="color: #8b2252;">"sgml-mode"</span>
+  '(<span style="color: #a020f0;">progn</span>
+     (<span style="color: #a020f0;">require</span> '<span style="color: #008b8b;">tagedit</span>)
+     (add-hook 'html-mode-hook (<span style="color: #a020f0;">lambda</span> () (tagedit-mode 1)))
+     (add-hook 'nxml-mode-hook (<span style="color: #a020f0;">lambda</span> () (tagedit-mode 1)))))
+
+(define-key tagedit-mode-map (kbd <span style="color: #8b2252;">"C-c )"</span>) #'tagedit-forward-slurp-tag)
+(define-key tagedit-mode-map (kbd <span style="color: #8b2252;">"C-c }"</span>) #'tagedit-forward-barf-tag)
+(define-key tagedit-mode-map (kbd <span style="color: #8b2252;">"C-c s"</span>) #'tagedit-raise-tag)
+(define-key tagedit-mode-map (kbd <span style="color: #8b2252;">"C-M-k"</span>) #'tagedit-kill)
+(define-key tagedit-mode-map (kbd <span style="color: #8b2252;">"C-c a"</span>) #'tagedit-kill-attribute)
+</pre>
+</div>
+</div>
+</li>
+</ul>
+</div>
+
+<div id="outline-container-org9988c8c" class="outline-4">
+<h4 id="org9988c8c">smartparens mode</h4>
+<div class="outline-text-4" id="text-org9988c8c">
+<p>
+In emacs lisp, we want slurp and barf support via smartparens. As the default
+conflicts with my habits, we define our own mapping here.
+Also use our delimiter for parens.
+</p>
+
+<div class="org-src-container">
+<pre class="src src-emacs-lisp">(<span style="color: #a020f0;">require</span> '<span style="color: #008b8b;">smartparens-config</span>)
+(sp--populate-keymap
+ (<span style="color: #a020f0;">let</span> ((my-sp-bindings '((<span style="color: #8b2252;">"C-M-f"</span> . sp-forward-sexp) <span style="color: #b22222;">;; </span><span style="color: #b22222;">navigation</span>
+                         (<span style="color: #8b2252;">"C-M-b"</span> . sp-backward-sexp)
+                         (<span style="color: #8b2252;">"C-M-u"</span> . sp-backward-up-sexp)
+                         (<span style="color: #8b2252;">"C-M-d"</span> . sp-down-sexp)
+                         (<span style="color: #8b2252;">"C-M-p"</span> . sp-backward-parallel-sexp)
+                         (<span style="color: #8b2252;">"C-M-n"</span> . sp-forward-parallel-sexp)
+                         (<span style="color: #8b2252;">"C-M-k"</span> . sp-kill-sexp)
+                         (<span style="color: #8b2252;">"C-M-w"</span> . sp-copy-sexp)
+                         (<span style="color: #8b2252;">"M-F"</span> . sp-forward-symbol)
+                         (<span style="color: #8b2252;">"M-B"</span> . sp-backward-symbol)
+                         (<span style="color: #8b2252;">"C-M-SPC"</span> . sp-mark-sexp)
+                         (<span style="color: #8b2252;">"C-c s"</span> . sp-splice-sexp) <span style="color: #b22222;">;; </span><span style="color: #b22222;">depth-changing commands</span>
+                         (<span style="color: #8b2252;">"C-c S"</span> . (<span style="color: #a020f0;">lambda</span> (point mark pre) (<span style="color: #a020f0;">interactive</span> <span style="color: #8b2252;">"r\nP"</span>) (my-delimit-region point mark pre ?\()))
+                         (<span style="color: #8b2252;">"C-c b"</span> . sp-splice-sexp-killing-backward)
+                         (<span style="color: #8b2252;">"C-c f"</span> . sp-splice-sexp-killing-forward)
+                         (<span style="color: #8b2252;">"C-c k"</span> . sp-splice-sexp-killing-around)
+                         (<span style="color: #8b2252;">"C-c )"</span> . sp-forward-slurp-sexp) <span style="color: #b22222;">;; </span><span style="color: #b22222;">barf/slurp</span>
+                         (<span style="color: #8b2252;">"C-c }"</span> . sp-forward-barf-sexp)
+                         (<span style="color: #8b2252;">"C-c ("</span> . sp-backward-slurp-sexp)
+                         (<span style="color: #8b2252;">"C-c {"</span> . sp-backward-barf-sexp)
+                         (<span style="color: #8b2252;">"C-c C-s"</span> . sp-split-sexp)
+                         (<span style="color: #8b2252;">"C-c C-]"</span> . sp-select-next-thing-exchange)
+                         (<span style="color: #8b2252;">"C-c ]"</span> . sp-select-next-thing)
+                         )))
+   my-sp-bindings))
+(add-hook 'emacs-lisp-mode-hook #'smartparens-mode)
+</pre>
+</div>
+</div>
+</div>
+
+<div id="outline-container-org4824b40" class="outline-4">
+<h4 id="org4824b40">markdown mode</h4>
+<div class="outline-text-4" id="text-org4824b40">
+<div class="org-src-container">
+<pre class="src src-emacs-lisp">(autoload 'markdown-mode <span style="color: #8b2252;">"markdown-mode"</span>
+  <span style="color: #8b2252;">"Major mode for editing Markdown files"</span> t)
+(add-to-list 'auto-mode-alist '(<span style="color: #8b2252;">"\\.markdown\\'"</span> . markdown-mode))
+(add-to-list 'auto-mode-alist '(<span style="color: #8b2252;">"\\.md\\'"</span> . markdown-mode))
+(<span style="color: #a020f0;">setq</span> markdown-command <span style="color: #8b2252;">"/Users/jko/Programming/node/node_modules/.bin/md2html"</span>)
+</pre>
+</div>
+</div>
+</div>
+</div>
+
+<div id="outline-container-orga348b71" class="outline-3">
+<h3 id="orga348b71">Disabled commands</h3>
+<div class="outline-text-3" id="text-orga348b71">
+<div class="org-src-container">
+<pre class="src src-emacs-lisp">(put 'narrow-to-region 'disabled nil)
+(put 'narrow-to-page 'disabled nil)
+(put 'set-goal-column 'disabled nil)
+</pre>
+</div>
+</div>
+</div>
+
+<div id="outline-container-orgbb76f91" class="outline-3">
+<h3 id="orgbb76f91">Todo</h3>
+<div class="outline-text-3" id="text-orgbb76f91">
+</div>
+<div id="outline-container-org6a8a5b6" class="outline-4">
+<h4 id="org6a8a5b6"><span class="todo TODO">TODO</span> split custom.el into site specific customization and global custom selection to be merged/distributed</h4>
+<div class="outline-text-4" id="text-org6a8a5b6">
+<ul class="org-ul">
+<li>move mergeable options into init-babel.org?</li>
+</ul>
+</div>
+</div>
+<div id="outline-container-org6c5eae0" class="outline-4">
+<h4 id="org6c5eae0"><span class="todo TODO">TODO</span> read about tramp plugins</h4>
+</div>
+<div id="outline-container-orgbc76d1d" class="outline-4">
+<h4 id="orgbc76d1d"><span class="todo TODO">TODO</span> macro for command composition</h4>
+<div class="outline-text-4" id="text-orgbc76d1d">
+<ul class="org-ul">
+<li>compose key 1 and key 2</li>
+<li>assign function name</li>
+<li>where-is-internal - find key bindings for function</li>
+<li>key-binding - find function for key binding</li>
+</ul>
+</div>
+</div>
+<div id="outline-container-orgf8c7e82" class="outline-4">
+<h4 id="orgf8c7e82"><span class="done DONE">DONE</span> complete mouse/trackpad handling/switching</h4>
+</div>
+<div id="outline-container-orgcb0a9dc" class="outline-4">
+<h4 id="orgcb0a9dc"><span class="done DONE">DONE</span> make window resize steps customizable, add center function</h4>
+</div>
+<div id="outline-container-org9648bfc" class="outline-4">
+<h4 id="org9648bfc"><span class="done DONE">DONE</span> display-buffer</h4>
+<div class="outline-text-4" id="text-org9648bfc">
+</div>
+<ul class="org-ul">
+<li><a id="org2ff422e"></a><span class="done DONE">DONE</span> option close frame on quit instead of iconify<br />
+<div class="outline-text-5" id="text-org2ff422e">
+<ul class="org-ul">
+<li>frame-auto-hide-function to delete</li>
+</ul>
+</div>
+</li>
+<li><a id="orgadeff24"></a><span class="done DONE">DONE</span> build a function scaling selected window to fit buffer, but use max arg fract of frame<br />
+<div class="outline-text-5" id="text-orgadeff24">
+<ul class="org-ul">
+<li>fit-window-to-buffer-max-half-frame</li>
+</ul>
+</div>
+</li>
+<li><a id="orgca8a73c"></a><span class="done DONE">DONE</span> how to make window dedicated? that is not 'dedicated' to a buffer, but not selected as other window<br />
+<div class="outline-text-5" id="text-orgca8a73c">
+<ul class="org-ul">
+<li>probably mitigated by not using display-buffer-use-some-window</li>
+</ul>
+</div>
+</li>
+<li><a id="orgfa94b27"></a><span class="done DONE">DONE</span> continue experiments with-current-buffer<br /></li>
+<li><a id="org052e14e"></a><span class="done DONE">DONE</span> read display-buffer<br /></li>
+<li><a id="orgff1615e"></a><span class="done DONE">DONE</span> check dired buffer handling<br />
+<div class="outline-text-5" id="text-orgff1615e">
+<ul class="org-ul">
+<li>experiment with logging display-buffer function</li>
+</ul>
+</div>
+</li>
+</ul>
+</div>
+<div id="outline-container-org2d9a66e" class="outline-4">
+<h4 id="org2d9a66e"><span class="done DONE">DONE</span> find out about alist handling</h4>
+</div>
+<div id="outline-container-org0e72be4" class="outline-4">
+<h4 id="org0e72be4"><span class="done DONE">DONE</span> finetune nth-window and other window handling</h4>
+<div class="outline-text-4" id="text-org0e72be4">
+<ul class="org-ul">
+<li>s f. other-window-for-scrolling and v. other-window-scroll-buffer</li>
+<li>select other window:
+<ul class="org-ul">
+<li>probably tag different windows with dedication tags (main work
+window, dired window, info/help window)</li>
+<li>advice display-buffer functions not to use these</li>
+</ul></li>
+<li>or define own actions</li>
+<li>first see display-buffer docs</li>
+</ul>
+</div>
+</div>
+<div id="outline-container-orgeabc7b5" class="outline-4">
+<h4 id="orgeabc7b5"><span class="done DONE">DONE</span> complete keyboard switching</h4>
+</div>
+<div id="outline-container-org34631a7" class="outline-4">
+<h4 id="org34631a7"><span class="done DONE">DONE</span> cleanup misc, move to mode specific sections</h4>
+</div>
+<div id="outline-container-org867998c" class="outline-4">
+<h4 id="org867998c"><span class="done DONE">DONE</span> env-mode: use make-composed-keymap, set-keymap-parent</h4>
+<div class="outline-text-4" id="text-org867998c">
+<p>
+this way, each action can define an own keymap indefinitely existing and
+just adding/removing it on enter/exit. Advantage is, rebind commands
+should also be effective on these existing keymaps.
+</p>
+<ul class="org-ul">
+<li>also: call first toggle-my-environment on mode init. So if envs are
+defined, we are always in one of the valid states.</li>
+</ul>
+</div>
+</div>
+<div id="outline-container-org871eb5f" class="outline-4">
+<h4 id="org871eb5f"><span class="done DONE">DONE</span> think about movement/search placing point on beginning of adjacent object</h4>
+<div class="outline-text-4" id="text-org871eb5f">
+<p>
+done at least for searching
+</p>
+</div>
+</div>
+</div>
+</div>
+</div>
+<div id="postamble" class="status">
+<p class="author">Author: Jörg Kollmann
+(Reddit: <a href="https://www.reddit.com/user/e17i">u/e17i</a>)</p> <p>Made on
+emacs org-mode</p>
+</div>
+</body>
+</html>
