@@ -98,6 +98,12 @@
  '(org-agenda-files nil)
  '(org-babel-python-command "python2")
  '(org-goto-auto-isearch nil)
+ '(org-html-postamble t)
+ '(org-html-postamble-format
+   (quote
+    (("en" "<p class=\"author\">Author: %a
+(Reddit: <a href=\"https://www.reddit.com/user/e17i\">u/e17i</a>)</p> <p>Made on
+emacs org-mode with <a href=\"https://jessekelly881-rethink.surge.sh/\">Rethink</a></p>"))))
  '(org-src-preserve-indentation t)
  '(package-archives
    (quote
