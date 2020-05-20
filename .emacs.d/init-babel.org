@@ -1336,6 +1336,7 @@ Load and enable different additional packages
 (require 'ox-rst)
 (global-undo-tree-mode)
 (global-magit-file-mode t)
+(setq erc-autojoin-channels-alist '(("freenode.net" "#latex-de" "##latinitas" "#NetBSD" "##bash-de" "#git" "#vim" "#emacs" "#erc" "#oberon" "#macosx")))
 (which-key-mode 1)  ;; not only for spacemacs..
 #+END_SRC
 
