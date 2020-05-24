@@ -11,6 +11,7 @@
  '(custom-file "~/.emacs.d/custom.el")
  '(default-input-method "german-postfix")
  '(delete-selection-mode t)
+ '(dired-dwim-target t)
  '(dired-recursive-deletes 'top)
  '(display-buffer-alist
    '((dired-to-other-window maybe-make-dired-window-origin)
@@ -73,6 +74,8 @@
      (77
       (german-kbd apple-kbd battery))))
  '(my-environment-mode t)
+ '(my-frame-background "White")
+ '(my-frame-foreground "Black")
  '(my-frame-stylings
    '(frame-width-below-threshold frame-height-dec frame-to-right frame-to-top))
  '(my-frame-transparency 85)
