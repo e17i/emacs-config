@@ -18,49 +18,6 @@ Some nice customizations are still hidden in =custom.el= and probably
 should be moved here..
 
 ** Lisp functions
-*** Initialization
-
-I like to have an easy way of setting and changing colors and
-transparency for all frames, this way having a consistent appearance
-on each machine.
-
-#+BEGIN_SRC emacs-lisp
-(defgroup my-cust nil "my customizations")
-(defcustom my-frame-transparency 100
-  "transparency used for all display frames."
-  :type '(integer)
-  :group 'my-cust
-  :set (lambda (symb val)
-         (setq my-frame-transparency val)
-         (dolist (frame (frames-on-display-list))
-           (set-frame-parameter frame 'alpha `(,val . ,val)))))
-(defcustom my-frame-background "Black"
-  "background color used for all display frames."
-  :type '(string)
-  :group 'my-cust
-  :set (lambda (symb val)
-         (setq my-frame-background val)
-         (dolist (frame (frames-on-display-list))
-           (with-selected-frame frame
-             (set-background-color my-frame-background)))))
-(defcustom my-frame-foreground "Green"
-  "foreground color used for all display frames."
-  :type '(string)
-  :group 'my-cust
-  :set (lambda (symb val)
-         (setq my-frame-foreground val)
-         (dolist (frame (frames-on-display-list))
-           (with-selected-frame frame
-             (set-foreground-color my-frame-foreground)))))
-
-(add-hook 'after-make-frame-functions
-	  (lambda (frame)
-	    (set-frame-parameter frame 'alpha (cons my-frame-transparency my-frame-transparency))
-	    (with-selected-frame frame
-	      (set-background-color my-frame-background)
-	      (set-foreground-color my-frame-foreground))))
-#+END_SRC
-
 *** Handling of other window
 
 A topic of long and outstanding troubles has been the question
@@ -892,6 +849,50 @@ transparency.
    ('t
     (set-frame-parameter nil 'my-transparency my-frame-transparency)
     (apply (get 'my-frame-transparency 'custom-set) 'my-frame-transparency 100 nil))))
+#+END_SRC
+
+*** Frame Transparency
+
+I like to have an easy way of setting and changing colors and
+transparency for all frames, this way having a consistent appearance
+on each machine. More easy then defining themes, still contradicts
+them a little bit..
+
+#+BEGIN_SRC emacs-lisp
+(defgroup my-cust nil "my customizations")
+(defcustom my-frame-transparency 100
+  "transparency used for all display frames."
+  :type '(integer)
+  :group 'my-cust
+  :set (lambda (symb val)
+         (setq my-frame-transparency val)
+         (dolist (frame (frames-on-display-list))
+           (set-frame-parameter frame 'alpha `(,val . ,val)))))
+(defcustom my-frame-background "Black"
+  "background color used for all display frames."
+  :type '(string)
+  :group 'my-cust
+  :set (lambda (symb val)
+         (setq my-frame-background val)
+         (dolist (frame (frames-on-display-list))
+           (with-selected-frame frame
+             (set-background-color my-frame-background)))))
+(defcustom my-frame-foreground "Green"
+  "foreground color used for all display frames."
+  :type '(string)
+  :group 'my-cust
+  :set (lambda (symb val)
+         (setq my-frame-foreground val)
+         (dolist (frame (frames-on-display-list))
+           (with-selected-frame frame
+             (set-foreground-color my-frame-foreground)))))
+
+(add-hook 'after-make-frame-functions
+	  (lambda (frame)
+	    (set-frame-parameter frame 'alpha (cons my-frame-transparency my-frame-transparency))
+	    (with-selected-frame frame
+	      (set-background-color my-frame-background)
+	      (set-foreground-color my-frame-foreground))))
 #+END_SRC
 
 *** electric delimiter
