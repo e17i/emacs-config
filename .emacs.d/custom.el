@@ -122,7 +122,7 @@
      ("melpa" . "https://melpa.org/packages/"))))
  '(package-selected-packages
    (quote
-    (deadgrep undo-tree which-key smartparens tagedit ob-restclient company-restclient restclient py-autopep8 flycheck elpy company-jedi json-mode jedi-direx jedi ox-rst magit zzz-to-char ace-jump-mode helm realgud evil markdown-mode cider web-mode org-plus-contrib js2-mode electric-spacing auctex)))
+    (which-key realgud deadgrep undo-tree smartparens tagedit ob-restclient company-restclient restclient py-autopep8 flycheck elpy company-jedi json-mode jedi-direx jedi ox-rst magit zzz-to-char ace-jump-mode helm evil markdown-mode cider web-mode org-plus-contrib js2-mode electric-spacing auctex)))
  '(python-mode-hook
    (quote
     ((lambda nil "Turn off Indent Tabs mode."
@@ -135,6 +135,7 @@
        (superword-mode))
      (lambda nil "use electric spacing mode"
        (electric-spacing-mode)))) t)
+ '(realgud:pdb-command-name "/sqlite/bin/powerscript -m pdb")
  '(savehist-mode t nil (savehist))
  '(scroll-bar-mode nil)
  '(select-enable-clipboard t)
