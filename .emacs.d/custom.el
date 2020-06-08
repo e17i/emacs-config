@@ -11,6 +11,7 @@
  '(custom-file "~/.emacs.d/custom.el")
  '(default-input-method "german-postfix")
  '(delete-selection-mode t)
+ '(dired-dwim-target t)
  '(dired-recursive-deletes 'top)
  '(display-buffer-alist
    '((dired-to-other-window maybe-make-dired-window-origin)
@@ -87,6 +88,8 @@
      (77
       (german-kbd apple-kbd battery))))
  '(my-environment-mode t)
+ '(my-frame-background "#181a26")
+ '(my-frame-foreground "gray80")
  '(my-frame-stylings
    '(frame-width-below-threshold frame-height-dec frame-to-right frame-to-top))
  '(my-frame-transparency 90)
@@ -111,7 +114,7 @@
      ("melpa-stable" . "https://stable.melpa.org/packages/")
      ("melpa" . "https://melpa.org/packages/")))
  '(package-selected-packages
-   '(deadgrep use-package which-key smartparens tagedit ob-restclient company-restclient restclient py-autopep8 flycheck elpy company-jedi json-mode jedi-direx jedi ox-rst magit zzz-to-char ace-jump-mode helm realgud evil markdown-mode cider web-mode org-plus-contrib js2-mode electric-spacing auctex))
+   '(yaml-mode indent-tools solarized-theme deadgrep use-package which-key smartparens tagedit ob-restclient company-restclient restclient py-autopep8 flycheck elpy company-jedi json-mode jedi-direx jedi ox-rst magit zzz-to-char ace-jump-mode helm realgud evil markdown-mode cider web-mode org-plus-contrib js2-mode electric-spacing auctex))
  '(python-mode-hook
    '((lambda nil "Turn off Indent Tabs mode."
        (setq indent-tabs-mode nil))
@@ -121,6 +124,8 @@
        (jedi:setup))
      (lambda nil "use superword mode"
        (superword-mode))
+     (lambda nil "indent tools minor mode"
+       (indent-tools-minor-mode))
      (lambda nil "use electric spacing mode"
        (electric-spacing-mode))) t)
  '(savehist-mode t nil (savehist))
