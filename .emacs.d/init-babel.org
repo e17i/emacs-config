@@ -1334,6 +1334,7 @@ Load and enable different additional packages
 (load "dired-x.el") ;; also enable C-x C-j
 (require 'helm-config)
 (require 'ox-rst)
+(require 'yaml-mode)
 (global-undo-tree-mode)
 (global-magit-file-mode t)
 (setq erc-autojoin-channels-alist '(("freenode.net" "#latex-de" "##latinitas" "#NetBSD" "##bash-de" "#git" "#vim" "#emacs" "#erc" "#oberon" "#macosx")))
@@ -1591,7 +1592,8 @@ As this is not only for python, currently enabled only in customize.
 
 The untabify-function defined here is disabled. Instead, we use custom
 variable ~indent-tabs-mode~. Nevertheless, this may serve as an example, so it
-stays here. custom python mode hook also activates jedi and superword mode.
+stays here. custom python mode hook also activates jedi, superword and indent
+tools mode, which binds =C-c >= as hydra.
 
 #+BEGIN_SRC emacs-lisp
 ;; (defun python-mode-untabify ()
@@ -1714,6 +1716,18 @@ Also use our delimiter for parens.
 (add-to-list 'auto-mode-alist '("\\.markdown\\'" . markdown-mode))
 (add-to-list 'auto-mode-alist '("\\.md\\'" . markdown-mode))
 (setq markdown-command "/Users/jko/Programming/node/node_modules/.bin/md2html")
+#+END_SRC
+
+*** yaml mode
+
+Have RET indent like in python mode:
+
+#+BEGIN_SRC emacs-lisp
+(add-to-list 'auto-mode-alist '("\\.yml\\'" . yaml-mode))
+(add-hook 'yaml-mode-hook
+          '(lambda () (indent-tools-minor-mode))
+          '(lambda ()
+             (define-key yaml-mode-map "\C-m" 'newline-and-indent)))
 #+END_SRC
 
 ** Disabled commands
