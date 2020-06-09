@@ -11,6 +11,7 @@
  '(custom-file "~/.emacs.d/custom.el")
  '(default-input-method "german-postfix")
  '(delete-selection-mode t)
+ '(dired-dwim-target t)
  '(dired-recursive-deletes (quote top))
  '(display-buffer-alist
    (quote
@@ -133,6 +134,8 @@
        (jedi:setup))
      (lambda nil "use superword mode"
        (superword-mode))
+     (lambda nil "indent tools minor mode"
+       (indent-tools-minor-mode))
      (lambda nil "use electric spacing mode"
        (electric-spacing-mode)))) t)
  '(savehist-mode t nil (savehist))
