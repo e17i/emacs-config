@@ -114,7 +114,7 @@ emacs org-mode with <a href=\"https://jessekelly881-rethink.surge.sh/\">Rethink<
      ("melpa" . "https://melpa.org/packages/"))))
  '(package-selected-packages
    (quote
-    (tagedit undo-tree which-key zzz-to-char htmlize smartparens magit ace-jump-zap helm realgud evil auctex)))
+    (indent-tools yaml-mode tagedit undo-tree which-key zzz-to-char htmlize smartparens magit ace-jump-zap helm realgud evil auctex)))
  '(paren-match-face (quote paren-face-match-light))
  '(paren-sexp-mode t)
  '(python-mode-hook
