@@ -1108,6 +1108,7 @@ Similar keys for word navigation. As usual, =M-f= and =M-b= navigates over
 words. When combined with /Shift/, navigates to the end/beginning of words. 
 
 #+BEGIN_SRC emacs-lisp
+(require 'misc)
 (global-set-key "\M-p" #'previous-logical-line)
 (global-set-key "\M-n" #'next-logical-line)
 (global-set-key "\M-P" #'scroll-down-line)
@@ -1120,13 +1121,17 @@ words. When combined with /Shift/, navigates to the end/beginning of words.
 
 *** Ace zapping
 
-Ace enables some more vi-style jumping and zapping (see =M-z= for the basic
-~zap-to-char~ function).
+Ace enables some more vi-style jumping and zapping. But not working
+iteratively, it's not really nicely integrating with typical emacs workflows.
+Actually better proved to be using isearch (also with customized =M-RET=). So
+we are probably going to remove ace.
+
+But additionally to =M-z= (the basic ~zap-to-char~ function), we are adding =M-Z=
+for ~zap-up-to-char~. Both of them can be nicely repeated or provided with an
+prefix arg.
 
 #+BEGIN_SRC emacs-lisp
-(global-set-key "\M-J" #'ace-jump-char-mode)
-;;;(global-set-key "\C-x\C-j" #'ace-jump-mode-pop-mark) ;; this is dired-jump
-(global-set-key "\M-Z" #'zzz-up-to-char)
+(global-set-key "\M-Z" #'zap-up-to-char)
 #+END_SRC
 
 *** Mouse handling
@@ -1330,7 +1335,7 @@ Load and enable different additional packages
 (load-library "realgud")
 (load-library "evil")
 (require 'wdired)  ;; edit dired buffers with C-x C-q
-(load "dired-x.el") ;; also enable C-x C-j
+(load "dired-x.el") ;; also enable dired-jump with C-x C-j
 (require 'helm-config)
 (require 'ox-rst)
 (require 'yaml-mode)
