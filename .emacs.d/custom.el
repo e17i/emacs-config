@@ -91,7 +91,7 @@
  '(my-frame-background "#181a26")
  '(my-frame-foreground "gray80")
  '(my-frame-stylings
-   '(frame-width-below-threshold frame-height-dec frame-to-right frame-to-top))
+   '(frame-width-below-threshold frame-height-dec frame-to-left frame-to-top))
  '(my-frame-transparency 90)
  '(ns-alternate-modifier 'meta)
  '(ns-command-modifier 'super)
