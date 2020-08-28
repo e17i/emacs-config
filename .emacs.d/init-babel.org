@@ -549,11 +549,10 @@ is still selected.
 
 *** Convenient Navigation Mode
 
-This is another feature in the spirit of previous means of other
-window handling, activating some kind of temporary navigation mode. Using
-this, you can conveniently navigate, scroll, set marks and jump to previous
-mark positions in the other window, without actually leaving the
-current window. Features include navigating up and down of the point,
+This is another feature in the spirit of other window handling, activating
+some kind of temporary navigation mode. Using this, you can conveniently
+navigate, scroll, set marks and jump to previous mark positions in the other
+window, without actually leaving the current window. Features include
 scrolling up and down, jumping to begin and end of buffer, pagewise up and
 down. Most of these can be combined with a numeric argument. The mode is
 cancelled by using any other key.
@@ -573,7 +572,7 @@ allowing to specify a remote window to be controlled."
 					 (* arg-acc (if arg-neg -1 1))
 				       default)))
 			    res))
-	     (acc-status () (message "navigate ([-,0-9] n,p,N,P,v,V,<,>,[,],l, ) %c %d"
+	     (acc-status () (message "navigate ([-,0-9] n,p,v,V,<,>,[,],l, ) %c %d"
 				     (if arg-neg arg-neg '? ) arg-acc))
 	     (arg-negate ()
 			 (setq arg-neg (if arg-neg nil '?-))
@@ -603,8 +602,8 @@ allowing to specify a remote window to be controlled."
 				(if (eq arg-acc 0)
 				    (progn (set-mark-command nil)(deactivate-mark))
 				  (set-mark-command (get-arg-acc)))))
-	   (define-key map "n" (with-window (next-line (get-arg-acc 1))))
-	   (define-key map "p" (with-window (previous-line (get-arg-acc 1))))
+	   (define-key map "n" (with-window (scroll-up-line (get-arg-acc 1))))
+	   (define-key map "p" (with-window (scroll-down-line (get-arg-acc 1))))
 	   (define-key map "/" (with-window (isearch-forward))) ;not documented
 	   (define-key map "l" (with-window (recenter-top-bottom (get-arg-acc))))
 	   (define-key map "r" (with-window (move-to-window-line-top-bottom (get-arg-acc))))
@@ -612,8 +611,8 @@ allowing to specify a remote window to be controlled."
 	   (define-key map ">" (with-window (end-of-buffer (get-arg-acc))))
 	   (define-key map "]" (with-window (forward-paragraph (get-arg-acc))))
 	   (define-key map "[" (with-window (backward-paragraph (get-arg-acc))))
-	   (define-key map "N" (with-window (scroll-up-line (get-arg-acc 1))))
-	   (define-key map "P" (with-window (scroll-down-line (get-arg-acc 1))))
+	   (define-key map "\M-n" (with-window (next-line (get-arg-acc 1))))
+	   (define-key map "\M-p" (with-window (previous-line (get-arg-acc 1))))
 	   (define-key map "v" (with-window (scroll-up-command (get-arg-acc))))
 	   (define-key map "V" (with-window (scroll-down-command (get-arg-acc))))
 	 map) 't)))))
@@ -634,12 +633,12 @@ Keys are:
   -, 0-9: set an argument to following commands, which stays in effect until
           reset (e.g. by pressing 0)
   space: set a mark; with arg jump to mark
-  n, p: move point to next/previous line
+  n, p: scroll up/down
   l: recenter buffer to point
   r: move point to window center
   <, >: move point to beginning/end of buffer
   [, ]: move point forward/backward in paragraphs
-  N, P: scroll up/down
+  M-n, M-p: move point to next/previous line
   v, V: pagewise scroll up/down"
   (navigate-buffer))
 #+END_SRC
@@ -1001,6 +1000,28 @@ default N id and no actions."
 #+END_SRC
 
 ** Global key bindings
+
+Controlling emacs works best with the ability of touch typing, combined with a
+sensible selection of modifier keys. Repetitive strain injury can be prevented
+by using the hand not typing to hold modifier keys. At least to a certain degree,
+this counteracts the emacs philosophy of continuously holding a modifier while
+pressing a continuous key path. So often it is more practical to use one hand
+holding the modifier (in my case this is often the left one) while using the
+other one going over the full keyboard. Nevertheless, it is useful to have all
+modifier keys on both sides.
+
+Remembering the space cadet keyboard, you find all of the modifiers both on
+the left and on the right of space bar. This can be done in a similar fashion
+on today's pc keyboards, using ctrl, cmd and alt for the /Control/, /super/
+and /Meta/ modifiers on the left. On the right, I'm using alt as it is, cmd and ctrl
+for the /Meta/ and /Control/ modifiers. This way, I can always have one hand
+on a modifier block.
+
+Of course this leads to a considerable re-wiring of long learned muscle
+memory. On the other side, the hope is to also considerably ease fast emacs
+handling this way. For example, I'm observing me starting to prefer =C-m= to =RET=,
+being easier within reach when having left hand on the modifier row.
+
 *** Generic
 
 Some convenience keys for handling buffers and files. Use caution and check to
