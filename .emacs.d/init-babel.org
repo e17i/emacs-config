@@ -1096,6 +1096,13 @@ on =M-(=:
 (global-set-key [remap insert-parentheses] #'my-delimit-region)
 #+END_SRC
 
+Moving through paragraphs put somewhat easier into reach:
+
+#+BEGIN_SRC emacs-lisp
+(global-set-key "\M-[" #'backward-paragraph)
+(global-set-key "\M-]" #'forward-paragraph)
+#+END_SRC
+
 *** Convenience for searching
 
 This one really is a small hidden diamond. Often you want to finish a
