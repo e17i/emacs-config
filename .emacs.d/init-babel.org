@@ -1013,14 +1013,21 @@ modifier keys on both sides.
 Remembering the space cadet keyboard, you find all of the modifiers both on
 the left and on the right of space bar. This can be done in a similar fashion
 on today's pc keyboards, using ctrl, cmd and alt for the /Control/, /super/
-and /Meta/ modifiers on the left. On the right, I'm using alt as it is, cmd and ctrl
-for the /Meta/ and /Control/ modifiers. This way, I can always have one hand
-on a modifier block.
+and /Meta/ modifiers on the left, to be used with 4th, 3rd and 2nd left
+finger. On the right, I'm using alt as it is, cmd and ctrl for the /Meta/ and
+/Control/ modifiers (similarly to be used with 2nd and 4th right finger). This
+way, I can always have one hand on a modifier block.
 
 Of course this leads to a considerable re-wiring of long learned muscle
 memory. On the other side, the hope is to also considerably ease fast emacs
 handling this way. For example, I'm observing me starting to prefer =C-m= to =RET=,
 being easier within reach when having left hand on the modifier row.
+
+Still, it is often easier to press combinations on the left side one handed
+(like =C-x C-s=). To do these holding /Control/ with the small finger, it is
+also adviced to define caps lock as /Control/. Doing the left-hand moves then
+gets quite easy. Time will tell if usage of these one-handed combinations will
+be replaced by the more healthy two-handed counterparts.
 
 *** Generic
 
@@ -1338,7 +1345,20 @@ Accept simplified answers.
 
 ** Mode-specific customizations
 *** dired
+**** convenience
+In dired, to select a file or directory, often it is easier to type =C-m=
+than =RET= (because easier within reach of base row than the ret key, being
+two keys away). To get up a directory in the opposite direction via =^= is
+also not within easy reach. So going up also with =,= and =C-,= seems
+reasonable. BTW, selecting a file or directory is also possible with =f= and
+=e=.
 
+#+BEGIN_SRC emacs-lisp
+(define-key dired-mode-map "," #'dired-up-directory)
+(define-key dired-mode-map [67108908] #'dired-up-directory)
+#+END_SRC
+
+**** dired-ediff
 Enable simple access to  ~ediff~ within ~dired~. Select two files with
 mark and point, then press ~=~ to compare.
 
