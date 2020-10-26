@@ -1,8 +1,13 @@
-;;;; Emacs Bookmark Format Version 1 ;;;; -*- coding: utf-8-emacs -*-
+;;;; Emacs Bookmark Format Version 1;;;; -*- coding: utf-8-emacs; mode: lisp-data -*-
 ;;; This format is meant to be slightly human-readable;
 ;;; nevertheless, you probably don't want to edit it.
 ;;; -*- End Of Bookmark File Format Version Stamp -*-
-(("howto"
+(("misc"
+ (filename . "~/contact/orgs-misc/")
+ (front-context-string . "Urlaub.txt\n  -rw")
+ (rear-context-string . "33 31 Aug 09:25 ")
+ (position . 239))
+("howto"
  (filename . "~/contact/howto/howto.org")
  (position . 1))
 ("todo"
