@@ -1375,6 +1375,46 @@ mark and point, then press ~=~ to compare.
           (ediff-files prev file)))))
 #+END_SRC
 
+*** org
+**** org present
+
+Org present presents each top level element as a page. It only has a few
+simple keys. Use left/right to go through the presentation, =C-c <= and =C-c
+>= for first and last page. Switch to large presentation mode and back by =C-c
+C-== and =C-c C--=. Quit the presentation with =C-c C-q=.
+
+=org-present= shows the presentation in a normal window, allowing it to be
+used besides other windows and also to change it's contents while presenting.
+For a full presentation, use the =my-org-present-full= command. Switch back
+with the corresponding =tiny= command.
+
+#+BEGIN_SRC emacs-lisp
+(defun my-org-present-full ()
+  (interactive)
+  (progn
+    (add-hook 'org-present-mode-hook
+              (lambda ()
+                (org-present-big)
+                (org-display-inline-images)
+                (toggle-frame-fullscreen)
+                (org-present-hide-cursor)
+                (org-present-read-only)
+                (turn-on-hide-mode-line-mode)))
+    (add-hook 'org-present-mode-quit-hook
+              (lambda ()
+                (turn-off-hide-mode-line-mode)
+                (org-present-small)
+                (org-remove-inline-images)
+                (toggle-frame-fullscreen)
+                (org-present-show-cursor)
+                (org-present-read-write)))))
+
+(defun my-org-present-tiny ()
+  (interactive)
+  (setq org-present-mode-hook nil)
+  (setq org-present-mode-quit-hook nil))
+#+END_SRC
+
 *** Evil mode
 
 **** Evil defines
