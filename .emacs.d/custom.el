@@ -77,7 +77,7 @@
  '(my-frame-background "White")
  '(my-frame-foreground "Black")
  '(my-frame-stylings
-   '(frame-width-below-threshold frame-height-dec frame-to-right frame-to-top))
+   '(frame-width-below-threshold frame-height-dec frame-to-left frame-to-top))
  '(my-frame-transparency 85)
  '(ns-alternate-modifier 'super)
  '(ns-command-modifier 'meta)
