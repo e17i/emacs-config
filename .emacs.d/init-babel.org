@@ -1384,7 +1384,7 @@ Load and enable different additional packages
 (require 'wdired)  ;; edit dired buffers with C-x C-q
 (load "dired-x.el") ;; also enable dired-jump with C-x C-j
 (require 'helm-config)
-;; (require 'ox-rst) ; not yet installed
+(require 'ox-rst)
 (require 'yaml-mode)
 (global-undo-tree-mode)
 (global-magit-file-mode t)
