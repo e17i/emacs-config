@@ -107,6 +107,8 @@
        (jedi:setup))
      (lambda nil "use superword mode"
        (superword-mode))
+     (lambda nil "indent tools minor mode"
+       (indent-tools-minor-mode))
      (lambda nil "use electric spacing mode"
        (electric-spacing-mode))) t)
  '(savehist-mode t nil (savehist))

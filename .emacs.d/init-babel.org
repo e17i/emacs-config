@@ -549,11 +549,10 @@ is still selected.
 
 *** Convenient Navigation Mode
 
-This is another feature in the spirit of previous means of other
-window handling, activating some kind of temporary navigation mode. Using
-this, you can conveniently navigate, scroll, set marks and jump to previous
-mark positions in the other window, without actually leaving the
-current window. Features include navigating up and down of the point,
+This is another feature in the spirit of other window handling, activating
+some kind of temporary navigation mode. Using this, you can conveniently
+navigate, scroll, set marks and jump to previous mark positions in the other
+window, without actually leaving the current window. Features include
 scrolling up and down, jumping to begin and end of buffer, pagewise up and
 down. Most of these can be combined with a numeric argument. The mode is
 cancelled by using any other key.
@@ -573,7 +572,7 @@ allowing to specify a remote window to be controlled."
 					 (* arg-acc (if arg-neg -1 1))
 				       default)))
 			    res))
-	     (acc-status () (message "navigate ([-,0-9] n,p,N,P,v,V,<,>,[,],l, ) %c %d"
+	     (acc-status () (message "navigate ([-,0-9] n,p,v,V,<,>,[,],l, ) %c %d"
 				     (if arg-neg arg-neg '? ) arg-acc))
 	     (arg-negate ()
 			 (setq arg-neg (if arg-neg nil '?-))
@@ -603,8 +602,8 @@ allowing to specify a remote window to be controlled."
 				(if (eq arg-acc 0)
 				    (progn (set-mark-command nil)(deactivate-mark))
 				  (set-mark-command (get-arg-acc)))))
-	   (define-key map "n" (with-window (next-line (get-arg-acc 1))))
-	   (define-key map "p" (with-window (previous-line (get-arg-acc 1))))
+	   (define-key map "n" (with-window (scroll-up-line (get-arg-acc 1))))
+	   (define-key map "p" (with-window (scroll-down-line (get-arg-acc 1))))
 	   (define-key map "/" (with-window (isearch-forward))) ;not documented
 	   (define-key map "l" (with-window (recenter-top-bottom (get-arg-acc))))
 	   (define-key map "r" (with-window (move-to-window-line-top-bottom (get-arg-acc))))
@@ -612,8 +611,8 @@ allowing to specify a remote window to be controlled."
 	   (define-key map ">" (with-window (end-of-buffer (get-arg-acc))))
 	   (define-key map "]" (with-window (forward-paragraph (get-arg-acc))))
 	   (define-key map "[" (with-window (backward-paragraph (get-arg-acc))))
-	   (define-key map "N" (with-window (scroll-up-line (get-arg-acc 1))))
-	   (define-key map "P" (with-window (scroll-down-line (get-arg-acc 1))))
+	   (define-key map "\M-n" (with-window (next-line (get-arg-acc 1))))
+	   (define-key map "\M-p" (with-window (previous-line (get-arg-acc 1))))
 	   (define-key map "v" (with-window (scroll-up-command (get-arg-acc))))
 	   (define-key map "V" (with-window (scroll-down-command (get-arg-acc))))
 	 map) 't)))))
@@ -634,12 +633,12 @@ Keys are:
   -, 0-9: set an argument to following commands, which stays in effect until
           reset (e.g. by pressing 0)
   space: set a mark; with arg jump to mark
-  n, p: move point to next/previous line
+  n, p: scroll up/down
   l: recenter buffer to point
   r: move point to window center
   <, >: move point to beginning/end of buffer
   [, ]: move point forward/backward in paragraphs
-  N, P: scroll up/down
+  M-n, M-p: move point to next/previous line
   v, V: pagewise scroll up/down"
   (navigate-buffer))
 #+END_SRC
@@ -876,33 +875,25 @@ them a little bit..
 
 Often I want to put some text into delimiters after writing it, for example a
 string or an argument list. So the reverse of a splicing operation is needed.
-Here, you can select a region and delimit it using a character. In the special
-case of the character being an opening type of brace, automatically selects
-the corresponding closing brace. When called with prefix arg, the region is
-newly indented after delimiting.
+This is a wrapper around ~insert-pair~, so the prefix arg works selecting the
+next or previous entities to surround. Alternatively, the region is used.
+Respects ~insert-pair-alist~ to determine the closing character.
 
 #+BEGIN_SRC emacs-lisp
-(defun my-delimit-region (point mark pre bd)
-  "Frame region with delimiters. If delim is an opening type of
-brace, automatically use the corresponding closing delimiter,
-otherwise use the same char for both sides. If called
-interactively, take next key press as opening delimiter. If
-called with prefix arg, the region is newly indented after
-delimiting."
-  (interactive "r\nP\nc")
-  (let ((ed (case bd
-              ((?\() ?\))
-              ((?\[) ?\])
-              ((?{) ?})
-              ((?<) ?>)
-              (t bd))))
-    (save-excursion
-      (goto-char mark)
-      (insert ed))
-    (save-excursion
-      (goto-char point)
-      (insert bd))
-    (if pre (indent-region point mark))))
+(defun my-delimit-region (pre bd)
+  "Frame region or entities selected by prefix with delimiters.
+If delim is an opening type of brace, automatically use the
+corresponding closing delimiter using `insert-pair-alist'.
+If called interactively, take next key press as
+opening delimiter."
+  (interactive "P\nc")
+  (let ((pair (assq bd insert-pair-alist))
+        (open bd) (close bd))
+    (if pair
+        (if (nth 2 pair)
+            (setq open (nth 1 pair) close (nth 2 pair))
+          (setq open (nth 0 pair) close (nth 1 pair))))
+    (insert-pair pre open close)))
 #+END_SRC
 
 ** Environment Minor Mode
@@ -1051,6 +1042,35 @@ default N id and no actions."
 #+END_SRC
 
 ** Global key bindings
+
+Controlling emacs works best with the ability of touch typing, combined with a
+sensible selection of modifier keys. Repetitive strain injury can be prevented
+by using the hand not typing to hold modifier keys. At least to a certain degree,
+this counteracts the emacs philosophy of continuously holding a modifier while
+pressing a continuous key path. So often it is more practical to use one hand
+holding the modifier (in my case this is often the left one) while using the
+other one going over the full keyboard. Nevertheless, it is useful to have all
+modifier keys on both sides.
+
+Remembering the space cadet keyboard, you find all of the modifiers both on
+the left and on the right of space bar. This can be done in a similar fashion
+on today's pc keyboards, using ctrl, cmd and alt for the /Control/, /super/
+and /Meta/ modifiers on the left, to be used with 4th, 3rd and 2nd left
+finger. On the right, I'm using alt as it is, cmd and ctrl for the /Meta/ and
+/Control/ modifiers (similarly to be used with 2nd and 4th right finger). This
+way, I can always have one hand on a modifier block.
+
+Of course this leads to a considerable re-wiring of long learned muscle
+memory. On the other side, the hope is to also considerably ease fast emacs
+handling this way. For example, I'm observing me starting to prefer =C-m= to =RET=,
+being easier within reach when having left hand on the modifier row.
+
+Still, it is often easier to press combinations on the left side one handed
+(like =C-x C-s=). To do these holding /Control/ with the small finger, it is
+also adviced to define caps lock as /Control/. Doing the left-hand moves then
+gets quite easy. Time will tell if usage of these one-handed combinations will
+be replaced by the more healthy two-handed counterparts.
+
 *** Generic
 
 Some convenience keys for handling buffers and files. Use caution and check to
@@ -1075,10 +1095,19 @@ Having the repeat commands more within reach also proves to be very helpful:
 (global-set-key [201326650] #'repeat-complex-command) ;; C-M-:
 #+END_SRC
 
-And my delimiting function:
+And my delimiting function, experimentally also replacing ~insert-parenthesis~
+on =M-(=:
 
 #+BEGIN_SRC emacs-lisp
 (global-set-key "\C-cF" #'my-delimit-region)
+(global-set-key [remap insert-parentheses] #'my-delimit-region)
+#+END_SRC
+
+Moving through paragraphs put somewhat easier into reach:
+
+#+BEGIN_SRC emacs-lisp
+(global-set-key "\M-[" #'backward-paragraph)
+(global-set-key "\M-]" #'forward-paragraph)
 #+END_SRC
 
 *** Convenience for searching
@@ -1102,7 +1131,7 @@ spots. Make it visible with =C-x C-x=.
     (isearch-exit)))
 #+END_SRC
 
-*** Scrolling
+*** Scrolling and Navigation
 
 Convenience keys for buffer scrolling. Enables up/down also with /Meta/
 modifier. Together with /Shift/ this enables scrolling. This way you can very
@@ -1110,24 +1139,34 @@ conveniently move the pointer and scroll by just adding/releasing the /Shift/
 modifier. When ~visual-line-mode~ is activated, the /Meta/ keys act on the
 logical lines.
 
+Similar keys for word navigation. As usual, =M-f= and =M-b= navigates over
+words. When combined with /Shift/, navigates to the end/beginning of words. 
+
 #+BEGIN_SRC emacs-lisp
+(require 'misc)
 (global-set-key "\M-p" #'previous-logical-line)
 (global-set-key "\M-n" #'next-logical-line)
 (global-set-key "\M-P" #'scroll-down-line)
 (global-set-key "\M-N" #'scroll-up-line)
+(global-set-key "\M-F" #'forward-to-word)
+(global-set-key "\M-B" #'backward-to-word)
 (global-set-key [end] #'move-end-of-line)
 (global-set-key [home] #'move-beginning-of-line)
 #+END_SRC
 
 *** Ace zapping
 
-Ace enables some more vi-style jumping and zapping (see =M-z= for the basic
-~zap-to-char~ function).
+Ace enables some more vi-style jumping and zapping. But not working
+iteratively, it's not really nicely integrating with typical emacs workflows.
+Actually better proved to be using isearch (also with customized =M-RET=). So
+we are probably going to remove ace.
+
+But additionally to =M-z= (the basic ~zap-to-char~ function), we are adding =M-Z=
+for ~zap-up-to-char~. Both of them can be nicely repeated or provided with an
+prefix arg.
 
 #+BEGIN_SRC emacs-lisp
-(global-set-key "\M-J" #'ace-jump-char-mode)
-;;;(global-set-key "\C-x\C-j" #'ace-jump-mode-pop-mark) ;; this is dired-jump
-(global-set-key "\M-Z" #'zzz-up-to-char)
+(global-set-key "\M-Z" #'zap-up-to-char)
 #+END_SRC
 
 *** Mouse handling
@@ -1343,9 +1382,10 @@ Load and enable different additional packages
 (load-library "realgud")
 (load-library "evil")
 (require 'wdired)  ;; edit dired buffers with C-x C-q
-(load "dired-x.el") ;; also enable C-x C-j
+(load "dired-x.el") ;; also enable dired-jump with C-x C-j
 (require 'helm-config)
 ;; (require 'ox-rst) ; not yet installed
+(require 'yaml-mode)
 (global-undo-tree-mode)
 (global-magit-file-mode t)
 (which-key-mode 1)
@@ -1380,7 +1420,20 @@ Accept simplified answers.
 
 ** Mode-specific customizations
 *** dired
+**** convenience
+In dired, to select a file or directory, often it is easier to type =C-m=
+than =RET= (because easier within reach of base row than the ret key, being
+two keys away). To get up a directory in the opposite direction via =^= is
+also not within easy reach. So going up also with =,= and =C-,= seems
+reasonable. BTW, selecting a file or directory is also possible with =f= and
+=e=.
 
+#+BEGIN_SRC emacs-lisp
+(define-key dired-mode-map "," #'dired-up-directory)
+(define-key dired-mode-map [67108908] #'dired-up-directory)
+#+END_SRC
+
+**** dired-ediff
 Enable simple access to  ~ediff~ within ~dired~. Select two files with
 mark and point, then press ~=~ to compare.
 
@@ -1395,6 +1448,46 @@ mark and point, then press ~=~ to compare.
                   nil)))
       (if (and file prev)
           (ediff-files prev file)))))
+#+END_SRC
+
+*** org
+**** org present
+
+Org present presents each top level element as a page. It only has a few
+simple keys. Use left/right to go through the presentation, =C-c <= and =C-c
+>= for first and last page. Switch to large presentation mode and back by =C-c
+C-== and =C-c C--=. Quit the presentation with =C-c C-q=.
+
+=org-present= shows the presentation in a normal window, allowing it to be
+used besides other windows and also to change it's contents while presenting.
+For a full presentation, use the =my-org-present-full= command. Switch back
+with the corresponding =tiny= command.
+
+#+BEGIN_SRC emacs-lisp
+(defun my-org-present-full ()
+  (interactive)
+  (progn
+    (add-hook 'org-present-mode-hook
+              (lambda ()
+                (org-present-big)
+                (org-display-inline-images)
+                (toggle-frame-fullscreen)
+                (org-present-hide-cursor)
+                (org-present-read-only)
+                (turn-on-hide-mode-line-mode)))
+    (add-hook 'org-present-mode-quit-hook
+              (lambda ()
+                (turn-off-hide-mode-line-mode)
+                (org-present-small)
+                (org-remove-inline-images)
+                (toggle-frame-fullscreen)
+                (org-present-show-cursor)
+                (org-present-read-write)))))
+
+(defun my-org-present-tiny ()
+  (interactive)
+  (setq org-present-mode-hook nil)
+  (setq org-present-mode-quit-hook nil))
 #+END_SRC
 
 *** Evil mode
@@ -1665,7 +1758,8 @@ As this is not only for python, currently enabled only in customize.
 
 The untabify-function defined here is disabled. Instead, we use custom
 variable ~indent-tabs-mode~. Nevertheless, this may serve as an example, so it
-stays here. custom python mode hook also activates jedi and superword mode.
+stays here. custom python mode hook also activates jedi, superword and indent
+tools mode, which binds =C-c >= as hydra.
 
 #+BEGIN_SRC emacs-lisp
 ;; (defun python-mode-untabify ()
@@ -1788,6 +1882,18 @@ Also use our delimiter for parens.
 (add-to-list 'auto-mode-alist '("\\.markdown\\'" . markdown-mode))
 (add-to-list 'auto-mode-alist '("\\.md\\'" . markdown-mode))
 (setq markdown-command "/Users/jko/Programming/node/node_modules/.bin/md2html")
+#+END_SRC
+
+*** yaml mode
+
+Have RET indent like in python mode:
+
+#+BEGIN_SRC emacs-lisp
+(add-to-list 'auto-mode-alist '("\\.yml\\'" . yaml-mode))
+(add-hook 'yaml-mode-hook
+          '(lambda () (indent-tools-minor-mode))
+          '(lambda ()
+             (define-key yaml-mode-map "\C-m" 'newline-and-indent)))
 #+END_SRC
 
 *** calendar/diary

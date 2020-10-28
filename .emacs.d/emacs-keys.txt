@@ -28,6 +28,10 @@ C-x 4		use C-x cmds on other window
 C-x 5		frames
 C-x 6		two-column
 
+other window
+C-x 4 1         temp display buffer of next command in same window
+C-x 4 4         temp display buffer of next command in other window
+
 regexp search
 C-M-s		begin incremental regexp search
 C-M-r		reverse
