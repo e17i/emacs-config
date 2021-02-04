@@ -647,20 +647,29 @@ On X11, set a convenient frame size.
 (defun fake-small-fullsize-on-x11 ()
   "Set frame size to a prescribed fullsize on mobile display."
   (interactive)
+  (set-frame-position nil 10 320)
   (set-frame-width nil 160)
   (set-frame-height nil 45))
 
-(defun fake-large-fullsize-on-x11 ()
-  "Set frame size to a prescribed fullsize on mobile display."
+(defun fake-med-fullsize-on-x11 ()
+  "Set frame size to a prescribed larger size."
   (interactive)
   (set-frame-width nil 186)
   (set-frame-height nil 55))
+
+(defun fake-large-fullsize-on-x11 ()
+  "Set frame size to a prescribed fullsize on stationary display."
+  (interactive)
+  (set-frame-position nil 1460 30)
+  (set-frame-width nil 236)
+  (set-frame-height nil 65))
 
 (define-prefix-command 'fake-frame-size)
 (global-set-key "\C-ci" #'fake-frame-size)
 (define-key fake-frame-size "0" #'init-frame-on-x11)
 (define-key fake-frame-size "1" #'fake-small-fullsize-on-x11)
-(define-key fake-frame-size "2" #'fake-large-fullsize-on-x11)
+(define-key fake-frame-size "2" #'fake-med-fullsize-on-x11)
+(define-key fake-frame-size "9" #'fake-large-fullsize-on-x11)
 #+END_SRC
 
 And another temporary pseudo mode, this time interactively resizing windows.
