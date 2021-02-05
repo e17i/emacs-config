@@ -2,7 +2,12 @@
 ;;; This format is meant to be slightly human-readable;
 ;;; nevertheless, you probably don't want to edit it.
 ;;; -*- End Of Bookmark File Format Version Stamp -*-
-(("misc"
+(("work"
+ (filename . "~/contact/work/work.org")
+ (front-context-string . "* Todo / Heute\n\n")
+ (rear-context-string . "TUP: hidestars\n\n")
+ (position . 23))
+("misc"
  (filename . "~/contact/orgs-misc/")
  (front-context-string . "Urlaub.txt\n  -rw")
  (rear-context-string . "33 31 Aug 09:25 ")
