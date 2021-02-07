@@ -1247,7 +1247,9 @@ Moving through paragraphs put somewhat easier into reach:
 (global-set-key "\M-]" #'forward-paragraph)
 #+END_SRC
 
-expand-region may come handy, besides the explicit selection commands.
+expand-region may come handy, additionally to the explicit selection
+commands. We put it on =C-c h= and =SPC=, similar to other selection commands
+using =h= or =SPC=.
 
 #+BEGIN_SRC emacs-lisp
 (require 'expand-region)
