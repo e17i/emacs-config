@@ -95,7 +95,7 @@
      ("melpa-stable" . "https://stable.melpa.org/packages/")
      ("melpa" . "https://melpa.org/packages/")))
  '(package-selected-packages
-   '(yaml-mode indent-tools ox-rst which-key zzz-to-char htmlize smartparens magit ace-jump-zap helm realgud evil auctex))
+   '(expand-region yaml-mode indent-tools ox-rst which-key zzz-to-char htmlize smartparens magit ace-jump-zap helm realgud evil auctex))
  '(paren-match-face 'paren-face-match-light)
  '(paren-sexp-mode t)
  '(python-mode-hook
