@@ -1114,7 +1114,8 @@ expand-region may come handy, besides the explicit selection commands.
 
 #+BEGIN_SRC emacs-lisp
 (require 'expand-region)
-(global-set-key (kbd "C-=") 'er/expand-region)
+(global-set-key "\C-ch" 'er/expand-region)
+(global-set-key " " 'er/expand-region)
 #+END_SRC
 
 *** Convenience for searching
