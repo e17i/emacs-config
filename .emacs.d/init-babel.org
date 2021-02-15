@@ -61,7 +61,12 @@ First of all, here is the configuration, including changes to
         (buffer alist)
         (match-current-buffer "\\\\*Occur\\\\*"))
       display-buffer-in-orig)
-     ("\\*Help\\*\\|\\*Apropos\\*"
+     ("\\*deadgrep"
+      (make-buffer-window-origin display-buffer-in-previous-window display-buffer-pop-up-window))
+     ((lambda (buffer alist)
+        (match-current-buffer "\\\\*deadgrep"))
+      display-buffer-in-orig)
+     ("\\*Help\\*\\|\\*Apropos\\*\\|\\*Python Doc\\*"
       (display-buffer-as-scroll-buffer display-buffer-dedicated-window display-buffer-reuse-help display-buffer-at-bottom)
       (window-height . fit-window-to-buffer-max-half-frame))))
  '(display-buffer-base-action
@@ -252,6 +257,39 @@ way enabling using occur buffers in a similar way as dired.
 (defun match-current-buffer (regex)
   "match if regex matches current buffer."
   (string-match regex (buffer-name (current-buffer))))
+#+END_SRC
+
+***** deadgrep display patches
+
+deadgrep-mode is missing some typical navigational features like =next-error=,
+=previous-error=. Also it needs a function only displaying a result, not
+visiting it. These are provided here. Used in combination with a corresponding
+=display-buffer-alist=, this allows to easily navigate through the matches,
+displaying them in the other window.
+
+#+BEGIN_SRC emacs-lisp
+(defun deadgrep-display-result ()
+  "display currently selected match, but don't visit/select."
+  (interactive)
+  (let ((current-window (selected-window)))
+    (deadgrep-visit-result)
+    (select-window current-window)))
+
+(defun deadgrep-display-next ()
+  "display next match and don't select it."
+  (interactive)
+  (deadgrep-forward-match)
+  (deadgrep-display-result))
+
+(defun deadgrep-display-prev ()
+  "display previous match and don't select it."
+  (interactive)
+  (deadgrep-backward-match)
+  (deadgrep-display-result))
+
+(define-key deadgrep-mode-map "\M-g\M-n" #'deadgrep-display-next)
+(define-key deadgrep-mode-map "\M-g\M-p" #'deadgrep-display-prev)
+(define-key deadgrep-mode-map "\C-o" #'deadgrep-display-result)
 #+END_SRC
 
 **** Dedicated window
@@ -765,6 +803,16 @@ receive an argument list of (FRAME MAX-LINES MAX-COLS).
     (let ((geom (assq 'workarea current-display)))
       geom)))
 
+(defun frame-geom (&optional frame)
+  (let ((current-display
+         (car (remove-if-not
+               (lambda (disp)
+                 (let ((f (assq 'frames disp)))
+                   (member (or frame (selected-frame)) f)))
+               (display-monitor-attributes-list)))))
+    (let ((geom (assq 'workarea current-display)))
+      geom)))
+
 (defun frame-to-left (frame lines cols)
   (let ((geom (frame-geom frame)))
     (let ((x (cadr geom)))
@@ -1142,6 +1190,14 @@ Moving through paragraphs put somewhat easier into reach:
 (global-set-key "\M-]" #'forward-paragraph)
 #+END_SRC
 
+expand-region may come handy, besides the explicit selection commands.
+
+#+BEGIN_SRC emacs-lisp
+(require 'expand-region)
+(global-set-key "\C-ch" 'er/expand-region)
+(global-set-key " " 'er/expand-region)
+#+END_SRC
+
 *** Convenience for searching
 
 This one really is a small hidden diamond. Often you want to finish a
@@ -1448,6 +1504,46 @@ mark and point, then press ~=~ to compare.
                   nil)))
       (if (and file prev)
           (ediff-files prev file)))))
+#+END_SRC
+
+*** org
+**** org present
+
+Org present presents each top level element as a page. It only has a few
+simple keys. Use left/right to go through the presentation, =C-c <= and =C-c
+>= for first and last page. Switch to large presentation mode and back by =C-c
+C-== and =C-c C--=. Quit the presentation with =C-c C-q=.
+
+=org-present= shows the presentation in a normal window, allowing it to be
+used besides other windows and also to change it's contents while presenting.
+For a full presentation, use the =my-org-present-full= command. Switch back
+with the corresponding =tiny= command.
+
+#+BEGIN_SRC emacs-lisp
+(defun my-org-present-full ()
+  (interactive)
+  (progn
+    (add-hook 'org-present-mode-hook
+              (lambda ()
+                (org-present-big)
+                (org-display-inline-images)
+                (toggle-frame-fullscreen)
+                (org-present-hide-cursor)
+                (org-present-read-only)
+                (turn-on-hide-mode-line-mode)))
+    (add-hook 'org-present-mode-quit-hook
+              (lambda ()
+                (turn-off-hide-mode-line-mode)
+                (org-present-small)
+                (org-remove-inline-images)
+                (toggle-frame-fullscreen)
+                (org-present-show-cursor)
+                (org-present-read-write)))))
+
+(defun my-org-present-tiny ()
+  (interactive)
+  (setq org-present-mode-hook nil)
+  (setq org-present-mode-quit-hook nil))
 #+END_SRC
 
 *** Evil mode
