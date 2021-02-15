@@ -13,19 +13,6 @@
  '(delete-selection-mode t)
  '(dired-dwim-target t)
  '(dired-recursive-deletes (quote top))
- '(display-buffer-alist
-   (quote
-    ((dired-to-other-window maybe-make-dired-window-origin)
-     (dired-from-other-window
-      (display-dired-maybe-in-orig))
-     ("\\*Occur\\*" make-buffer-window-origin)
-     ((lambda
-        (buffer alist)
-        (match-current-buffer "\\\\*Occur\\\\*"))
-      display-buffer-in-orig)
-     ("\\*Help\\*\\|\\*Apropos\\*\\|\\*Python Doc\\*"
-      (display-buffer-as-scroll-buffer display-buffer-dedicated-window display-buffer-reuse-help display-buffer-at-bottom)
-      (window-height . fit-window-to-buffer-max-half-frame)))))
  '(display-buffer-base-action
    (quote
     ((display-buffer-maybe-as-scroll-buffer display-buffer-dedicated-window display-buffer--maybe-same-window display-buffer-reuse-window display-buffer--maybe-pop-up-frame-or-window display-buffer-in-previous-window display-buffer-below-selected display-buffer-at-bottom display-buffer-pop-up-frame))))
@@ -105,11 +92,6 @@
  '(my-environment-mode t)
  '(my-frame-stylings (quote (frame-to-second-x11)))
  '(my-frame-transparency 100)
- '(ns-alternate-modifier (quote meta))
- '(ns-command-modifier (quote super))
- '(ns-control-modifier (quote control))
- '(ns-right-alternate-modifier (quote alternate))
- '(ns-right-command-modifier (quote meta))
  '(nxml-sexp-element-flag t)
  '(org-agenda-files nil)
  '(org-babel-python-command "python2")
@@ -123,7 +105,7 @@
      ("melpa" . "https://melpa.org/packages/"))))
  '(package-selected-packages
    (quote
-    (yaml-mode indent-tools solarized-theme deadgrep undo-tree which-key smartparens tagedit ob-restclient company-restclient restclient py-autopep8 flycheck elpy company-jedi json-mode jedi-direx jedi ox-rst magit zzz-to-char ace-jump-mode helm realgud evil markdown-mode cider web-mode org-plus-contrib js2-mode electric-spacing auctex)))
+    (expand-region yaml-mode indent-tools solarized-theme deadgrep undo-tree which-key smartparens tagedit ob-restclient company-restclient restclient py-autopep8 flycheck elpy company-jedi json-mode jedi-direx jedi ox-rst magit zzz-to-char ace-jump-mode helm realgud evil markdown-mode cider web-mode org-plus-contrib js2-mode electric-spacing auctex)))
  '(python-mode-hook
    (quote
     ((lambda nil "Turn off Indent Tabs mode."
