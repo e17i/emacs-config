@@ -269,39 +269,6 @@ way enabling using occur buffers in a similar way as dired.
   (string-match regex (buffer-name (current-buffer))))
 #+END_SRC
 
-***** deadgrep display patches
-
-deadgrep-mode is missing some typical navigational features like =next-error=,
-=previous-error=. Also it needs a function only displaying a result, not
-visiting it. These are provided here. Used in combination with a corresponding
-=display-buffer-alist=, this allows to easily navigate through the matches,
-displaying them in the other window.
-
-#+BEGIN_SRC emacs-lisp
-(defun deadgrep-display-result ()
-  "display currently selected match, but don't visit/select."
-  (interactive)
-  (let ((current-window (selected-window)))
-    (deadgrep-visit-result)
-    (select-window current-window)))
-
-(defun deadgrep-display-next ()
-  "display next match and don't select it."
-  (interactive)
-  (deadgrep-forward-match)
-  (deadgrep-display-result))
-
-(defun deadgrep-display-prev ()
-  "display previous match and don't select it."
-  (interactive)
-  (deadgrep-backward-match)
-  (deadgrep-display-result))
-
-(define-key deadgrep-mode-map "\M-g\M-n" #'deadgrep-display-next)
-(define-key deadgrep-mode-map "\M-g\M-p" #'deadgrep-display-prev)
-(define-key deadgrep-mode-map "\C-o" #'deadgrep-display-result)
-#+END_SRC
-
 **** Dedicated window
 
 Use this to define a dedicated /other window/. Afterwards, the next
@@ -1421,7 +1388,7 @@ Load and enable different additional packages
 (require 'ox-rst)
 (require 'yaml-mode)
 (global-undo-tree-mode)
-(global-magit-file-mode t)
+;;(global-magit-file-mode t)
 (which-key-mode 1)  ;; not only for spacemacs..
 #+END_SRC
 
@@ -1443,6 +1410,7 @@ reasonable. BTW, selecting a file or directory is also possible with =f= and
 
 #+BEGIN_SRC emacs-lisp
 (define-key dired-mode-map "," #'dired-up-directory)
+(define-key dired-mode-map ";" #'dired-up-directory)
 (define-key dired-mode-map [67108908] #'dired-up-directory)
 #+END_SRC
 
@@ -1461,6 +1429,41 @@ mark and point, then press ~=~ to compare.
                   nil)))
       (if (and file prev)
           (ediff-files prev file)))))
+#+END_SRC
+
+*** deadgrep
+
+deadgrep-mode is missing some typical navigational features like =next-error=,
+=previous-error=. Also it needs a function only displaying a result, not
+visiting it. These are provided here. Used in combination with a corresponding
+=display-buffer-alist=, this allows to easily navigate through the matches,
+displaying them in the other window.
+
+#+BEGIN_SRC emacs-lisp
+  (defun deadgrep-display-result ()
+    "display currently selected match, but don't visit/select."
+    (interactive)
+    (let ((current-window (selected-window)))
+      (deadgrep-visit-result)
+      (select-window current-window)))
+
+  (defun deadgrep-display-next ()
+    "display next match and don't select it."
+    (interactive)
+    (deadgrep-forward-match)
+    (deadgrep-display-result))
+
+  (defun deadgrep-display-prev ()
+    "display previous match and don't select it."
+    (interactive)
+    (deadgrep-backward-match)
+    (deadgrep-display-result))
+
+  (add-hook 'deadgrep-mode-hook
+            '(lambda ()
+               (define-key deadgrep-mode-map "\M-g\M-n" #'deadgrep-display-next)
+               (define-key deadgrep-mode-map "\M-g\M-p" #'deadgrep-display-prev)
+               (define-key deadgrep-mode-map "\C-o" #'deadgrep-display-result)))
 #+END_SRC
 
 *** org
