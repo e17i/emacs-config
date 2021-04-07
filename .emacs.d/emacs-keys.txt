@@ -6,7 +6,10 @@ C-l		center point at screen (next up/down) (C-u set line position)
 C-M-l		reposition window heuristically
 M-r		move point to center/top/bottom line
 M-m		move point to first non-whitespace
-C-u C-<SPC>	jump to last mark position
+C-SPC           set/acticate/deactivate mark
+C-u C-SPC	jump to last mark position
+C-x C-SPC       pop global mark
+C-x SPC         rectangle mark mode
 M-x list-command-history
 M-x icomplete-mode  minibuffer advanced
 C-h e		messages
@@ -14,11 +17,17 @@ C-h l		list of last key commands
 C-x C-x		exchange mark and point
 C-M-w		kill and append to prev kill
 C-o		open new line
-M-^		join lines
 C-x C-o		delete blank lines
+M-^		join lines
 C-u 0 C-k	kill line backwards
 C-r		in query-replace etc activate recursive editing
 C-M-c		cancel recursive edits
+M-l             downcase word
+C-x C-l         downcase region
+M-u             uppercase word
+C-x C-u         uppercase region
+M-c             capitalize word
+C-x n           narrow
 M-!		shell command
 M-|		shell command on region
 M-g g		go to line
@@ -42,6 +51,8 @@ e		in replace, change replacement
 M-s o		(M-x occur) regexp search in all buffers
 \#N		in regexp, use replacement N as number (not text)
 \,(lisp)	in regexp, eval lisp function
+
+C-M-;           repeat complex command
 
 M-x ibuffer	interactive buffer editor incl multi-occur
 
@@ -114,37 +125,48 @@ M-x kill-emacs  exit daemonized emacs
 
 dired
 C-x C-j		dired-jump to directory of current file, showing it
+(               toggle details
 i		insert directory view into current dired buffer
 C-x [/C-x ]	next page/prev page: jump to dir views in dired buffer
 C-0 k	  	remove marked dir view from dired buffer
 
- f b              p n              @                d                a e              h                k
-+----------------+----------------+----------------+----------------+----------------+----------------+----------------+
-|forward/backward|prev/next       |                |delete          |                |                |                |CTRL
-|char            |char            |                |char            |                |                |                |
-|C-f C-b         |C-p C-n         |                |C-d             |                |                |                |
-+----------------+----------------+----------------+----------------+----------------+----------------+----------------+
-|                |                |                |                |start/end of    |                |kill rest of    |
-|                |                |                |                |line            |                |line            |
-|                |                |                |                |C-a C-e         |                |C-k             |
-+----------------+----------------+----------------+----------------+----------------+----------------+----------------+
-|forward/backward|                |mark            |delete          |                |                |                |META
-|word            |                |word            |word            |                |                |                |
-|M-f M-b         |                |M-@             |M-d             |                |                |                |
-+----------------+----------------+----------------+----------------+----------------+----------------+----------------+
-|                |                |                |                |start/end of    |                |kill rest of    |
-|                |                |                |                |sentence        |                |sentence        |
-|                |                |                |                |M-a M-e         |                |M-k             |
-+----------------+----------------+----------------+----------------+----------------+----------------+----------------+
-|                |                |                |                |start/end of    |mark            |                |
-|                |                |                |                |paragraph       |paragraph       |                |
-|                |                |                |                |M-{ M-}         |M-h             |                |
-+----------------+----------------+----------------+----------------+----------------+----------------+----------------+
-|forward/backward|prev/next       |mark            |up/down         |                |                |kill rest of    |CTRL-META
-|s-exp           |list            |s-exp           |list            |                |                |s-exp           |
-|C-M-f C-M-b     |C-M-p C-M-n     |C-M-@ C-M-SPC   |C-M-u C-M-d     |                |                |C-M-k           |
-+----------------+----------------+----------------+----------------+----------------+----------------+----------------+
-|                |                |                |                |start/end of    |mark            |                |
-|                |                |                |                |defun           |defun           |                |
-|                |                |                |                |C-M-a C-M-e     |C-M-h           |                |
-+----------------+----------------+----------------+----------------+----------------+----------------+----------------+
+ f b              p n              @ SPC            d                a e { } [ ] < >  h           k            t         DEL
++----------------+----------------+----------------+----------------+----------------+-----------+------------+----------+---------+
+|forward/backward|prev/next       |set/act/deact   |delete          |                |           |            |transpose |backwards|CTRL
+|char            |char            |mark            |char            |                |           |            |chars     |kill char|
+|C-f C-b         |C-p C-n         |C-SPC C-@       |C-d             |                |           |            |C-t       |DEL      |
++----------------+----------------+----------------+----------------+----------------+-----------+------------+----------+---------+
+|                |                |                |                |start/end of    |           |kill rest of|          |         |
+|                |                |                |                |line            |           |line        |          |         |
+|                |                |                |                |C-a C-e         |           |C-k         |          |         |
++----------------+----------------+----------------+----------------+----------------+-----------+------------+----------+---------+
+|forward/backward|                |mark            |delete          |                |           |            |transpose |backwards|META
+|word            |                |word            |word            |                |           |            |words     |kill word|
+|M-f M-b         |                |M-@             |M-d             |                |           |            |M-t       |M-DEL    |
++----------------+----------------+----------------+----------------+----------------+-----------+------------+----------+---------+
+|                |                |                |                |start/end of    |           |kill rest of|          |         |
+|                |                |                |                |sentence        |           |sentence    |          |         |
+|                |                |                |                |M-a M-e         |           |M-k         |          |         |
++----------------+----------------+----------------+----------------+----------------+-----------+------------+----------+---------+
+|                |                |                |                |start/end of    |mark       |            |          |         |
+|                |                |                |                |paragraph       |paragraph  |            |          |         |
+|                |                |                |                |M-{ M-}         |M-h        |            |          |         |
++----------------+----------------+----------------+----------------+----------------+-----------+------------+----------+---------+
+|                |                |                |                |start/end of    |           |            |          |         |
+|                |                |                |                |buffer          |           |            |          |         |
+|                |                |                |                |M-< M->         |           |            |          |         |
++----------------+----------------+----------------+----------------+----------------+-----------+------------+----------+---------+
+|                |                |rectangle mark  |                |start/end of    |mark whole |kill whole  |transpose |backw kil|CTRL-X
+|                |                |mode            |                |page            |buffer     |buffer      |lines     |sentence |
+|                |                |C-x SPC         |                |C-x [ C-x ]     |C-x h      |C-x k       |C-x C-t   |C-x DEL  |
++----------------+----------------+----------------+----------------+----------------+-----------+------------+----------+---------+
+|forward/backward|prev/next       |mark            |up/down         |                |           |kill rest of|transpose |         |CTRL-META
+|s-exp           |list            |s-exp           |list            |                |           |s-exp       |sexps     |         |
+|C-M-f C-M-b     |C-M-p C-M-n     |C-M-@ C-M-SPC   |C-M-u C-M-d     |                |           |C-M-k       |C-M-t     |         |
++----------------+----------------+----------------+----------------+----------------+-----------+------------+----------+---------+
+|                |                |                |                |start/end of    |mark       |            |          |         |
+|                |                |                |                |defun           |defun      |            |          |         |
+|                |                |                |                |C-M-a C-M-e     |C-M-h      |            |          |         |
++----------------+----------------+----------------+----------------+----------------+-----------+------------+----------+---------+
+
+also: C-c SPC, C-c h: expand-region
