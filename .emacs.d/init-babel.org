@@ -71,7 +71,12 @@ First of all, here is the configuration, including changes to
         (buffer alist)
         (match-current-buffer "\\\\*Occur\\\\*"))
       display-buffer-in-orig)
-     ("\\*Help\\*\\|\\*Apropos\\*"
+     ("\\*deadgrep"
+      (make-buffer-window-origin display-buffer-in-previous-window display-buffer-pop-up-window))
+     ((lambda (buffer alist)
+        (match-current-buffer "\\\\*deadgrep"))
+      display-buffer-in-orig)
+     ("\\*Help\\*\\|\\*Apropos\\*\\|\\*Python Doc\\*"
       (display-buffer-as-scroll-buffer display-buffer-dedicated-window display-buffer-reuse-help display-buffer-at-bottom)
       (window-height . fit-window-to-buffer-max-half-frame))))
  '(display-buffer-base-action
@@ -1117,6 +1122,7 @@ using =h=.
 #+BEGIN_SRC emacs-lisp
 (require 'expand-region)
 (global-set-key "\C-ch" 'er/expand-region)
+(global-set-key " " 'er/expand-region)
 #+END_SRC
 
 *** Convenience for searching
@@ -1396,8 +1402,8 @@ Load and enable different additional packages
 (require 'ox-rst)
 (require 'yaml-mode)
 (global-undo-tree-mode)
-(global-magit-file-mode t)
-(which-key-mode 1)
+;;(global-magit-file-mode t)
+(which-key-mode 1)  ;; not only for spacemacs..
 
 (setq erc-autojoin-channels-alist '(("freenode.net" "#latex-de" "##latinitas" "#NetBSD" "##bash-de" "#git" "#vim" "#emacs" "#erc" "#oberon" "#macosx")))
 (define-key global-map [ns-drag-file] 'ns-find-file)
@@ -1439,6 +1445,7 @@ reasonable. BTW, selecting a file or directory is also possible with =f= and
 
 #+BEGIN_SRC emacs-lisp
 (define-key dired-mode-map "," #'dired-up-directory)
+(define-key dired-mode-map ";" #'dired-up-directory)
 (define-key dired-mode-map [67108908] #'dired-up-directory)
 #+END_SRC
 
@@ -1457,6 +1464,41 @@ mark and point, then press ~=~ to compare.
                   nil)))
       (if (and file prev)
           (ediff-files prev file)))))
+#+END_SRC
+
+*** deadgrep
+
+deadgrep-mode is missing some typical navigational features like =next-error=,
+=previous-error=. Also it needs a function only displaying a result, not
+visiting it. These are provided here. Used in combination with a corresponding
+=display-buffer-alist=, this allows to easily navigate through the matches,
+displaying them in the other window.
+
+#+BEGIN_SRC emacs-lisp
+  (defun deadgrep-display-result ()
+    "display currently selected match, but don't visit/select."
+    (interactive)
+    (let ((current-window (selected-window)))
+      (deadgrep-visit-result)
+      (select-window current-window)))
+
+  (defun deadgrep-display-next ()
+    "display next match and don't select it."
+    (interactive)
+    (deadgrep-forward-match)
+    (deadgrep-display-result))
+
+  (defun deadgrep-display-prev ()
+    "display previous match and don't select it."
+    (interactive)
+    (deadgrep-backward-match)
+    (deadgrep-display-result))
+
+  (add-hook 'deadgrep-mode-hook
+            '(lambda ()
+               (define-key deadgrep-mode-map "\M-g\M-n" #'deadgrep-display-next)
+               (define-key deadgrep-mode-map "\M-g\M-p" #'deadgrep-display-prev)
+               (define-key deadgrep-mode-map "\C-o" #'deadgrep-display-result)))
 #+END_SRC
 
 *** org
