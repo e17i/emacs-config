@@ -90,7 +90,9 @@
      (77
       (german-kbd apple-kbd)))))
  '(my-environment-mode t)
- '(my-frame-stylings (quote (frame-to-second-x11)))
+ '(my-frame-stylings
+   (quote
+    (frame-to-top-x11 frame-width-dec frame-height-dec frame-width-dec)))
  '(my-frame-transparency 100)
  '(nxml-sexp-element-flag t)
  '(org-agenda-files nil)
