@@ -54,7 +54,7 @@ space. This way, info/occur/magit windows which you want to pop up on
 the fly are put below the window you are working in currently. Other
 windows further down or at the sides are left untouched.
 
-But we also need to make sure windows are not splitted if too small. We also
+But we also need to make sure windows are not split if too small. We also
 activate some further tweaks which are declared in the following sections.
 
 First of all, here is the configuration, including changes to
@@ -648,7 +648,28 @@ Keys are:
   (navigate-buffer))
 #+END_SRC
 
+*** Scrolling functions
+
+#+BEGIN_SRC emacs-lisp
+(defun scroll-fast ()
+  (interactive)
+  (let ((next-screen-context-lines (round (* (frame-height) 0.8))))
+    (recursive-edit)))
+
+(defun scroll-slow ()
+  (interactive)
+  (let ((next-screen-context-lines (round (* (frame-height) 0.9))))
+    (recursive-edit)))
+
+(defun scroll-halve ()
+  (interactive)
+  (let ((next-screen-context-lines (round (* (frame-height) 0.5))))
+    (recursive-edit)))
+#+END_SRC
+
 *** Frame and window size
+
+**** Window size
 
 And another temporary pseudo mode, this time interactively resizing windows.
 
@@ -685,6 +706,8 @@ Keys supported:
        tmap) 't)))
 #+END_SRC
 
+**** Frame size maximizing/auto-resizing
+
 The following used to be a pseudo frame maximizing function for Mac,
 which is no longer needed, since macos supports native full screen
 modes. Instead we build a configurable solution toggling through
@@ -694,9 +717,16 @@ frame and use the rest of screen". For this, we use a customizable
 variable constructing a list of frame styling functions. The functions
 receive an argument list of (FRAME MAX-LINES MAX-COLS).
 
+Note there is another function for switching to full size besides of this one.
+
 #+BEGIN_SRC emacs-lisp
 (defcustom my-frame-stylings nil
-  "styling functions used when toggling display frame size."
+  "Frame styling functions used when toggling display frame size.
+  After switching back from maximized size, each of the functions
+  listed here is executed. There are functions to place the frame
+  into a convenient position (e.g. left, right, middle of screen)
+  and to resize it (like size just below threshold or size a
+  little bit smaller than screen)."
   :type '(repeat function)
   :group 'my-cust)
 
@@ -728,12 +758,21 @@ receive an argument list of (FRAME MAX-LINES MAX-COLS).
       (set-frame-parameter nil 'fullscreen 'maximized)))))
 
 (defun frame-width-below-threshold (frame lines cols)
+  "Set frame with smaller than split width threshold. This way,
+  info windows are split below. Otherwise, they might be split to
+  the right."
   (set-frame-width frame (- split-width-threshold 1)))
 
+(defun frame-width-dec (frame lines cols)
+  "Set frame width a little bit smaller than display width."
+  (set-frame-width frame (- cols 2)))
+
 (defun frame-height-dec (frame lines cols)
-  (set-frame-height frame (- lines 1)))
+  "Set frame height a little bit smaller than display height."
+  (set-frame-height frame (- lines 2)))
 
 (defun frame-geom (&optional frame)
+  "Helper returning the current display geometry."
   (let ((current-display
          (car (remove-if-not
                (lambda (disp)
@@ -744,6 +783,8 @@ receive an argument list of (FRAME MAX-LINES MAX-COLS).
       geom)))
 
 (defun frame-to-left (frame lines cols)
+  "Position frame to the left of current display. Works best when
+  before frame is made smaller than maximized."
   (let ((geom (frame-geom frame)))
     (let ((x (cadr geom)))
       (set-frame-position frame
@@ -751,6 +792,8 @@ receive an argument list of (FRAME MAX-LINES MAX-COLS).
                           (cdr (frame-position frame))))))
 
 (defun frame-to-top (frame lines cols)
+  "Position frame to the top of current display. Works best when
+  before frame is made smaller than maximized."
   (let ((geom (frame-geom frame)))
     (let ((y (caddr geom)))
       (set-frame-position frame
@@ -758,6 +801,8 @@ receive an argument list of (FRAME MAX-LINES MAX-COLS).
                           y))))
 
 (defun frame-to-center (frame lines cols)
+  "Position frame to the center of current display. Works best when
+  before frame is made smaller than maximized."
   (let ((geom (frame-geom frame)))
     (let ((x (cadr geom))
           (y (caddr geom))
@@ -773,6 +818,8 @@ receive an argument list of (FRAME MAX-LINES MAX-COLS).
          (+ y (round dheight 2.1)))))))
 
 (defun frame-to-right (frame lines cols)
+  "Position frame to the right of current display. Works best when
+  before frame is made smaller than maximized."
   (let ((geom (frame-geom frame)))
     (let ((x (cadr geom))
           (width (cadddr geom))
@@ -783,7 +830,19 @@ receive an argument list of (FRAME MAX-LINES MAX-COLS).
          frame
          (+ x dwidth)
          py)))))
+
+(defun frame-to-top-x11 (frame lines cols)
+  "Position frame to the top of current x11 display. Works best when
+  before frame is made smaller than maximized."
+  (set-frame-position frame (car (frame-position frame)) 0))
+
+(defun frame-to-second-x11 (frame lines cols)
+  "(Questionable) function to position frame to the second x11
+  display."
+  (set-frame-position frame 1441 0))
 #+END_SRC
+
+**** Frame full screen switching
 
 Here we toggle native fullscreen, removing all frame decorations and
 transparency.
