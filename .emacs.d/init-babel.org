@@ -55,7 +55,7 @@ First of all, here is the configuration, including changes to
  '(display-buffer-alist
    '((dired-to-other-window maybe-make-dired-window-origin)
      (dired-from-other-window
-      (display-dired-maybe-in-orig))
+       (display-buffer-maybe-as-scroll-buffer display-dired-maybe-in-orig))
      ("\\*Occur\\*" make-buffer-window-origin)
      ((lambda
         (buffer alist)
