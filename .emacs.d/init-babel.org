@@ -78,7 +78,9 @@ First of all, here is the configuration, including changes to
       display-buffer-in-orig)
      ("\\*Help\\*\\|\\*Apropos\\*\\|\\*Python Doc\\*"
       (display-buffer-as-scroll-buffer display-buffer-dedicated-window display-buffer-reuse-help display-buffer-at-bottom)
-      (window-height . fit-window-to-buffer-max-half-frame))))
+      (window-height . fit-window-to-buffer-max-half-frame))
+     ("\\*ansi"
+      display-buffer-at-bottom)))
  '(display-buffer-base-action
    '((display-buffer-maybe-as-scroll-buffer display-buffer-dedicated-window display-buffer--maybe-same-window display-buffer-reuse-window display-buffer--maybe-pop-up-frame-or-window display-buffer-in-previous-window display-buffer-below-selected display-buffer-at-bottom display-buffer-pop-up-frame)))
  '(window-min-height 8)
@@ -167,7 +169,26 @@ reused later). When other files are selected and opened within the main
 window (=o= or =C-o=), jumping forth and back between main and dired
 window is easily possible.
 
+First, some helper functions, setting and removing orig-window markers and
+finding a window with a certain marker.
+
 #+BEGIN_SRC emacs-lisp
+(defun clear-orig-window-marker (marker-or-buffer)
+  "remove the given marker or buffer from any windows, so afterwards, no
+window can be found containing this marker."
+  (walk-windows (lambda (w)
+                  (if (eq marker-or-buffer
+                          (window-parameter w 'orig-window))
+                      (set-window-parameter w 'orig-window nil)))))
+
+(defun find-orig-window (marker-or-buffer)
+  "find the first window whose `orig-window' parameter is set to the given
+marker or buffer. If no such window is found, return nil.":()
+  (get-window-with-predicate
+   (lambda (w)
+     (eq marker-or-buffer
+         (window-parameter w 'orig-window)))))
+
 (defun set-orig-window (window marker-or-buffer)
   "mark the given window as origin of operation specific to
 buffer, removing the mark from other windows this buffer was
@@ -175,12 +196,40 @@ assgned to. This way, a dired buffer in other window can push its
 subsequent other window view buffers into the origin window."
   (if (not (eq (window-buffer window) marker-or-buffer))
       (progn
-        (walk-windows (lambda (w)
-                        (if (eq marker-or-buffer
-                                (window-parameter w 'orig-window))
-                            (set-window-parameter w 'orig-window nil))))
+        (clear-orig-window-marker marker-or-buffer)
         (set-window-parameter window 'orig-window marker-or-buffer))))
+#+END_SRC
 
+If a marked window exists, we want to be able to select it.
+
+#+BEGIN_SRC emacs-lisp
+(defun select-marked-orig-window (marker-or-buffer)
+  "select the next window whose orig-window parameter is set to the given
+marker or buffer."
+  (let ((orig-window (find-orig-window marker-or-buffer)))
+    (if (window-live-p orig-window)
+        (select-window orig-window))))
+#+END_SRC
+
+If the ~other-window~ parameter of some window is a function, it will be used
+to select a special other window instead of just the next one. So we provide a
+funtion here that can do exactly this.
+
+#+BEGIN_SRC emacs-lisp
+(defun set-other-window-dired-orig (window)
+  "setup `window' to have a :dired window as next window. If an arg is given
+to the `other-window' function or that next window is not found, fall back
+to default behaviour."
+  (set-window-parameter window 'other-window
+                        (lambda (count all-frames)
+                          (if (and (= count 1)
+                                   (select-marked-orig-window :dired))
+                              't
+                            (let ((ignore-window-parameters 't))
+                              (other-window count all-frames))))))
+#+END_SRC
+
+#+BEGIN_SRC emacs-lisp
 (defun make-buffer-window-origin (buffer alist)
   "use with a regex or matcher to memorize origin window. Then use
 `display-buffer-in-orig' with same regex to push buffers to origin."
@@ -194,12 +243,9 @@ subsequent other window view buffers into the origin window."
 
 (defun display-buffer-in-orig (buffer alist)
   "if a live orig window is defined, unconditionally use that to
-display the buffer."
+  display the buffer."
   (let* ((other-buffer (current-buffer))
-         (my-window (get-window-with-predicate
-                     (lambda (w)
-                       (eq other-buffer
-                           (window-parameter w 'orig-window))))))
+         (my-window (find-orig-window other-buffer)))
     (if (and my-window (window-live-p my-window))
         (window-update-buffer buffer my-window 'reuse alist))))
 
@@ -227,7 +273,12 @@ is a dired buffer.
 (defun dired-from-other-window (buffer alist)
   "match if current buffer is a dired buffer."
   (dired-p (current-buffer)))
+#+END_SRC
 
+So when a ~dired-to-other-window~ matches, we need a function marking the
+currently selected window as future origin for that new dired window.
+
+#+BEGIN_SRC emacs-lisp
 (defun make-dired-window-origin (buffer alist)
   "special case of `make-buffer-window-origin'. Use with a regex
 or matcher to memorize origin window. Then use
@@ -240,15 +291,22 @@ origin."
   "if action attribute inhibit-same-window is given, store originating dired window."
   (if (cdr (assq 'inhibit-same-window alist))
       (make-dired-window-origin buffer alist)))
+#+END_SRC
 
+And vice versa, when a ~dired-from-other-window~ matches (this should actually
+be called something like ~from-dired-to-orig-window~), the new buffer should
+be shown in the marked orig window. Besides that, we set up the dired window
+to have the origin as next window (not sure though if this is useful).
+
+#+BEGIN_SRC emacs-lisp
 (defun display-dired-in-orig (buffer alist)
   "if a live orig window is defined, unconditionally use that to
 display the dired buffer."
-  (let ((my-window (get-window-with-predicate
-                    (lambda (w)
-                      (eq :dired (window-parameter w 'orig-window))))))
+  (let ((my-window (find-orig-window :dired)))
     (if (and my-window (window-live-p my-window))
-        (window-update-buffer buffer my-window 'reuse alist))))
+        (progn
+          (set-other-window-dired-orig (selected-window))
+          (window-update-buffer buffer my-window 'reuse alist)))))
 
 (defun display-dired-maybe-in-orig (buffer alist)
   "if action attribute inhibit-same-window is given and a live orig window is
@@ -649,6 +707,14 @@ Keys are:
 #+END_SRC
 
 *** Scrolling functions
+
+When scrolling page wise, these functions help to control how much of the
+previous page stays visible. ~scroll-slow~ leaves visible 90% of the previous
+screen, doing only small scroll steps. ~scroll-fast~ still leaves 80%.
+~scroll-halve~ jumps halve of the screen size. Each of them enable a recursive
+edit, which can be cancelled with =C-M-c=.
+
+Probably to be unified into a single function with argument..
 
 #+BEGIN_SRC emacs-lisp
 (defun scroll-fast ()
