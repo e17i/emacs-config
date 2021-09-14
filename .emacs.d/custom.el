@@ -73,7 +73,8 @@
  '(mouse-wheel-scroll-amount (quote (1 ((meta) . 3) ((shift) . text-scale))))
  '(my-env-actions
    (quote
-    ((mouse-wheel-zoom my-wheel-zoom my-env-reset-keymap)
+    ((mouse-wheel-zoom my-x11-wheel-zoom my-env-reset-keymap)
+     (mac-mouse-yank mac-mouse-yank my-env-reset-keymap)
      (mouse-undo mouse-undo my-env-reset-keymap)
      (german-kbd activate-german-keymap my-env-reset-keymap)
      (apple-kbd on-apple-keyboard ignore)
@@ -86,7 +87,7 @@
  '(my-env-definitions
    (quote
     ((68
-      (mouse-wheel-zoom pc-kbd mouse-undo))
+      (mouse-wheel-zoom pc-kbd mouse-undo mac-mouse-yank))
      (77
       (german-kbd apple-kbd)))))
  '(my-environment-mode t)
