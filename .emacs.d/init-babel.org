@@ -1941,6 +1941,9 @@ Here we use ~hs-mode~, enabling tag view toggling and tag level hiding. Also
 In emacs lisp, we want slurp and barf support via smartparens. As the default
 conflicts with my habits, we define our own mapping here.
 Also use our delimiter for parens.
+Plan is to use most of this with /Control/ and /Meta/ combination. Then splice
+is ="=, unsplice is ~'~. ~(~ and ~)~ slurp in corresponding direction, ~{~ and
+~}~ slurp.
 
 #+BEGIN_SRC emacs-lisp
 (require 'smartparens-config)
@@ -1957,14 +1960,20 @@ Also use our delimiter for parens.
                          ("M-B" . sp-backward-symbol)
                          ("C-M-SPC" . sp-mark-sexp)
                          ("C-c s" . sp-splice-sexp) ;; depth-changing commands
-                         ("C-c S" . (lambda (point mark pre) (interactive "r\nP") (my-delimit-region point mark pre ?\()))
+                         ("C-M-\"" . sp-splice-sexp) ;; depth-changing commands
+                         ("C-c S" . (lambda (point mark pre) (interactive "r\nP") (my-delimit-region pre ?\()))
+                         ("C-M-'" . (lambda (point mark pre) (interactive "r\nP") (my-delimit-region pre ?\()))
                          ("C-c b" . sp-splice-sexp-killing-backward)
                          ("C-c f" . sp-splice-sexp-killing-forward)
                          ("C-c k" . sp-splice-sexp-killing-around)
                          ("C-c )" . sp-forward-slurp-sexp) ;; barf/slurp
+                         ("C-M-)" . sp-forward-slurp-sexp) ;; barf/slurp
                          ("C-c }" . sp-forward-barf-sexp)
+                         ("C-M-}" . sp-forward-barf-sexp)
                          ("C-c (" . sp-backward-slurp-sexp)
+                         ("C-M-(" . sp-backward-slurp-sexp)
                          ("C-c {" . sp-backward-barf-sexp)
+                         ("C-M-{" . sp-backward-barf-sexp)
                          ("C-c C-s" . sp-split-sexp)
                          ("C-c C-]" . sp-select-next-thing-exchange)
                          ("C-c ]" . sp-select-next-thing)
