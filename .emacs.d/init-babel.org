@@ -234,8 +234,7 @@ to default behaviour."
 (defun display-buffer-in-orig (buffer alist)
   "if a live orig window is defined, unconditionally use that to
   display the buffer."
-  (let* ((other-buffer (current-buffer))
-         (my-window (find-orig-window other-buffer)))
+  (let ((my-window (find-orig-window (current-buffer))))
     (if (and my-window (window-live-p my-window))
         (window-update-buffer buffer my-window 'reuse alist))))
 
@@ -500,6 +499,14 @@ jumps and returning with =C-M-c= or =C-]=.
 (nth-window end-of-other-window
   "Like `end-of-buffer-other-window', but use prefix arg to select window."
   (end-of-buffer))
+
+(nth-window jump-mark-other-window
+  "jump to next mark from local mark ring."
+  (pop-to-mark-command))
+
+(nth-window jump-global-mark-other-window
+  "jump to next mark from global mark ring."
+  (pop-global-mark))
 
 (nth-window kill-other-buffer-and-window
   "kill buffer in other window and delete that window."
@@ -1448,6 +1455,8 @@ We also want to jump to beginning/end in other window by =C-M-<= and =C-M->=
 (global-set-key [201326654] #'end-of-other-window)
 (global-set-key "\C-x4<" #'beginning-of-other-window)
 (global-set-key "\C-x4>" #'end-of-other-window)
+(global-set-key "\C-x4 " #'jump-mark-other-window)
+(global-set-key [24 52 24 67108896] #'jump-global-mark-other-window)  ;; C-x 4 C-x C-SPC
 (global-set-key [remap scroll-other-window] #'my-scroll-other-window)
 (global-set-key [remap scroll-other-window-down] #'my-scroll-other-window-down)
 #+END_SRC
