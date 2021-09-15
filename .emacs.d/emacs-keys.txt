@@ -10,11 +10,13 @@ C-SPC           set/acticate/deactivate mark
 C-u C-SPC	jump to last mark position
 C-x C-SPC       pop global mark
 C-x SPC         rectangle mark mode
+M-SPC           just one space
 M-x list-command-history
 M-x icomplete-mode  minibuffer advanced
 C-h e		messages
 C-h l		list of last key commands
 C-x C-x		exchange mark and point
+C-x TAB         indent region interactively
 C-M-w		kill and append to prev kill
 C-o		open new line
 C-x C-o		delete blank lines
@@ -30,6 +32,8 @@ M-c             capitalize word
 C-x n           narrow
 M-!		shell command
 M-|		shell command on region
+M-&             async shell command
+M-$             ispell word
 M-g g		go to line
 M-g <tab>	go to column
 M-g n		go to next error
