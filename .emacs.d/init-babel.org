@@ -1351,12 +1351,6 @@ in wheel-mode apparently works only with trackpad.
     (define-key kmap (kbd "<S-mouse-7>") #'text-scale-increase)
     (define-key kmap (kbd "<S-mouse-6>") #'text-scale-decrease)
     (my-env-add-map kmap)))
-
-(defun my-x11-wheel-zoom ()
-  (let ((kmap (make-sparse-keymap)))
-    (define-key kmap (kbd "<S-mouse-5>") #'text-scale-increase)
-    (define-key kmap (kbd "<S-mouse-4>") #'text-scale-decrease)
-    (my-env-add-map kmap)))
 #+END_SRC
 
 *** Keyboard handling
