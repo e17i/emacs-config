@@ -13,20 +13,6 @@
  '(delete-selection-mode t)
  '(dired-dwim-target t)
  '(dired-recursive-deletes 'top)
- '(display-buffer-alist
-   '((dired-to-other-window maybe-make-dired-window-origin)
-     (dired-from-other-window
-      (display-dired-maybe-in-orig))
-     ("\\*Occur\\*" make-buffer-window-origin)
-     ((lambda
-        (buffer alist)
-        (match-current-buffer "\\\\*Occur\\\\*"))
-      display-buffer-in-orig)
-     ("\\*Help\\*\\|\\*Apropos\\*"
-      (display-buffer-as-scroll-buffer display-buffer-dedicated-window display-buffer-reuse-help display-buffer-at-bottom)
-      (window-height . fit-window-to-buffer-max-half-frame))))
- '(display-buffer-base-action
-   '((display-buffer-maybe-as-scroll-buffer display-buffer-dedicated-window display-buffer--maybe-same-window display-buffer-reuse-window display-buffer--maybe-pop-up-frame-or-window display-buffer-in-previous-window display-buffer-below-selected display-buffer-at-bottom display-buffer-pop-up-frame)))
  '(display-time-24hr-format t)
  '(display-time-default-load-average nil)
  '(dynamic-completion-mode nil)
@@ -76,8 +62,7 @@
  '(my-environment-mode t)
  '(my-frame-background "NavajoWhite3")
  '(my-frame-foreground "Black")
- '(my-frame-stylings
-   '(frame-width-below-threshold frame-height-dec frame-to-right frame-to-top))
+ '(my-frame-stylings '(frame-width-below-threshold frame-to-right frame-to-top))
  '(my-frame-transparency 85)
  '(nxml-sexp-element-flag t)
  '(org-agenda-files nil)
