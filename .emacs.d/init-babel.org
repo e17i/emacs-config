@@ -54,7 +54,7 @@ space. This way, info/occur/magit windows which you want to pop up on
 the fly are put below the window you are working in currently. Other
 windows further down or at the sides are left untouched.
 
-But we also need to make sure windows are not splitted if too small. We also
+But we also need to make sure windows are not split if too small. We also
 activate some further tweaks which are declared in the following sections.
 
 First of all, here is the configuration, including changes to
@@ -65,7 +65,7 @@ First of all, here is the configuration, including changes to
  '(display-buffer-alist
    '((dired-to-other-window maybe-make-dired-window-origin)
      (dired-from-other-window
-      (display-dired-maybe-in-orig))
+       (display-buffer-maybe-as-scroll-buffer display-dired-maybe-in-orig))
      ("\\*Occur\\*" make-buffer-window-origin)
      ((lambda
         (buffer alist)
@@ -78,7 +78,9 @@ First of all, here is the configuration, including changes to
       display-buffer-in-orig)
      ("\\*Help\\*\\|\\*Apropos\\*\\|\\*Python Doc\\*"
       (display-buffer-as-scroll-buffer display-buffer-dedicated-window display-buffer-reuse-help display-buffer-at-bottom)
-      (window-height . fit-window-to-buffer-max-half-frame))))
+      (window-height . fit-window-to-buffer-max-half-frame))
+     ("\\*ansi"
+      display-buffer-at-bottom)))
  '(display-buffer-base-action
    '((display-buffer-maybe-as-scroll-buffer display-buffer-dedicated-window display-buffer--maybe-same-window display-buffer-reuse-window display-buffer--maybe-pop-up-frame-or-window display-buffer-in-previous-window display-buffer-below-selected display-buffer-at-bottom display-buffer-pop-up-frame)))
  '(window-min-height 8)
@@ -167,7 +169,26 @@ reused later). When other files are selected and opened within the main
 window (=o= or =C-o=), jumping forth and back between main and dired
 window is easily possible.
 
+First, some helper functions, setting and removing orig-window markers and
+finding a window with a certain marker.
+
 #+BEGIN_SRC emacs-lisp
+(defun clear-orig-window-marker (marker-or-buffer)
+  "remove the given marker or buffer from any windows, so afterwards, no
+window can be found containing this marker."
+  (walk-windows (lambda (w)
+                  (if (eq marker-or-buffer
+                          (window-parameter w 'orig-window))
+                      (set-window-parameter w 'orig-window nil)))))
+
+(defun find-orig-window (marker-or-buffer)
+  "find the first window whose `orig-window' parameter is set to the given
+marker or buffer. If no such window is found, return nil.":()
+  (get-window-with-predicate
+   (lambda (w)
+     (eq marker-or-buffer
+         (window-parameter w 'orig-window)))))
+
 (defun set-orig-window (window marker-or-buffer)
   "mark the given window as origin of operation specific to
 buffer, removing the mark from other windows this buffer was
@@ -175,12 +196,40 @@ assgned to. This way, a dired buffer in other window can push its
 subsequent other window view buffers into the origin window."
   (if (not (eq (window-buffer window) marker-or-buffer))
       (progn
-        (walk-windows (lambda (w)
-                        (if (eq marker-or-buffer
-                                (window-parameter w 'orig-window))
-                            (set-window-parameter w 'orig-window nil))))
+        (clear-orig-window-marker marker-or-buffer)
         (set-window-parameter window 'orig-window marker-or-buffer))))
+#+END_SRC
 
+If a marked window exists, we want to be able to select it.
+
+#+BEGIN_SRC emacs-lisp
+(defun select-marked-orig-window (marker-or-buffer)
+  "select the next window whose orig-window parameter is set to the given
+marker or buffer."
+  (let ((orig-window (find-orig-window marker-or-buffer)))
+    (if (window-live-p orig-window)
+        (select-window orig-window))))
+#+END_SRC
+
+If the ~other-window~ parameter of some window is a function, it will be used
+to select a special other window instead of just the next one. So we provide a
+funtion here that can do exactly this.
+
+#+BEGIN_SRC emacs-lisp
+(defun set-other-window-dired-orig (window)
+  "setup `window' to have a :dired window as next window. If an arg is given
+to the `other-window' function or that next window is not found, fall back
+to default behaviour."
+  (set-window-parameter window 'other-window
+                        (lambda (count all-frames)
+                          (if (and (= count 1)
+                                   (select-marked-orig-window :dired))
+                              't
+                            (let ((ignore-window-parameters 't))
+                              (other-window count all-frames))))))
+#+END_SRC
+
+#+BEGIN_SRC emacs-lisp
 (defun make-buffer-window-origin (buffer alist)
   "use with a regex or matcher to memorize origin window. Then use
 `display-buffer-in-orig' with same regex to push buffers to origin."
@@ -194,12 +243,8 @@ subsequent other window view buffers into the origin window."
 
 (defun display-buffer-in-orig (buffer alist)
   "if a live orig window is defined, unconditionally use that to
-display the buffer."
-  (let* ((other-buffer (current-buffer))
-         (my-window (get-window-with-predicate
-                     (lambda (w)
-                       (eq other-buffer
-                           (window-parameter w 'orig-window))))))
+  display the buffer."
+  (let ((my-window (find-orig-window (current-buffer))))
     (if (and my-window (window-live-p my-window))
         (window-update-buffer buffer my-window 'reuse alist))))
 
@@ -227,7 +272,12 @@ is a dired buffer.
 (defun dired-from-other-window (buffer alist)
   "match if current buffer is a dired buffer."
   (dired-p (current-buffer)))
+#+END_SRC
 
+So when a ~dired-to-other-window~ matches, we need a function marking the
+currently selected window as future origin for that new dired window.
+
+#+BEGIN_SRC emacs-lisp
 (defun make-dired-window-origin (buffer alist)
   "special case of `make-buffer-window-origin'. Use with a regex
 or matcher to memorize origin window. Then use
@@ -240,15 +290,22 @@ origin."
   "if action attribute inhibit-same-window is given, store originating dired window."
   (if (cdr (assq 'inhibit-same-window alist))
       (make-dired-window-origin buffer alist)))
+#+END_SRC
 
+And vice versa, when a ~dired-from-other-window~ matches (this should actually
+be called something like ~from-dired-to-orig-window~), the new buffer should
+be shown in the marked orig window. Besides that, we set up the dired window
+to have the origin as next window (not sure though if this is useful).
+
+#+BEGIN_SRC emacs-lisp
 (defun display-dired-in-orig (buffer alist)
   "if a live orig window is defined, unconditionally use that to
 display the dired buffer."
-  (let ((my-window (get-window-with-predicate
-                    (lambda (w)
-                      (eq :dired (window-parameter w 'orig-window))))))
+  (let ((my-window (find-orig-window :dired)))
     (if (and my-window (window-live-p my-window))
-        (window-update-buffer buffer my-window 'reuse alist))))
+        (progn
+          (set-other-window-dired-orig (selected-window))
+          (window-update-buffer buffer my-window 'reuse alist)))))
 
 (defun display-dired-maybe-in-orig (buffer alist)
   "if action attribute inhibit-same-window is given and a live orig window is
@@ -453,6 +510,14 @@ jumps and returning with =C-M-c= or =C-]=.
   "Like `end-of-buffer-other-window', but use prefix arg to select window."
   (end-of-buffer))
 
+(nth-window jump-mark-other-window
+  "jump to next mark from local mark ring."
+  (pop-to-mark-command))
+
+(nth-window jump-global-mark-other-window
+  "jump to next mark from global mark ring."
+  (pop-global-mark))
+
 (nth-window kill-other-buffer-and-window
   "kill buffer in other window and delete that window."
   (kill-buffer-and-window))
@@ -648,7 +713,36 @@ Keys are:
   (navigate-buffer))
 #+END_SRC
 
+*** Scrolling functions
+
+When scrolling page wise, these functions help to control how much of the
+previous page stays visible. ~scroll-slow~ leaves visible 90% of the previous
+screen, doing only small scroll steps. ~scroll-fast~ still leaves 80%.
+~scroll-halve~ jumps halve of the screen size. Each of them enable a recursive
+edit, which can be cancelled with =C-M-c=.
+
+Probably to be unified into a single function with argument..
+
+#+BEGIN_SRC emacs-lisp
+(defun scroll-fast ()
+  (interactive)
+  (let ((next-screen-context-lines (round (* (frame-height) 0.8))))
+    (recursive-edit)))
+
+(defun scroll-slow ()
+  (interactive)
+  (let ((next-screen-context-lines (round (* (frame-height) 0.9))))
+    (recursive-edit)))
+
+(defun scroll-halve ()
+  (interactive)
+  (let ((next-screen-context-lines (round (* (frame-height) 0.5))))
+    (recursive-edit)))
+#+END_SRC
+
 *** Frame and window size
+
+**** Window size
 
 And another temporary pseudo mode, this time interactively resizing windows.
 
@@ -685,6 +779,8 @@ Keys supported:
        tmap) 't)))
 #+END_SRC
 
+**** Frame size maximizing/auto-resizing
+
 The following used to be a pseudo frame maximizing function for Mac,
 which is no longer needed, since macos supports native full screen
 modes. Instead we build a configurable solution toggling through
@@ -694,9 +790,16 @@ frame and use the rest of screen". For this, we use a customizable
 variable constructing a list of frame styling functions. The functions
 receive an argument list of (FRAME MAX-LINES MAX-COLS).
 
+Note there is another function for switching to full size besides of this one.
+
 #+BEGIN_SRC emacs-lisp
 (defcustom my-frame-stylings nil
-  "styling functions used when toggling display frame size."
+  "Frame styling functions used when toggling display frame size.
+  After switching back from maximized size, each of the functions
+  listed here is executed. There are functions to place the frame
+  into a convenient position (e.g. left, right, middle of screen)
+  and to resize it (like size just below threshold or size a
+  little bit smaller than screen)."
   :type '(repeat function)
   :group 'my-cust)
 
@@ -728,12 +831,21 @@ receive an argument list of (FRAME MAX-LINES MAX-COLS).
       (set-frame-parameter nil 'fullscreen 'maximized)))))
 
 (defun frame-width-below-threshold (frame lines cols)
+  "Set frame with smaller than split width threshold. This way,
+  info windows are split below. Otherwise, they might be split to
+  the right."
   (set-frame-width frame (- split-width-threshold 1)))
 
+(defun frame-width-dec (frame lines cols)
+  "Set frame width a little bit smaller than display width."
+  (set-frame-width frame (- cols 2)))
+
 (defun frame-height-dec (frame lines cols)
-  (set-frame-height frame (- lines 1)))
+  "Set frame height a little bit smaller than display height."
+  (set-frame-height frame (- lines 2)))
 
 (defun frame-geom (&optional frame)
+  "Helper returning the current display geometry."
   (let ((current-display
          (car (remove-if-not
                (lambda (disp)
@@ -744,6 +856,8 @@ receive an argument list of (FRAME MAX-LINES MAX-COLS).
       geom)))
 
 (defun frame-to-left (frame lines cols)
+  "Position frame to the left of current display. Works best when
+  before frame is made smaller than maximized."
   (let ((geom (frame-geom frame)))
     (let ((x (cadr geom)))
       (set-frame-position frame
@@ -751,6 +865,8 @@ receive an argument list of (FRAME MAX-LINES MAX-COLS).
                           (cdr (frame-position frame))))))
 
 (defun frame-to-top (frame lines cols)
+  "Position frame to the top of current display. Works best when
+  before frame is made smaller than maximized."
   (let ((geom (frame-geom frame)))
     (let ((y (caddr geom)))
       (set-frame-position frame
@@ -758,6 +874,8 @@ receive an argument list of (FRAME MAX-LINES MAX-COLS).
                           y))))
 
 (defun frame-to-center (frame lines cols)
+  "Position frame to the center of current display. Works best when
+  before frame is made smaller than maximized."
   (let ((geom (frame-geom frame)))
     (let ((x (cadr geom))
           (y (caddr geom))
@@ -773,6 +891,8 @@ receive an argument list of (FRAME MAX-LINES MAX-COLS).
          (+ y (round dheight 2.1)))))))
 
 (defun frame-to-right (frame lines cols)
+  "Position frame to the right of current display. Works best when
+  before frame is made smaller than maximized."
   (let ((geom (frame-geom frame)))
     (let ((x (cadr geom))
           (width (cadddr geom))
@@ -783,7 +903,19 @@ receive an argument list of (FRAME MAX-LINES MAX-COLS).
          frame
          (+ x dwidth)
          py)))))
+
+(defun frame-to-top-x11 (frame lines cols)
+  "Position frame to the top of current x11 display. Works best when
+  before frame is made smaller than maximized."
+  (set-frame-position frame (car (frame-position frame)) 0))
+
+(defun frame-to-second-x11 (frame lines cols)
+  "(Questionable) function to position frame to the second x11
+  display."
+  (set-frame-position frame 1441 0))
 #+END_SRC
+
+**** Frame full screen switching
 
 Here we toggle native fullscreen, removing all frame decorations and
 transparency.
@@ -1115,7 +1247,9 @@ Moving through paragraphs put somewhat easier into reach:
 (global-set-key "\M-]" #'forward-paragraph)
 #+END_SRC
 
-expand-region may come handy, besides the explicit selection commands.
+expand-region may come handy, additionally to the explicit selection
+commands. We put it on =C-c h= and =SPC=, similar to other selection commands
+using =h= or =SPC=.
 
 #+BEGIN_SRC emacs-lisp
 (require 'expand-region)
@@ -1190,6 +1324,16 @@ after double - select words, right - define region and save to kill ring,
 right after double click - define region up to next word, double right - kill
 to kill ring, middle - yank to click position.
 
+On Mac, we yank with /Control/ and /Meta/.
+
+#+BEGIN_SRC emacs-lisp
+(defun mac-mouse-yank ()
+  "yank with mouse button."
+  (let ((kmap (make-sparse-keymap)))
+    (define-key kmap (kbd "<C-M-mouse-2>") #'yank)
+    (my-env-add-map kmap)))
+#+END_SRC
+
 Additionally, you can double click on delimiters like parens or quotes to
 select the delimited text. Finally, we activated the drag and drop feature.
 
@@ -1230,6 +1374,12 @@ in wheel-mode apparently works only with trackpad.
   (let ((kmap (make-sparse-keymap)))
     (define-key kmap (kbd "<S-mouse-7>") #'text-scale-increase)
     (define-key kmap (kbd "<S-mouse-6>") #'text-scale-decrease)
+    (my-env-add-map kmap)))
+
+(defun my-x11-wheel-zoom ()
+  (let ((kmap (make-sparse-keymap)))
+    (define-key kmap (kbd "<S-mouse-5>") #'text-scale-increase)
+    (define-key kmap (kbd "<S-mouse-4>") #'text-scale-decrease)
     (my-env-add-map kmap)))
 #+END_SRC
 
@@ -1345,6 +1495,8 @@ We also want to jump to beginning/end in other window by =C-M-<= and =C-M->=
 (global-set-key [201326654] #'end-of-other-window)
 (global-set-key "\C-x4<" #'beginning-of-other-window)
 (global-set-key "\C-x4>" #'end-of-other-window)
+(global-set-key "\C-x4 " #'jump-mark-other-window)
+(global-set-key [24 52 24 67108896] #'jump-global-mark-other-window)  ;; C-x 4 C-x C-SPC
 (global-set-key [remap scroll-other-window] #'my-scroll-other-window)
 (global-set-key [remap scroll-other-window-down] #'my-scroll-other-window-down)
 #+END_SRC
@@ -1891,6 +2043,9 @@ Here we use ~hs-mode~, enabling tag view toggling and tag level hiding. Also
 In emacs lisp, we want slurp and barf support via smartparens. As the default
 conflicts with my habits, we define our own mapping here.
 Also use our delimiter for parens.
+Plan is to use most of this with /Control/ and /Meta/ combination. Then splice
+is ="=, unsplice is ~'~. ~(~ and ~)~ slurp in corresponding direction, ~{~ and
+~}~ slurp.
 
 #+BEGIN_SRC emacs-lisp
 (require 'smartparens-config)
@@ -1907,14 +2062,20 @@ Also use our delimiter for parens.
                          ("M-B" . sp-backward-symbol)
                          ("C-M-SPC" . sp-mark-sexp)
                          ("C-c s" . sp-splice-sexp) ;; depth-changing commands
-                         ("C-c S" . (lambda (point mark pre) (interactive "r\nP") (my-delimit-region point mark pre ?\()))
+                         ("C-M-\"" . sp-splice-sexp) ;; depth-changing commands
+                         ("C-c S" . (lambda (point mark pre) (interactive "r\nP") (my-delimit-region pre ?\()))
+                         ("C-M-'" . (lambda (point mark pre) (interactive "r\nP") (my-delimit-region pre ?\()))
                          ("C-c b" . sp-splice-sexp-killing-backward)
                          ("C-c f" . sp-splice-sexp-killing-forward)
                          ("C-c k" . sp-splice-sexp-killing-around)
                          ("C-c )" . sp-forward-slurp-sexp) ;; barf/slurp
+                         ("C-M-)" . sp-forward-slurp-sexp) ;; barf/slurp
                          ("C-c }" . sp-forward-barf-sexp)
+                         ("C-M-}" . sp-forward-barf-sexp)
                          ("C-c (" . sp-backward-slurp-sexp)
+                         ("C-M-(" . sp-backward-slurp-sexp)
                          ("C-c {" . sp-backward-barf-sexp)
+                         ("C-M-{" . sp-backward-barf-sexp)
                          ("C-c C-s" . sp-split-sexp)
                          ("C-c C-]" . sp-select-next-thing-exchange)
                          ("C-c ]" . sp-select-next-thing)
