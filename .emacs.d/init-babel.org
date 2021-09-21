@@ -828,9 +828,19 @@ Note there is another function for switching to full size besides of this one.
 
 (defun frame-width-dec (frame lines cols)
   "Set frame width a little bit smaller than display width."
-  (set-frame-width frame (- cols 2)))
+  (set-frame-width frame (- cols 1)))
 
-(defun frame-height-dec (frame lines cols)
+(defun frame-width-abs (frame lines cols)
+  "Set frame width to absolute size of current frame"
+  (let ((geom (frame-geom frame)))
+    (let ((width (cadddr geom)))
+      (set-frame-width frame width nil 't))))
+
+(defun frame-height-dec(frame lines cols)
+  "Set frame height a little bit smaller than display height."
+  (set-frame-height frame (- lines 1)))
+
+(defun frame-height-dec-two(frame lines cols)
   "Set frame height a little bit smaller than display height."
   (set-frame-height frame (- lines 2)))
 
