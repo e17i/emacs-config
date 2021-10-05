@@ -1573,6 +1573,7 @@ reasonable. BTW, selecting a file or directory is also possible with =f= and
 #+BEGIN_SRC emacs-lisp
 (define-key dired-mode-map "," #'dired-up-directory)
 (define-key dired-mode-map ";" #'dired-up-directory)
+(define-key dired-mode-map "ö" #'dired-up-directory)  ;; on german keyboard same key like ;
 (define-key dired-mode-map [67108908] #'dired-up-directory)
 #+END_SRC
 
