@@ -13,18 +13,6 @@
  '(delete-selection-mode t)
  '(dired-dwim-target t)
  '(dired-recursive-deletes 'top)
- '(display-buffer-alist
-   '((dired-to-other-window maybe-make-dired-window-origin)
-     (dired-from-other-window
-      (display-dired-maybe-in-orig))
-     ("\\*Occur\\*" make-buffer-window-origin)
-     ((lambda
-        (buffer alist)
-        (match-current-buffer "\\\\*Occur\\\\*"))
-      display-buffer-in-orig)
-     ("\\*Help\\*\\|\\*Apropos\\*"
-      (display-buffer-as-scroll-buffer display-buffer-dedicated-window display-buffer-reuse-help display-buffer-at-bottom)
-      (window-height . fit-window-to-buffer-max-half-frame))))
  '(display-buffer-base-action
    '((display-buffer-maybe-as-scroll-buffer display-buffer-dedicated-window display-buffer--maybe-same-window display-buffer-reuse-window display-buffer--maybe-pop-up-frame-or-window display-buffer-in-previous-window display-buffer-below-selected display-buffer-at-bottom display-buffer-pop-up-frame)))
  '(display-time-24hr-format t)
@@ -91,7 +79,6 @@
  '(org-src-preserve-indentation t)
  '(package-archives
    '(("gnu" . "https://elpa.gnu.org/packages/")
-     ("marmalade" . "https://marmalade-repo.org/packages/")
      ("melpa-stable" . "https://stable.melpa.org/packages/")
      ("melpa" . "https://melpa.org/packages/")))
  '(package-selected-packages
