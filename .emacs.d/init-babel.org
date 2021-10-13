@@ -1604,10 +1604,10 @@ displaying them in the other window.
 
 #+BEGIN_SRC emacs-lisp
   (defun deadgrep-display-result ()
-    "display currently selected match, but don't visit/select."
+    "display currently selected match in some buffer, but don't visit/select."
     (interactive)
     (let ((current-window (selected-window)))
-      (deadgrep-visit-result)
+      (deadgrep-visit-result-other-window)
       (select-window current-window)))
 
   (defun deadgrep-display-next ()
