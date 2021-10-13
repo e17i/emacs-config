@@ -1574,6 +1574,7 @@ reasonable. BTW, selecting a file or directory is also possible with =f= and
 #+BEGIN_SRC emacs-lisp
 (define-key dired-mode-map "," #'dired-up-directory)
 (define-key dired-mode-map ";" #'dired-up-directory)
+(define-key dired-mode-map "ö" #'dired-up-directory)  ;; on german keyboard same key like ;
 (define-key dired-mode-map [67108908] #'dired-up-directory)
 #+END_SRC
 
@@ -1604,10 +1605,10 @@ displaying them in the other window.
 
 #+BEGIN_SRC emacs-lisp
   (defun deadgrep-display-result ()
-    "display currently selected match, but don't visit/select."
+    "display currently selected match in some buffer, but don't visit/select."
     (interactive)
     (let ((current-window (selected-window)))
-      (deadgrep-visit-result)
+      (deadgrep-visit-result-other-window)
       (select-window current-window)))
 
   (defun deadgrep-display-next ()
