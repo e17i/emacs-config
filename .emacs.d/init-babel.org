@@ -560,6 +560,20 @@ To make this work smoothly, we also change iconification of frames on close.
  '(frame-auto-hide-function #'delete-frame))
 #+END_SRC
 
+**** Misc
+
+Split a window and select the new one. Use =C-u= to split vertically.
+
+#+BEGIN_SRC emacs-lisp
+(defun split-and-select-window (arg)
+  "Split the current window and select the new one."
+  (interactive "P")
+  (if (eq arg nil)
+      (split-window-below)
+    (split-window-right))
+  (other-window 1))
+#+END_SRC
+
 *** Convenient error stepping
 
 Often I want to quickly navigate through a list of error messages or
@@ -1265,6 +1279,13 @@ using =h= or =SPC=.
 (require 'expand-region)
 (global-set-key "\C-ch" 'er/expand-region)
 (global-set-key " " 'er/expand-region)
+#+END_SRC
+
+Split window and select new one. With prefix arg, split vertically.
+
+#+BEGIN_SRC emacs-lisp
+(global-set-key [24 67108914] #'split-and-select-window)  ;; C-x C-2
+(global-set-key "\C-x42" #'split-and-select-window)
 #+END_SRC
 
 *** Convenience for searching
