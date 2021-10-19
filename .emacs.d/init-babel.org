@@ -1584,7 +1584,7 @@ Accept simplified answers.
 In dired, to select a file or directory, often it is easier to type =C-m=
 than =RET= (because easier within reach of base row than the ret key, being
 two keys away). To get up a directory in the opposite direction via =^= is
-also not within easy reach. So going up also with =,= and =C-,= seems
+also not within easy reach. So going up also with =;= and =C-,= seems
 reasonable. BTW, selecting a file or directory is also possible with =f= and
 =e=.
 
@@ -1611,6 +1611,24 @@ mark and point, then press ~=~ to compare.
       (if (and file prev)
           (ediff-files prev file)))))
 #+END_SRC
+
+**** dired-multi-occur
+As suggested by Nicolas Petton
+(https://nicolas.petton.fr/blog/mutli-occur-on-projects.html), selecting files
+as source for =multi-occur= can be handy. This is done here:
+
+#+BEGIN_SRC emacs-lisp
+(defun dired-occur (regexp &optional nlines)
+  "Perform `multi-occur' with REGEXP in all dired marked files.
+When called with a prefix argument NLINES, display NLINES lines before and after."
+  (interactive (occur-read-primary-args))
+  (multi-occur (mapcar #'find-file (dired-get-marked-files)) regexp nlines))
+
+(define-key dired-mode-map "\C-c\C-o" #'dired-occur)
+#+END_SRC
+
+Besides that, using the =ibuffer= multi-occur feature to search in buffers is
+also handy.
 
 *** deadgrep
 
