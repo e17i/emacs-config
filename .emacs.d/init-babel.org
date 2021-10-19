@@ -98,6 +98,13 @@ As a fallback we add a function to recursively edit with original behaviour.
     (recursive-edit)))
 #+END_SRC
 
+#+BEGIN_SRC emacs-lisp
+(defun display-show-args (buffer alist)
+  "Write the current alist into the message buffer. Useful when debugging window handling."
+  (message "display buffer '%s'\nwith alist:\n%s" buffer alist)
+  nil)
+#+END_SRC
+
 **** Help and Apropos buffers
 
 All help or apropos buffers to be pushed into the other window,
@@ -134,13 +141,12 @@ buffers in `display-buffer-reuse-help'."
 
 (defun display-buffer-reuse-help (buffer alist)
   "If a *Help* or *Apropos* window is live, try to reuse that."
-  (let ((wnd (car (remove-if-not
-                   (lambda (w)
-                     (string-match help-buffer-regex
-                                   (buffer-name (window-buffer w))))
-                   (window-list)))))
-    (if (and wnd (window-live-p wnd))
-        (window-update-buffer buffer wnd 'reuse alist))))
+  (window-update-buffer buffer
+                        (get-window-with-predicate
+                         (lambda (w)
+                           (string-match help-buffer-regex
+                                         (buffer-name (window-buffer w)))))
+                        'reuse alist))
 #+END_SRC
 
 Now I'm defining a buffer specific ~window-height~ action attribute only for
@@ -576,32 +582,35 @@ Split a window and select the new one. Use =C-u= to split vertically.
 
 *** Convenient error stepping
 
-Often I want to quickly navigate through a list of error messages or
-occurencies, jumping to the places the errors are indicating. There
-are different ways to archieve this. First of all, with =C-x C-f= you
-can activate ~error-follow-minor-mode~, allowing to move the mark
-through the error buffer, letting the referenced source buffers follow
-you. But if you want to have the source buffer active, you would need
-to jump to the error buffer for each next step. To ease this, the
-following functions are introduced. While they follow the scheme of
-adding remote control functions for the other window, they also show a
-cool feature of setting a temporary keymap in place, allowing further
-navigation steps by using shortcuts. This way, the long key sequence
-of addressing the other window (=C-x 4=) and starting the goto
-sequence (=M-g=) needs to be casted only as an initiation. Afterwards,
-it gets really easy. This is quite convenient in the most different
-applications. Here is a pattern often used my me as an example. When
-using =multi-occur= to find a common regex within a project's files,
-arrange for a current file to be displayed within a (selected) main window and
-multi-occur in another window. Now just call =next-error-other-window=
-and navigate through the hits. This changes the current file buffer
-within the main window as you go, so you may edit away as this window
-is still selected.
+You often want to navigate quickly through a list of error messages or
+occurencies, jumping to the places the errors are indicating. There are
+different ways to archieve this. First of all, you can activate
+~next-error-follow-minor-mode~ (which in occur buffers is bound to =C-c C-f=),
+allowing to move the mark through the error buffer, letting the referenced
+source buffers follow you. Next, you can use =M-g M-n= or =M-g M-p= repeatedly
+within the respective source buffer. Combined with =C-u=, resets to the first
+error position and buffer. Also, ~next-error-select-buffer~ allows to select
+an error buffer used for the next steps.
+
+But if you want to have the respective source buffer active, you always need
+to press these double key combinations, which is quite inconvenient. To ease
+this, the following function is introduced. It also shows a cool feature of
+setting a temporary keymap in place, allowing further navigation steps by
+using shortcuts. This is quite convenient in the most different applications.
+Here is a pattern often used my me as an example. When using =multi-occur= to
+find a common regex within a project's files, arrange for a current file to be
+displayed within a (selected) main window and multi-occur in another window.
+Now just call =error-step= and navigate through the hits. This changes the
+current file buffer within the main window as you go, so you may edit away as
+this window is still selected.
+
+Of course, the altenative is using =occur-edit-mode=, being similarly cool.
 
 #+BEGIN_SRC emacs-lisp
 (require 'cl)
 
 (defun error-step ()
+  (interactive)
   (macrolet ((step-msg ()
 		       '(message "Use n,p,< to navigate further")))
     (step-msg)
@@ -615,20 +624,6 @@ is still selected.
 	 (define-key map (vector (append modk '(?p)))
 	   (lambda () (interactive) (previous-error) (step-msg))))
        map) 't)))
-
-(defun next-error-other-window (&optional arg)
-  "Visit next error message displayed in other window's buffer. With prefix arg, jump to nth window."
-  (interactive "P")
-  (with-current-buffer (window-buffer (call-interactively #'find-other-window))
-    (next-error arg)
-    (error-step)))
-
-(defun previous-error-other-window (&optional arg)
-  "Visit previous error message displayed in other window's buffer. With prefix arg, jump to nth window."
-  (interactive "P")
-  (with-current-buffer (window-buffer (call-interactively #'find-other-window))
-    (previous-error arg)
-    (error-step)))
 #+END_SRC
 
 *** Convenient Navigation Mode
@@ -739,16 +734,19 @@ Probably to be unified into a single function with argument..
 
 #+BEGIN_SRC emacs-lisp
 (defun scroll-fast ()
+  "When scrolling pagewise, set the context lines to roughly 80% of screen height. This way, you need five steps to scroll one page."
   (interactive)
   (let ((next-screen-context-lines (round (* (frame-height) 0.8))))
     (recursive-edit)))
 
 (defun scroll-slow ()
+  "When scrolling pagewise, set the context lines to roughly 90% of screen height. This way, you need ten steps to scroll one page."
   (interactive)
   (let ((next-screen-context-lines (round (* (frame-height) 0.9))))
     (recursive-edit)))
 
 (defun scroll-halve ()
+  "When scrolling pagewise, set the context lines to roughly 50% of screen height. This way, you need two steps to scroll one page."
   (interactive)
   (let ((next-screen-context-lines (round (* (frame-height) 0.5))))
     (recursive-edit)))
@@ -1525,14 +1523,13 @@ define such a key, then call =C-x ESC ESC= and copy the resulting parametrized
 command from minibuffer.
 Alternatively, call =M-: (read-key-sequence "> ")=.
 
-Now come the key bindings for convenient error navigation whose
-functions were defined above.
+Now comes the key binding for convenient error navigation whose
+function was defined above.
 
 #+BEGIN_SRC emacs-lisp
 (define-prefix-command 'other-goto-map)
 (global-set-key "\C-x4\M-g" 'other-goto-map)
-(define-key other-goto-map "\M-n" #'next-error-other-window)
-(define-key other-goto-map "\M-p" #'previous-error-other-window)
+(define-key other-goto-map "\M-n" #'error-step)
 #+END_SRC
 
 Here we bind the temporary navigation mode to some useful keys for current and
@@ -1624,30 +1621,43 @@ visiting it. These are provided here. Used in combination with a corresponding
 displaying them in the other window.
 
 #+BEGIN_SRC emacs-lisp
-  (defun deadgrep-display-result ()
-    "display currently selected match in some buffer, but don't visit/select."
-    (interactive)
-    (let ((current-window (selected-window)))
-      (deadgrep-visit-result-other-window)
-      (select-window current-window)))
+(defun deadgrep-display-result-other-window ()
+  "display currently selected match in some buffer in other window, but don't visit/select."
+  (interactive)
+  (let ((current-window (selected-window)))
+    (deadgrep-visit-result-other-window)
+    (select-window current-window)))
 
-  (defun deadgrep-display-next ()
-    "display next match and don't select it."
-    (interactive)
-    (deadgrep-forward-match)
-    (deadgrep-display-result))
+(defun deadgrep-display-result ()
+  "display currently selected match in some buffer, but don't visit/select."
+  (interactive)
+  (let ((current-window (selected-window)))
+    (deadgrep-visit-result)
+    (select-window current-window)))
 
-  (defun deadgrep-display-prev ()
-    "display previous match and don't select it."
-    (interactive)
-    (deadgrep-backward-match)
-    (deadgrep-display-result))
+(defun deadgrep-display-next (arg reset)
+  "display next match and don't select it."
+  (interactive)
+  (message "%s" arg)
+  (let ((fnc (if (> arg 0)
+                 #'deadgrep-forward-match
+               #'deadgrep-backward-match)))
+    (loop repeat (abs arg)
+          do (funcall fnc)))
+  (deadgrep-display-result))
 
-  (add-hook 'deadgrep-mode-hook
-            '(lambda ()
-               (define-key deadgrep-mode-map "\M-g\M-n" #'deadgrep-display-next)
-               (define-key deadgrep-mode-map "\M-g\M-p" #'deadgrep-display-prev)
-               (define-key deadgrep-mode-map "\C-o" #'deadgrep-display-result)))
+(defun deadgrep-display-prev ()
+  "display previous match and don't select it."
+  (interactive)
+  (deadgrep-backward-match)
+  (deadgrep-display-result))
+
+(add-hook 'deadgrep-mode-hook
+          '(lambda ()
+             (setq next-error-function #'deadgrep-display-next)
+             ;; (define-key deadgrep-mode-map "\M-g\M-n" #'deadgrep-display-next)
+             ;; (define-key deadgrep-mode-map "\M-g\M-p" #'deadgrep-display-prev)
+             (define-key deadgrep-mode-map "\C-o" #'deadgrep-display-result-other-window)))
 #+END_SRC
 
 *** org
