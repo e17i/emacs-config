@@ -284,15 +284,16 @@ function object must be made explicit by using ~(funcall)~ or ~(apply)~.
 #+BEGIN_SRC emacs-lisp
 (defvar x 1)
 (setf (symbol-function 'testfnc)
-    (let ((sym (gensym)))
-    (setf (symbol-value sym) x)
-         (list 'lambda '(&rest rest)
-               (list 'apply
-                     (list 'function
-                           #'(lambda (invisible_closure_arg)
-                               (symbol-value invisible_closure_arg)))
-                     (list 'quote sym)
-                     'rest))))
+      (let ((sym (gensym)))
+        (setf (symbol-value sym) x)
+        `(lambda (&rest rest)
+           (apply
+            #'(lambda (invisible-closure-arg &rest val)
+                (if (eq val nil)
+                    (symbol-value invisible-closure-arg)
+                  (setf (symbol-value invisible-closure-arg) (car val))))
+            (quote ,sym)
+            rest))))
 #+END_SRC
 
 #+RESULTS:
