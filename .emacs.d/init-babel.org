@@ -60,22 +60,24 @@ activate some further tweaks which are declared in the following sections.
 First of all, here is the configuration, including changes to
 ~display-buffer-alist~, whose parts are introduced below.
 
+Note: the order is relevant. When a deadgrep window is initiated from a dired
+window, this is not an action going back to the dired origin. So all of the
+initiating actions come first.
+
 #+BEGIN_SRC emacs-lisp
 (custom-set-variables
- '(display-buffer-alist
-   '((dired-to-other-window maybe-make-dired-window-origin)
-     (dired-from-other-window
-       (display-buffer-maybe-as-scroll-buffer display-dired-maybe-in-orig))
+ `(display-buffer-alist
+   '(;; actions initiating a new selection window (so remember the origin)
+     (new-buffer-is-dired-p maybe-make-dired-window-origin)
      ("\\*Occur\\*" make-buffer-window-origin)
-     ((lambda
-        (buffer alist)
-        (match-current-buffer "\\\\*Occur\\\\*"))
-      display-buffer-in-orig)
      ("\\*deadgrep"
       (make-buffer-window-origin display-buffer-in-previous-window display-buffer-pop-up-window))
-     ((lambda (buffer alist)
-        (match-current-buffer "\\\\*deadgrep"))
-      display-buffer-in-orig)
+     ;; actions triggered from selection window (going back to the remembered origin)
+     (current-window-is-dired-p
+       (display-buffer-maybe-as-scroll-buffer display-dired-maybe-in-orig))
+     (,(current-buffer-name-is-p "\\\\*Occur\\\\*") display-buffer-in-orig)
+     (,(current-buffer-name-is-p "\\\\*deadgrep") display-buffer-in-orig)
+     ;; other actions
      ("\\*Help\\*\\|\\*Apropos\\*\\|\\*Python Doc\\*"
       (display-buffer-as-scroll-buffer display-buffer-dedicated-window display-buffer-reuse-help display-buffer-at-bottom)
       (window-height . fit-window-to-buffer-max-half-frame))
@@ -97,6 +99,10 @@ As a fallback we add a function to recursively edit with original behaviour.
   (let ((display-buffer-base-action nil))
     (recursive-edit)))
 #+END_SRC
+
+When constructing a display buffer alist, it can be useful to see the
+arguments sent down the display action pipeline. Just put it into the alist
+to get a logging in the message buffer.
 
 #+BEGIN_SRC emacs-lisp
 (defun display-show-args (buffer alist)
@@ -149,9 +155,9 @@ buffers in `display-buffer-reuse-help'."
                         'reuse alist))
 #+END_SRC
 
-Now I'm defining a buffer specific ~window-height~ action attribute only for
-help and apropos buffers, specifying my custom function
-~fit-window-to-buffer-max-half-frame~, which probably may need more tweaking to use less
+Now we're defining a buffer-specific ~window-height~ action attribute only for
+help and apropos buffers, specifying our custom function
+~fit-window-to-buffer-max-half-frame~. This probably needs more tweaking to use less
 than half frame height or also to use height of original window before split.
 
 #+BEGIN_SRC emacs-lisp
@@ -178,6 +184,11 @@ window is easily possible.
 First, some helper functions, setting and removing orig-window markers and
 finding a window with a certain marker.
 
+In ~ielm~, you can show the markers of the current window configuration using
+something like this:
+~(walk-windows (lambda (w)
+    (print (window-parameter w 'orig-window))))~
+
 #+BEGIN_SRC emacs-lisp
 (defun clear-orig-window-marker (marker-or-buffer)
   "remove the given marker or buffer from any windows, so afterwards, no
@@ -189,7 +200,7 @@ window can be found containing this marker."
 
 (defun find-orig-window (marker-or-buffer)
   "find the first window whose `orig-window' parameter is set to the given
-marker or buffer. If no such window is found, return nil.":()
+marker or buffer. If no such window is found, return nil."
   (get-window-with-predicate
    (lambda (w)
      (eq marker-or-buffer
@@ -235,6 +246,22 @@ to default behaviour."
                               (other-window count all-frames))))))
 #+END_SRC
 
+The following functions can be used as display actions. There are two
+functions. First, marking and remembering the originating window when a new
+buffer is opened to display a dired/occur/... window. This action actually
+doesn't select a window for the new buffer, only effecting this side effect.
+Second, for new buffers opened from within dired, occur and so on, actual
+actions selecting the previously marked buffer.
+
+Both functions come in two flavors, the name ~maybe~ signalling that the alist
+is respected when inhibiting usage of same window. The other one
+unconditionally sends the new buffer to the marked window. This way, in
+applications where you can decide whether to open a file in the same or in the
+original window, this decision is respected (in ~dired~, for example, use =f=
+or =RET= to open selected file in same window, =o= or =C-o= to open it in
+other window). If an applications doesn't do this distinction, use the
+function unconditionally selecting the other window.
+
 #+BEGIN_SRC emacs-lisp
 (defun make-buffer-window-origin (buffer alist)
   "use with a regex or matcher to memorize origin window. Then use
@@ -261,6 +288,19 @@ defined, use that to display the buffer."
       (display-buffer-in-orig buffer alist)))
 #+END_SRC
 
+Now that the actions are defined, we need some predicates to select them.
+First, a predicate using a regex to match buffer names. This way, you can
+for example select buffer names beginning with "*Occur" to trigger an action
+when a new occur buffer is opened. This one, actually generating the predicate
+function, can be used in a backquote environment.
+
+#+BEGIN_SRC emacs-lisp
+(defun current-buffer-name-is-p (regex)
+  "Does buffer name match the given regex?"
+  `(lambda (buffer alist)
+     (match-current-buffer ,regex)))
+#+END_SRC
+
 Helper function ~dired-p~ checks if a buffer has some ~dired-mode~. The
 following two predicate functions check if the originating or the new buffer
 is a dired buffer.
@@ -271,17 +311,18 @@ is a dired buffer.
   (let ((mode (with-current-buffer buffer major-mode)))
     (string-match "dired-.*mode" (symbol-name mode))))
 
-(defun dired-to-other-window (buffer alist)
+(defun new-buffer-is-dired-p (buffer alist)
   "match if new buffer is a dired buffer."
   (dired-p buffer))
 
-(defun dired-from-other-window (buffer alist)
+(defun current-window-is-dired-p (buffer alist)
   "match if current buffer is a dired buffer."
   (dired-p (current-buffer)))
 #+END_SRC
 
-So when a ~dired-to-other-window~ matches, we need a function marking the
+So when a ~new-buffer-is-dired-p~ matches, we need a function marking the
 currently selected window as future origin for that new dired window.
+What's the reason for this special variant btw?
 
 #+BEGIN_SRC emacs-lisp
 (defun make-dired-window-origin (buffer alist)
@@ -298,8 +339,7 @@ origin."
       (make-dired-window-origin buffer alist)))
 #+END_SRC
 
-And vice versa, when a ~dired-from-other-window~ matches (this should actually
-be called something like ~from-dired-to-orig-window~), the new buffer should
+And vice versa, when a ~current-window-is-dired-p~ matches, the new buffer should
 be shown in the marked orig window. Besides that, we set up the dired window
 to have the origin as next window (not sure though if this is useful).
 
@@ -527,6 +567,10 @@ jumps and returning with =C-M-c= or =C-]=.
 (nth-window kill-other-buffer-and-window
   "kill buffer in other window and delete that window."
   (kill-buffer-and-window))
+
+(nth-window isearch-forward-other-window
+  "do incremental search forward in other window."
+  (isearch-forward))
 
 (nth-window edit-other-window
   "recursively edit in other buffer, allowing to return later. Save
@@ -1492,6 +1536,7 @@ I'm adding a few ones which I missed so far.
 (global-set-key "\C-x4l" #'go-back-other-window)
 (global-set-key "\C-x4-" #'shrink-other-window-if-larger-than-buffer)
 (global-set-key "\C-x4s" #'dedicate-window)
+(global-set-key "\C-x4\C-s" #'isearch-forward-other-window)
 (global-set-key "\C-x4e" #'edit-other-window)
 (global-set-key "\C-x4k" #'kill-other-buffer-and-window)
 (global-set-key "\C-x40" #'kill-buffer-and-window)
@@ -1963,6 +2008,16 @@ tools mode, which binds =C-c >= as hydra.
 ;;            '(lambda ()
 ;;               (make-local-variable 'write-contents-hooks)
 ;;               (add-hook 'write-contents-hooks 'python-mode-untabify)))
+#+END_SRC
+
+*** realgud debugging
+
+We want to use middle mouse button on a variable to show the containing value.
+On mac, this works only good in combination with some modifier, so we use
+/super/ here.
+
+#+BEGIN_SRC emacs-lisp
+(global-set-key [(s-mouse-2)] #'realgud:tooltip-eval)
 #+END_SRC
 
 *** React programming
