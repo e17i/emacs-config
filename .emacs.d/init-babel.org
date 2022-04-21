@@ -65,28 +65,30 @@ window, this is not an action going back to the dired origin. So all of the
 initiating actions come first.
 
 #+BEGIN_SRC emacs-lisp
-(custom-set-variables
- `(display-buffer-alist
-   '(;; actions initiating a new selection window (so remember the origin)
-     (new-buffer-is-dired-p maybe-make-dired-window-origin)
-     ("\\*Occur\\*" make-buffer-window-origin)
-     ("\\*deadgrep"
-      (make-buffer-window-origin display-buffer-in-previous-window display-buffer-pop-up-window))
-     ;; actions triggered from selection window (going back to the remembered origin)
-     (current-window-is-dired-p
-       (display-buffer-maybe-as-scroll-buffer display-dired-maybe-in-orig))
-     (,(current-buffer-name-is-p "\\\\*Occur\\\\*") display-buffer-in-orig)
-     (,(current-buffer-name-is-p "\\\\*deadgrep") display-buffer-in-orig)
-     ;; other actions
-     ("\\*Help\\*\\|\\*Apropos\\*\\|\\*Python Doc\\*"
-      (display-buffer-as-scroll-buffer display-buffer-dedicated-window display-buffer-reuse-help display-buffer-at-bottom)
-      (window-height . fit-window-to-buffer-max-half-frame))
-     ("\\*ansi"
-      display-buffer-at-bottom)))
- '(display-buffer-base-action
-   '((display-buffer-maybe-as-scroll-buffer display-buffer-dedicated-window display-buffer--maybe-same-window display-buffer-reuse-window display-buffer--maybe-pop-up-frame-or-window display-buffer-in-previous-window display-buffer-below-selected display-buffer-at-bottom display-buffer-pop-up-frame)))
- '(window-min-height 8)
- '(window-min-width 40))
+  (custom-set-variables
+   '(display-buffer-alist
+     '(;; actions initiating a new selection window (so remember the origin)
+       (new-buffer-is-dired-p maybe-make-dired-window-origin)
+       ("\\*Occur\\*" make-buffer-window-origin)
+       ("\\*deadgrep"
+        (make-buffer-window-origin display-buffer-in-previous-window display-buffer-pop-up-window))
+       ;; actions triggered from selection window (going back to the remembered origin)
+       (current-window-is-dired-p
+        (display-buffer-maybe-as-scroll-buffer display-dired-maybe-in-orig))
+       ((lambda (buffer alist)
+          (match-current-buffer "\\\\*Occur\\\\*")) display-buffer-in-orig)
+       ((lambda (buffer alist)
+          (match-current-buffer "\\\\*deadgrep")) display-buffer-in-orig)
+       ;; other actions
+       ("\\*Help\\*\\|\\*Apropos\\*\\|\\*Python Doc\\*"
+        (display-buffer-as-scroll-buffer display-buffer-dedicated-window display-buffer-reuse-help display-buffer-at-bottom)
+        (window-height . fit-window-to-buffer-max-half-frame))
+       ("\\*ansi"
+        display-buffer-at-bottom)))
+   '(display-buffer-base-action
+     '((display-buffer-maybe-as-scroll-buffer display-buffer-dedicated-window display-buffer--maybe-same-window display-buffer-reuse-window display-buffer--maybe-pop-up-frame-or-window display-buffer-in-previous-window display-buffer-below-selected display-buffer-at-bottom display-buffer-pop-up-frame)))
+   '(window-min-height 8)
+   '(window-min-width 40))
 #+END_SRC
 
 As a fallback we add a function to recursively edit with original behaviour.
@@ -1530,6 +1532,8 @@ decorations.
 
 As I got quite used to remote control the other window using =C-x 4= keys, 
 I'm adding a few ones which I missed so far.
+Note emacs 28 adds =1= and =4= to push next buffer into current respective
+into other window.
 
 #+BEGIN_SRC emacs-lisp
 (global-set-key "\C-x4q" #'quit-restore-other-window)
@@ -1539,7 +1543,6 @@ I'm adding a few ones which I missed so far.
 (global-set-key "\C-x4\C-s" #'isearch-forward-other-window)
 (global-set-key "\C-x4e" #'edit-other-window)
 (global-set-key "\C-x4k" #'kill-other-buffer-and-window)
-(global-set-key "\C-x40" #'kill-buffer-and-window)
 #+END_SRC
 
 Note the window size changing keys, =C-x ^= to enlarge (also negative) and
@@ -1716,11 +1719,11 @@ displaying them in the other window.
   (deadgrep-display-result))
 
 (add-hook 'deadgrep-mode-hook
-          '(lambda ()
-             (setq next-error-function #'deadgrep-display-next)
-             ;; (define-key deadgrep-mode-map "\M-g\M-n" #'deadgrep-display-next)
-             ;; (define-key deadgrep-mode-map "\M-g\M-p" #'deadgrep-display-prev)
-             (define-key deadgrep-mode-map "\C-o" #'deadgrep-display-result-other-window)))
+          (lambda ()
+            (setq next-error-function #'deadgrep-display-next)
+            ;; (define-key deadgrep-mode-map "\M-g\M-n" #'deadgrep-display-next)
+            ;; (define-key deadgrep-mode-map "\M-g\M-p" #'deadgrep-display-prev)
+            (define-key deadgrep-mode-map "\C-o" #'deadgrep-display-result-other-window)))
 #+END_SRC
 
 *** org
@@ -1877,17 +1880,16 @@ Now, after Initializing evil, we may probably also activate it in all buffers.
 
 #+BEGIN_SRC emacs-lisp
 (add-hook 'c-mode-common-hook
-          (function
-           (lambda ()
-             (c-toggle-auto-hungry-state 1)
-             (c-set-style "Stroustrup")
-	     (setq c-basic-offset 2)
-             (setq c-hanging-braces-alist '((brace-list-open)
-                                            (brace-list-close after)
-                                            (defun-open after)
-                                            (class-open after)
-                                            (inline-open after)
-                                            (substatement-open after))))))
+          (lambda ()
+            (c-toggle-auto-hungry-state 1)
+            (c-set-style "Stroustrup")
+	    (setq c-basic-offset 2)
+            (setq c-hanging-braces-alist '((brace-list-open)
+                                           (brace-list-close after)
+                                           (defun-open after)
+                                           (class-open after)
+                                           (inline-open after)
+                                           (substatement-open after)))))
 #+END_SRC
 
 *** Auto-fill-mode
@@ -2141,9 +2143,9 @@ Have RET indent like in python mode:
 #+BEGIN_SRC emacs-lisp
 (add-to-list 'auto-mode-alist '("\\.yml\\'" . yaml-mode))
 (add-hook 'yaml-mode-hook
-          '(lambda () (indent-tools-minor-mode))
-          '(lambda ()
-             (define-key yaml-mode-map "\C-m" 'newline-and-indent)))
+          (lambda () (indent-tools-minor-mode))
+          (lambda ()
+            (define-key yaml-mode-map "\C-m" 'newline-and-indent)))
 #+END_SRC
 
 ** Disabled commands
