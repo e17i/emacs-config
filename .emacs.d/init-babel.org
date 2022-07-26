@@ -1630,6 +1630,7 @@ Load and enable different additional packages
 (global-undo-tree-mode)
 ;;(global-magit-file-mode t)
 (which-key-mode 1)  ;; not only for spacemacs..
+(load "lilypond-init.el")  ;; LilyPond-mode
 
 (setq erc-autojoin-channels-alist '(("freenode.net" "#latex-de" "##latinitas" "#NetBSD" "##bash-de" "#git" "#vim" "#emacs" "#erc" "#oberon" "#macosx")))
 (define-key global-map [ns-drag-file] 'ns-find-file)
