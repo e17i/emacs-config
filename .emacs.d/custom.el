@@ -128,6 +128,7 @@
  '(sql-oracle-options (list oracle-startup-script))
  '(svn-status-hide-unmodified t)
  '(tool-bar-mode nil)
+ '(undo-tree-auto-save-history nil)
  '(wdired-allow-to-change-permissions 'advanced)
  '(which-key-idle-delay 2.0)
  '(which-key-idle-secondary-delay 0.5)
