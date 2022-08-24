@@ -1972,14 +1972,17 @@ mode.
 (define-key elpy-mode-map (kbd "<S-tab>") #'elpy-folding-toggle-at-point)
 #+END_SRC
 
-Enable autopep8, but don't activate it on save. However, use =M-g M-n= and
-=M-g M-p= for flycheck next and flycheck previous error, which also show pep8 errors.
+Enable autopep8, but don't activate it on save. 
+Also don't use =M-g M-n= and =M-g M-p= for flycheck next and flycheck previous
+error, because we want to use this to navigate through occurence buffers.
+Instead, remap =M-g n= and =M-g p= to flycheck next and previous error, which
+also show pep8 errors. The flycheck menu can also be found with =C-c !=.
 
 #+BEGIN_SRC emacs-lisp
 (require 'py-autopep8)
 ;;(add-hook 'elpy-mode-hook 'py-autopep8-enable-on-save)
-(define-key elpy-mode-map [remap previous-error] #'flycheck-previous-error)
-(define-key elpy-mode-map [remap next-error] #'flycheck-next-error)
+(define-key elpy-mode-map "\M-gp" #'flycheck-previous-error)
+(define-key elpy-mode-map "\M-gn" #'flycheck-next-error)
 #+END_SRC
 
 elpy makes indentation levels visible columnwise, so we also highlight the
