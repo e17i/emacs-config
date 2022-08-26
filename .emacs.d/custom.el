@@ -29,6 +29,7 @@
  '(elpy-mode-hook '(hl-line-mode flycheck-mode))
  '(elpy-modules
    '(elpy-module-company elpy-module-eldoc elpy-module-folding elpy-module-pyvenv elpy-module-highlight-indentation elpy-module-yasnippet elpy-module-django elpy-module-sane-defaults))
+ '(elpy-rpc-python-command "python2")
  '(evil-default-state 'emacs)
  '(evil-insert-state-modes nil)
  '(evil-motion-state-modes nil)
@@ -112,9 +113,7 @@
      (lambda nil "use superword mode"
        (superword-mode))
      (lambda nil "indent tools minor mode"
-       (indent-tools-minor-mode))
-     (lambda nil "use electric spacing mode"
-       (electric-spacing-mode))) t)
+       (indent-tools-minor-mode))) t)
  '(savehist-mode t nil (savehist))
  '(scroll-bar-mode nil)
  '(select-enable-clipboard t)
