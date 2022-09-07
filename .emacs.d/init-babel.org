@@ -80,7 +80,7 @@ initiating actions come first.
        ((lambda (buffer alist)
           (match-current-buffer "\\\\*deadgrep")) display-buffer-in-orig)
        ;; other actions
-       ("\\*Help\\*\\|\\*Apropos\\*\\|\\*Python Doc\\*"
+       ("\\*Help\\*\\|\\*Apropos\\*\\|\\*Python Doc\\*\\|\\*jedi:doc\\*"
         (display-buffer-as-scroll-buffer display-buffer-dedicated-window display-buffer-reuse-help display-buffer-at-bottom)
         (window-height . fit-window-to-buffer-max-half-frame))
        ("\\*ansi"
