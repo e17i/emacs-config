@@ -79,7 +79,7 @@ emacs org-mode with <a href=\"https://jessekelly881-rethink.surge.sh/\">Rethink<
      ("melpa-stable" . "https://stable.melpa.org/packages/")
      ("melpa" . "https://melpa.org/packages/")))
  '(package-selected-packages
-   '(expand-region indent-tools yaml-mode tagedit undo-tree which-key zzz-to-char htmlize smartparens magit ace-jump-zap helm realgud evil auctex))
+   '(ement mastodon expand-region indent-tools yaml-mode tagedit undo-tree which-key zzz-to-char htmlize smartparens magit ace-jump-zap helm realgud evil auctex))
  '(paren-match-face 'paren-face-match-light)
  '(paren-sexp-mode t)
  '(python-mode-hook
@@ -106,6 +106,8 @@ emacs org-mode with <a href=\"https://jessekelly881-rethink.surge.sh/\">Rethink<
  '(sp-base-key-bindings nil)
  '(tool-bar-mode nil)
  '(tooltip-mode nil)
+ '(undo-tree-auto-save-history nil)
+ '(undo-tree-enable-undo-in-region t)
  '(wdired-allow-to-change-permissions 'advanced)
  '(which-key-idle-delay 2.0)
  '(which-key-idle-secondary-delay 0.5)
