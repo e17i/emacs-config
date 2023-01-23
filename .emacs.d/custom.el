@@ -42,7 +42,10 @@
  '(menu-bar-mode nil)
  '(mouse-drag-and-drop-region t)
  '(mouse-drag-copy-region t)
+ '(mouse-wheel-flip-direction t)
+ '(mouse-wheel-progressive-speed nil)
  '(mouse-wheel-scroll-amount '(1 ((meta) . 3) ((shift) . text-scale)))
+ '(mouse-wheel-tilt-scroll t)
  '(my-env-actions
    '((mouse-wheel-zoom my-wheel-zoom my-env-reset-keymap)
      (mouse-undo mouse-undo my-env-reset-keymap)
@@ -79,7 +82,7 @@ emacs org-mode with <a href=\"https://jessekelly881-rethink.surge.sh/\">Rethink<
      ("melpa-stable" . "https://stable.melpa.org/packages/")
      ("melpa" . "https://melpa.org/packages/")))
  '(package-selected-packages
-   '(ement mastodon expand-region indent-tools yaml-mode tagedit undo-tree which-key zzz-to-char htmlize smartparens magit ace-jump-zap helm realgud evil auctex))
+   '(nameless ement mastodon expand-region indent-tools yaml-mode tagedit undo-tree which-key zzz-to-char htmlize smartparens magit ace-jump-zap helm realgud evil auctex))
  '(paren-match-face 'paren-face-match-light)
  '(paren-sexp-mode t)
  '(python-mode-hook
