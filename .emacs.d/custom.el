@@ -33,7 +33,7 @@
  '(exec-path '("/usr/bin" "/bin" "/usr/sbin" "/sbin" "/usr/pkg/bin"))
  '(frame-auto-hide-function #'delete-frame)
  '(fringe-mode 0 nil (fringe))
- '(gud-mixvm-command-name "/opt/local/bin/mixvm")
+ '(help-buffer-regex "\\*Help\\*\\|\\*Apropos\\*\\|\\*Python Doc\\*\\|\\*jedi:doc\\*")
  '(hippie-expand-verbose nil)
  '(history-delete-duplicates t)
  '(indent-tabs-mode nil)

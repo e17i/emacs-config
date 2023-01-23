@@ -80,7 +80,7 @@ initiating actions come first.
        ((lambda (buffer alist)
           (match-current-buffer "\\\\*deadgrep")) display-buffer-in-orig)
        ;; other actions
-       ("\\*Help\\*\\|\\*Apropos\\*\\|\\*Python Doc\\*"
+       ("\\*Help\\*\\|\\*Apropos\\*\\|\\*Python Doc\\*\\|\\*jedi:doc\\*"
         (display-buffer-as-scroll-buffer display-buffer-dedicated-window display-buffer-reuse-help display-buffer-at-bottom)
         (window-height . fit-window-to-buffer-max-half-frame))
        ("\\*ansi"
@@ -1994,12 +1994,28 @@ We want to use flycheck in python.
 #+END_SRC
 
 ~elpy-mode~ defines a bunch of useful support functions for navigating and
-indenting in python buffers. Notably =C-c C-d= documentation for item under
+indenting in python buffers.
+
+**** (Re-)Installing venv
+
+First, make sure to set custom variables like ~elpy-rpc-python-command~ to
+appropriate values. When resetting them, probably also remove the virtual env
+directory in ~.emacs.d/elpy/rpc-venv~. Afterwards, use
+~elpy-rpc-reinstall-virtualenv~ to regenerate it. This is used e.g. for
+finding documentation and object definitions. See also ~elpy-rpc-restart~ and
+~jedi:install-server~ etc.
+
+**** Using elpy
+
+Use =C-c C-d= for documentation for item under
 point, =M-.= jump to definition of item under cursor, =M-*= pop back to where
 =M-.= was last invoked, =C-c C-o= show all python definitions of current
 buffer in occur view, =C-c C-z= switch to python shell.
 For this, set ~python-shell-interpreter~ to path of buildout powerscript exe and
 ~python-shell-interpreter-args~ to "" (see custom).
+Also see the elpy refactoring methods, like =C-c C-e= for multi-editing symbol
+under point (change name and it is simultaneously changed in all occurences).
+
 Also worth to remember the company backend completion on =C-M-i=.
 
 Note: ~elpy-enable~ adds to ~python-mode-hook~ only on first call. So if you
@@ -2047,14 +2063,17 @@ mode.
 ; (define-key elpy-mode-map (kbd "<S-tab>") #'elpy-folding-toggle-at-point) ; not yet installed
 #+END_SRC
 
-Enable autopep8, but don't activate it on save. However, use =M-g M-n= and
-=M-g M-p= for flycheck next and flycheck previous error, which also show pep8 errors.
+Enable autopep8, but don't activate it on save. 
+Also don't use =M-g M-n= and =M-g M-p= for flycheck next and flycheck previous
+error, because we want to use this to navigate through occurence buffers.
+Instead, remap =M-g n= and =M-g p= to flycheck next and previous error, which
+also show pep8 errors. The flycheck menu can also be found with =C-c !=.
 
 #+BEGIN_SRC emacs-lisp
 ; (require 'py-autopep8) ; not yet installed
 ;;(add-hook 'elpy-mode-hook 'py-autopep8-enable-on-save)
-;; (define-key elpy-mode-map [remap previous-error] #'flycheck-previous-error) ; not yet installed
-;; (define-key elpy-mode-map [remap next-error] #'flycheck-next-error)
+;; (define-key elpy-mode-map "\M-gp" #'flycheck-previous-error) ; not yet installed
+;; (define-key elpy-mode-map "\M-gn" #'flycheck-next-error)
 #+END_SRC
 
 elpy makes indentation levels visible columnwise, so we also highlight the
