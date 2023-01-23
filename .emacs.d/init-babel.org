@@ -1761,6 +1761,17 @@ displaying them in the other window.
 #+END_SRC
 
 *** org
+
+The well known template mechanism =<s TAB= has been replaced by a
+mechanism based on the tempo package. This is activated by
+
+#+begin_src emacs-lisp
+(require 'org-tempo)
+#+end_src
+
+Besides that, =C-c C-,= can be used to insert structure templates,
+which also works with regions.
+
 **** org present
 
 Org present presents each top level element as a page. It only has a few
