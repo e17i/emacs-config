@@ -1151,7 +1151,7 @@ a default N id and no actions."
 
 (defun my-env-remove-map (kmap)
   "Use this function in your exit action definitions to remove sparse keymaps from the current environment."
-  (setq my-env-maps (remote-if (lambda (elem)
+  (setq my-env-maps (remove-if (lambda (elem)
                                  (eq elem kmap))
                                my-env-maps)))
 
@@ -1612,7 +1612,7 @@ Load and enable different additional packages
 (load-library "evil")
 (require 'wdired)  ;; edit dired buffers with C-x C-q
 (load "dired-x.el") ;; also enable dired-jump with C-x C-j
-(require 'helm-config)
+;(require 'helm-config)
 (require 'ox-rst)
 (require 'yaml-mode)
 (global-undo-tree-mode)
