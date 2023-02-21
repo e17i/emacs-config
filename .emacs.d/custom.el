@@ -42,7 +42,8 @@
       (background light))
      (:background "grey50"))))
  '(fringe-mode 0 nil (fringe))
- '(help-buffer-regex "\\*Help\\*\\|\\*Apropos\\*\\|\\*Python Doc\\*\\|\\*jedi:doc\\*")
+ '(help-buffer-regex
+   "\\*Help\\*\\|\\*Apropos\\*\\|\\*Python Doc\\*\\|\\*jedi:doc\\*")
  '(hippie-expand-verbose nil)
  '(history-delete-duplicates t)
  '(indent-tabs-mode nil)
@@ -71,6 +72,7 @@
  '(my-frame-stylings
    '(frame-width-below-threshold frame-height-dec frame-to-top))
  '(my-frame-transparency 92)
+ '(native-comp-async-report-warnings-errors 'silent)
  '(ns-alternate-modifier 'meta)
  '(ns-command-modifier 'super)
  '(ns-control-modifier 'control)
@@ -87,7 +89,7 @@
      ("melpa-stable" . "https://stable.melpa.org/packages/")
      ("melpa" . "https://melpa.org/packages/")))
  '(package-selected-packages
-   '(expand-region hide-mode-line org-present epresent yaml-mode indent-tools solarized-theme deadgrep use-package which-key smartparens tagedit ob-restclient company-restclient restclient py-autopep8 flycheck elpy company-jedi json-mode jedi-direx jedi ox-rst magit zzz-to-char ace-jump-mode helm realgud evil markdown-mode cider web-mode org-plus-contrib js2-mode electric-spacing auctex))
+   '(org expand-region hide-mode-line org-present epresent yaml-mode indent-tools solarized-theme deadgrep use-package which-key smartparens tagedit ob-restclient company-restclient restclient py-autopep8 flycheck elpy company-jedi json-mode jedi-direx jedi ox-rst magit zzz-to-char ace-jump-mode helm realgud evil markdown-mode cider web-mode js2-mode electric-spacing auctex))
  '(python-mode-hook
    '((lambda nil "Turn off Indent Tabs mode."
        (setq indent-tabs-mode nil))
@@ -103,6 +105,7 @@
        (electric-spacing-mode))) t)
  '(savehist-mode t nil (savehist))
  '(scroll-bar-mode nil)
+ '(scroll-conservatively 3)
  '(select-enable-clipboard t)
  '(sentence-end-double-space nil)
  '(server-mode t)
