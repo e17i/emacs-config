@@ -33,7 +33,8 @@
  '(exec-path '("/usr/bin" "/bin" "/usr/sbin" "/sbin" "/usr/pkg/bin"))
  '(frame-auto-hide-function #'delete-frame)
  '(fringe-mode 0 nil (fringe))
- '(help-buffer-regex "\\*Help\\*\\|\\*Apropos\\*\\|\\*Python Doc\\*\\|\\*jedi:doc\\*")
+ '(help-buffer-regex
+   "\\*Help\\*\\|\\*Apropos\\*\\|\\*Python Doc\\*\\|\\*jedi:doc\\*")
  '(hippie-expand-verbose nil)
  '(history-delete-duplicates t)
  '(indent-tabs-mode nil)
@@ -100,6 +101,7 @@ emacs org-mode with <a href=\"https://jessekelly881-rethink.surge.sh/\">Rethink<
        (electric-spacing-mode))) t)
  '(savehist-mode t nil (savehist))
  '(scroll-bar-mode nil)
+ '(scroll-conservatively 3)
  '(select-enable-clipboard t)
  '(sentence-end-double-space nil)
  '(server-mode t)

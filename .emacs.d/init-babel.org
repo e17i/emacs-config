@@ -1151,7 +1151,7 @@ a default N id and no actions."
 
 (defun my-env-remove-map (kmap)
   "Use this function in your exit action definitions to remove sparse keymaps from the current environment."
-  (setq my-env-maps (remote-if (lambda (elem)
+  (setq my-env-maps (remove-if (lambda (elem)
                                  (eq elem kmap))
                                my-env-maps)))
 
@@ -1624,11 +1624,13 @@ Load and enable different additional packages
 (load-library "evil")
 (require 'wdired)  ;; edit dired buffers with C-x C-q
 (load "dired-x.el") ;; also enable dired-jump with C-x C-j
-(require 'helm-config)
 ;; (require 'ox-rst) ; not yet installed
 (require 'yaml-mode)
 (global-undo-tree-mode)
-;;(global-magit-file-mode t)
+
+(add-hook 'emacs-lisp-mode-hook #'nameless-mode)
+(add-hook 'org-mode-hook #'nameless-mode)
+
 (which-key-mode 1)  ;; not only for spacemacs..
 (load "lilypond-init.el")  ;; LilyPond-mode
 
