@@ -64,6 +64,7 @@
  '(my-env-actions
    '((mouse-wheel-zoom my-wheel-zoom my-env-reset-keymap)
      (mouse-undo mouse-undo my-env-reset-keymap)
+     (mouse-yank mac-mouse-yank my-env-reset-keymap)
      (german-kbd activate-german-keymap my-env-reset-keymap)
      (apple-kbd on-apple-keyboard ignore)
      (pc-kbd on-pc-keyboard ignore)
@@ -74,7 +75,7 @@
         (display-battery-mode 0)))))
  '(my-env-definitions
    '((68
-      (mouse-wheel-zoom pc-kbd mouse-undo))
+      (mouse-wheel-zoom pc-kbd mouse-undo mouse-yank))
      (77
       (german-kbd apple-kbd battery))))
  '(my-environment-mode t)
