@@ -50,19 +50,11 @@
  '(my-env-actions
    '((mouse-wheel-zoom my-wheel-zoom my-env-reset-keymap)
      (mouse-undo mouse-undo my-env-reset-keymap)
+     (mouse-yank mac-mouse-yank my-env-reset-keymap)
      (german-kbd activate-german-keymap my-env-reset-keymap)
      (apple-kbd on-apple-keyboard ignore)
-     (pc-kbd on-pc-keyboard ignore)
-     (battery
-      (lambda nil
-        (display-battery-mode 1))
-      (lambda nil
-        (display-battery-mode 0)))))
- '(my-env-definitions
-   '((68
-      (mouse-wheel-zoom pc-kbd mouse-undo))
-     (77
-      (german-kbd apple-kbd battery))))
+     (pc-kbd on-pc-keyboard ignore)))
+ '(my-env-definitions '((68 (mouse-undo mouse-yank)) (77 (german-kbd))))
  '(my-environment-mode t)
  '(my-frame-background "NavajoWhite3")
  '(my-frame-foreground "Black")
@@ -83,7 +75,7 @@ emacs org-mode with <a href=\"https://jessekelly881-rethink.surge.sh/\">Rethink<
      ("melpa-stable" . "https://stable.melpa.org/packages/")
      ("melpa" . "https://melpa.org/packages/")))
  '(package-selected-packages
-   '(nameless ement mastodon expand-region indent-tools yaml-mode tagedit undo-tree which-key zzz-to-char htmlize smartparens magit ace-jump-zap helm realgud evil auctex))
+   '(exwm nameless ement mastodon expand-region indent-tools yaml-mode tagedit undo-tree which-key zzz-to-char htmlize smartparens magit ace-jump-zap helm realgud evil auctex))
  '(paren-match-face 'paren-face-match-light)
  '(paren-sexp-mode t)
  '(python-mode-hook
@@ -101,7 +93,7 @@ emacs org-mode with <a href=\"https://jessekelly881-rethink.surge.sh/\">Rethink<
        (electric-spacing-mode))) t)
  '(savehist-mode t nil (savehist))
  '(scroll-bar-mode nil)
- '(scroll-conservatively 3)
+ '(scroll-conservatively 6)
  '(select-enable-clipboard t)
  '(sentence-end-double-space nil)
  '(server-mode t)
