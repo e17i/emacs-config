@@ -8,6 +8,7 @@
 
 (setq org-element-use-cache nil)  ;; temporarily disable org element cache
 (org-babel-load-file "~/.emacs.d/init-babel.org")
+(load-file (native-compile "~/.emacs.d/init-babel.el"))
 
 (load custom-file)  ;; load cust after babel
 (elpy-reenable)  ;; call this after load custom-file
