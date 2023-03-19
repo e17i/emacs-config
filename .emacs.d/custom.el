@@ -37,6 +37,8 @@
  '(frame-auto-hide-function #'delete-frame)
  '(fringe-mode 0 nil (fringe))
  '(gud-mixvm-command-name "/opt/local/bin/mixvm")
+ '(help-buffer-regex
+   "\\*Help\\*\\|\\*Apropos\\*\\|\\*Python Doc\\*\\|\\*jedi:doc\\*")
  '(hippie-expand-verbose nil)
  '(history-delete-duplicates t)
  '(indent-tabs-mode nil)
@@ -100,6 +102,7 @@
        (electric-spacing-mode))) t)
  '(savehist-mode t nil (savehist))
  '(scroll-bar-mode nil)
+ '(scroll-conservatively 3)
  '(select-enable-clipboard t)
  '(sentence-end-double-space nil)
  '(server-mode t)
