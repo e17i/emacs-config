@@ -12,47 +12,32 @@
  '(default-input-method "german-postfix")
  '(delete-selection-mode t)
  '(dired-dwim-target t)
- '(dired-recursive-deletes (quote top))
+ '(dired-recursive-deletes 'top)
  '(dynamic-completion-mode nil)
- '(ediff-before-setup-hook
-   (quote
-    ((lambda nil
-       (window-configuration-to-register 101)))))
- '(ediff-quit-hook
-   (quote
-    (ediff-cleanup-mess
-     (lambda nil
-       (jump-to-register 101)))))
- '(ediff-split-window-function (quote split-window-horizontally))
+ '(ediff-before-setup-hook '((lambda nil (window-configuration-to-register 101))))
+ '(ediff-quit-hook '(ediff-cleanup-mess (lambda nil (jump-to-register 101))))
+ '(ediff-split-window-function 'split-window-horizontally)
  '(ediff-suspend-hook
-   (quote
-    (ediff-default-suspend-function
+   '(ediff-default-suspend-function
      (lambda nil
-       (jump-to-register 101)))))
- '(ediff-window-setup-function (quote ediff-setup-windows-plain))
- '(elpy-mode-hook (quote (hl-line-mode flycheck-mode)))
+       (jump-to-register 101))))
+ '(ediff-window-setup-function 'ediff-setup-windows-plain)
+ '(elpy-mode-hook '(hl-line-mode flycheck-mode))
  '(elpy-modules
-   (quote
-    (elpy-module-company elpy-module-eldoc elpy-module-folding elpy-module-pyvenv elpy-module-highlight-indentation elpy-module-yasnippet elpy-module-django elpy-module-sane-defaults)))
- '(evil-default-state (quote emacs))
+   '(elpy-module-company elpy-module-eldoc elpy-module-folding elpy-module-pyvenv elpy-module-highlight-indentation elpy-module-yasnippet elpy-module-django elpy-module-sane-defaults))
+ '(evil-default-state 'emacs)
  '(evil-insert-state-modes nil)
  '(evil-motion-state-modes nil)
  '(fill-column 78)
- '(frame-auto-hide-function (function delete-frame))
+ '(frame-auto-hide-function #'delete-frame)
  '(frame-icon-title-format
-   (quote
-    (((quote buffer-name)
-      "%b")
+   '(('buffer-name "%b")
      " || " system-name " || "
-     ((quote buffer-name)
-      "%f"))))
+     ('buffer-name "%f")))
  '(frame-title-format
-   (quote
-    (((quote buffer-name)
-      "%b")
+   '(('buffer-name "%b")
      " || " system-name " || "
-     ((quote buffer-name)
-      "%f"))) t)
+     ('buffer-name "%f")) t)
  '(fringe
    ((((class color)
       (background light))
@@ -68,10 +53,9 @@
  '(menu-bar-mode nil)
  '(mouse-drag-and-drop-region t)
  '(mouse-drag-copy-region t)
- '(mouse-wheel-scroll-amount (quote (1 ((meta) . 3) ((shift) . text-scale))))
+ '(mouse-wheel-scroll-amount '(1 ((meta) . 3) ((shift) . text-scale)))
  '(my-env-actions
-   (quote
-    ((mouse-wheel-zoom my-x11-wheel-zoom my-env-reset-keymap)
+   '((mouse-wheel-zoom my-x11-wheel-zoom my-env-reset-keymap)
      (mac-mouse-yank mac-mouse-yank my-env-reset-keymap)
      (mouse-undo mouse-undo my-env-reset-keymap)
      (german-kbd activate-german-keymap my-env-reset-keymap)
@@ -81,17 +65,15 @@
       (lambda nil
         (display-battery-mode 1))
       (lambda nil
-        (display-battery-mode 0))))))
+        (display-battery-mode 0)))))
  '(my-env-definitions
-   (quote
-    ((68
+   '((68
       (mouse-wheel-zoom pc-kbd mouse-undo mac-mouse-yank))
      (77
-      (german-kbd apple-kbd)))))
+      (german-kbd apple-kbd))))
  '(my-environment-mode t)
  '(my-frame-stylings
-   (quote
-    (frame-to-top-x11 frame-width-dec frame-height-dec-two frame-width-dec)))
+   '(frame-to-top frame-to-right frame-width-below-threshold frame-height-dec-two))
  '(my-frame-transparency 100)
  '(nxml-sexp-element-flag t)
  '(org-agenda-files nil)
@@ -99,16 +81,13 @@
  '(org-goto-auto-isearch nil)
  '(org-src-preserve-indentation t)
  '(package-archives
-   (quote
-    (("gnu" . "http://elpa.gnu.org/packages/")
+   '(("gnu" . "http://elpa.gnu.org/packages/")
      ("melpa-stable" . "https://stable.melpa.org/packages/")
-     ("melpa" . "https://melpa.org/packages/"))))
+     ("melpa" . "https://melpa.org/packages/")))
  '(package-selected-packages
-   (quote
-    (lsp-python-ms company-lsp lsp-ui lsp-pyright expand-region yaml-mode indent-tools solarized-theme deadgrep undo-tree which-key smartparens tagedit ob-restclient company-restclient restclient py-autopep8 flycheck elpy company-jedi json-mode jedi-direx jedi ox-rst magit zzz-to-char ace-jump-mode helm realgud evil markdown-mode cider web-mode org-plus-contrib js2-mode electric-spacing auctex)))
+   '(nameless lsp-python-ms company-lsp lsp-ui lsp-pyright expand-region yaml-mode indent-tools solarized-theme deadgrep undo-tree which-key smartparens tagedit ob-restclient company-restclient restclient py-autopep8 flycheck elpy company-jedi json-mode jedi-direx jedi ox-rst magit zzz-to-char ace-jump-mode helm realgud evil markdown-mode cider web-mode org-plus-contrib js2-mode electric-spacing auctex))
  '(python-mode-hook
-   (quote
-    ((lambda nil "Turn off Indent Tabs mode."
+   '((lambda nil "Turn off Indent Tabs mode."
        (setq indent-tabs-mode nil))
      (lambda nil "highlight current column"
        (highlight-indentation-current-column-mode))
@@ -119,7 +98,7 @@
      (lambda nil "indent tools minor mode"
        (indent-tools-minor-mode))
      (lambda nil "use electric spacing mode"
-       (electric-spacing-mode)))) t)
+       (electric-spacing-mode))) t)
  '(savehist-mode t nil (savehist))
  '(scroll-bar-mode nil)
  '(scroll-conservatively 3)
@@ -134,7 +113,8 @@
  '(sql-oracle-options (list oracle-startup-script))
  '(svn-status-hide-unmodified t)
  '(tool-bar-mode nil)
- '(wdired-allow-to-change-permissions (quote advanced))
+ '(undo-tree-auto-save-history nil)
+ '(wdired-allow-to-change-permissions 'advanced)
  '(which-key-idle-delay 2.0)
  '(which-key-idle-secondary-delay 0.5)
  '(window-min-height 8)
