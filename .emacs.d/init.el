@@ -4,6 +4,7 @@
 ;; You may delete these explanatory comments.
 (package-initialize)
 
+(push "~/.emacs.d/lisp" load-path)
 (setq custom-file "~/.emacs.d/custom.el")
 
 (setq org-element-use-cache nil)  ;; temporarily disable org element cache
