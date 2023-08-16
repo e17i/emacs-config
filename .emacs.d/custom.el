@@ -27,6 +27,7 @@
  '(elpy-mode-hook '(hl-line-mode flycheck-mode))
  '(elpy-modules
    '(elpy-module-company elpy-module-eldoc elpy-module-folding elpy-module-pyvenv elpy-module-highlight-indentation elpy-module-yasnippet elpy-module-django elpy-module-sane-defaults))
+ '(elpy-rpc-virtualenv-path 'default)
  '(evil-default-state 'emacs)
  '(evil-insert-state-modes nil)
  '(evil-motion-state-modes nil)
@@ -62,7 +63,7 @@
  '(my-frame-transparency 85)
  '(nxml-sexp-element-flag t)
  '(org-agenda-files nil)
- '(org-babel-python-command "python2")
+ '(org-babel-python-command "python")
  '(org-goto-auto-isearch nil)
  '(org-html-postamble t)
  '(org-html-postamble-format
@@ -78,6 +79,8 @@ emacs org-mode with <a href=\"https://jessekelly881-rethink.surge.sh/\">Rethink<
    '(jedi py-autopep8 elpy flycheck exwm nameless ement mastodon expand-region indent-tools yaml-mode tagedit undo-tree which-key zzz-to-char htmlize smartparens magit ace-jump-zap helm realgud evil auctex))
  '(paren-match-face 'paren-face-match-light)
  '(paren-sexp-mode t)
+ '(python-environment-virtualenv
+   '("~joergk/.local/bin/virtualenv" "--system-site-packages" "--quiet"))
  '(python-mode-hook
    '((lambda nil "Turn off Indent Tabs mode."
        (setq indent-tabs-mode nil))
@@ -89,6 +92,7 @@ emacs org-mode with <a href=\"https://jessekelly881-rethink.surge.sh/\">Rethink<
        (superword-mode))
      (lambda nil "indent tools minor mode"
        (indent-tools-minor-mode))) t)
+ '(python-shell-interpreter "python3.11")
  '(savehist-mode t nil (savehist))
  '(scroll-bar-mode nil)
  '(scroll-conservatively 6)

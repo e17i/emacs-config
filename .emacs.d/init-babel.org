@@ -2094,7 +2094,7 @@ current line of point.
 As this is not only for python, currently enabled only in customize.
 
 #+BEGIN_SRC emacs-lisp
-(global-hl-line-mode)
+;; (global-hl-line-mode)
 #+END_SRC
 
 The untabify-function defined here is disabled. Instead, we use custom
