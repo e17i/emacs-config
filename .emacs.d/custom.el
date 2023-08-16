@@ -127,7 +127,7 @@ emacs org-mode with <a href=\"https://jessekelly881-rethink.surge.sh/\">Rethink<
  '(ediff-odd-diff-B ((t (:background "purple3"))))
  '(ediff-odd-diff-C ((t (:background "purple4"))))
  '(fringe ((((class color) (background light)) (:background "grey50"))))
- '(highlight-indentation-current-column-face ((t (:background "gray25"))))
- '(highlight-indentation-face ((t (:background "gray12")))))
+ '(highlight-indentation-current-column-face ((t (:background "NavajoWhite5"))))
+ '(highlight-indentation-face ((t (:background "NavajoWhite4")))))
 ;; '(package-selected-packages
 ;;   '(smartparens tagedit ob-restclient company-restclient restclient py-autopep8 flycheck elpy company-jedi json-mode jedi-direx jedi ox-rst magit zzz-to-char ace-jump-mode helm realgud evil markdown-mode cider web-mode org-plus-contrib js2-mode electric-spacing auctex))
