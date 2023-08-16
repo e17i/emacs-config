@@ -75,7 +75,7 @@ emacs org-mode with <a href=\"https://jessekelly881-rethink.surge.sh/\">Rethink<
      ("melpa-stable" . "https://stable.melpa.org/packages/")
      ("melpa" . "https://melpa.org/packages/")))
  '(package-selected-packages
-   '(exwm nameless ement mastodon expand-region indent-tools yaml-mode tagedit undo-tree which-key zzz-to-char htmlize smartparens magit ace-jump-zap helm realgud evil auctex))
+   '(jedi py-autopep8 elpy flycheck exwm nameless ement mastodon expand-region indent-tools yaml-mode tagedit undo-tree which-key zzz-to-char htmlize smartparens magit ace-jump-zap helm realgud evil auctex))
  '(paren-match-face 'paren-face-match-light)
  '(paren-sexp-mode t)
  '(python-mode-hook
@@ -88,9 +88,7 @@ emacs org-mode with <a href=\"https://jessekelly881-rethink.surge.sh/\">Rethink<
      (lambda nil "use superword mode"
        (superword-mode))
      (lambda nil "indent tools minor mode"
-       (indent-tools-minor-mode))
-     (lambda nil "use electric spacing mode"
-       (electric-spacing-mode))) t)
+       (indent-tools-minor-mode))) t)
  '(savehist-mode t nil (savehist))
  '(scroll-bar-mode nil)
  '(scroll-conservatively 6)

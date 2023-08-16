@@ -2003,7 +2003,7 @@ We use hippie-expand mapped to =M-/=
 We want to use flycheck in python.
 
 #+BEGIN_SRC emacs-lisp
-;; (require 'flycheck) ; not yet installed
+(require 'flycheck)
 #+END_SRC
 
 ~elpy-mode~ defines a bunch of useful support functions for navigating and
@@ -2040,13 +2040,13 @@ Because of this, provision of a function to reenable it after reloading
 ~custom.el~.
 
 #+BEGIN_SRC emacs-lisp
-;; (elpy-enable)  not yet installed
+(elpy-enable)
 
 (defun elpy-reenable ()
   "make sure elpy is put into `python-mode-hook'."
-  (interactive))
-  ;; (setq elpy-enabled-p nil)  not yet installed
-  ;; (elpy-enable))
+  (interactive)
+  (setq elpy-enabled-p nil)
+  (elpy-enable))
 #+END_SRC
 
 To navigate using more convenient keys, we put the block navigation moves
@@ -2057,14 +2057,14 @@ Also the python indentation functions (=C-c <= and =C-c >=) are remapped to
 elpy. The =M-i= and =M-I= bindings first have to prove themselves.
 
 #+BEGIN_SRC emacs-lisp
-;; (define-key elpy-mode-map "\C-\M-p" #'elpy-nav-backward-block) ; not yet installed
-;; (define-key elpy-mode-map "\C-\M-n" #'elpy-nav-forward-block)
-;; (define-key elpy-mode-map "\C-\M-f" #'elpy-nav-forward-indent)
-;; (define-key elpy-mode-map "\C-\M-b" #'elpy-nav-backward-indent)
-;; (define-key elpy-mode-map "\M-i" #'elpy-nav-indent-shift-right)
-;; (define-key elpy-mode-map "\M-I" #'elpy-nav-indent-shift-left)
-;; (define-key elpy-mode-map [remap python-indent-shift-right] #'elpy-nav-indent-shift-right)
-;; (define-key elpy-mode-map [remap python-indent-shift-left] #'elpy-nav-indent-shift-left)
+(define-key elpy-mode-map "\C-\M-p" #'elpy-nav-backward-block)
+(define-key elpy-mode-map "\C-\M-n" #'elpy-nav-forward-block)
+(define-key elpy-mode-map "\C-\M-f" #'elpy-nav-forward-indent)
+(define-key elpy-mode-map "\C-\M-b" #'elpy-nav-backward-indent)
+(define-key elpy-mode-map "\M-i" #'elpy-nav-indent-shift-right)
+(define-key elpy-mode-map "\M-I" #'elpy-nav-indent-shift-left)
+(define-key elpy-mode-map [remap python-indent-shift-right] #'elpy-nav-indent-shift-right)
+(define-key elpy-mode-map [remap python-indent-shift-left] #'elpy-nav-indent-shift-left)
 #+END_SRC
 
 The visibility toggling is on completely brain damaged keys, so we put at
@@ -2073,7 +2073,7 @@ mode.
 
 #+BEGIN_SRC emacs-lisp
 ;; (w32-register-hot-key (kbd "<M-tab>")) ; example of hot key override, but not practical
-; (define-key elpy-mode-map (kbd "<S-tab>") #'elpy-folding-toggle-at-point) ; not yet installed
+(define-key elpy-mode-map (kbd "<S-tab>") #'elpy-folding-toggle-at-point)
 #+END_SRC
 
 Enable autopep8, but don't activate it on save. 
@@ -2083,10 +2083,10 @@ Instead, remap =M-g n= and =M-g p= to flycheck next and previous error, which
 also show pep8 errors. The flycheck menu can also be found with =C-c !=.
 
 #+BEGIN_SRC emacs-lisp
-; (require 'py-autopep8) ; not yet installed
-;;(add-hook 'elpy-mode-hook 'py-autopep8-enable-on-save)
-;; (define-key elpy-mode-map "\M-gp" #'flycheck-previous-error) ; not yet installed
-;; (define-key elpy-mode-map "\M-gn" #'flycheck-next-error)
+(require 'py-autopep8)
+(add-hook 'elpy-mode-hook 'py-autopep8-enable-on-save)
+(define-key elpy-mode-map "\M-gp" #'flycheck-previous-error)
+(define-key elpy-mode-map "\M-gn" #'flycheck-next-error)
 #+END_SRC
 
 elpy makes indentation levels visible columnwise, so we also highlight the
@@ -2094,7 +2094,7 @@ current line of point.
 As this is not only for python, currently enabled only in customize.
 
 #+BEGIN_SRC emacs-lisp
-;; (global-hl-line-mode)
+(global-hl-line-mode)
 #+END_SRC
 
 The untabify-function defined here is disabled. Instead, we use custom
