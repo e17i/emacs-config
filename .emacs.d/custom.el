@@ -62,10 +62,11 @@
       (lambda nil
         (display-battery-mode 1))
       (lambda nil
-        (display-battery-mode 0)))))
+        (display-battery-mode 0)))
+     (use-super-as-ctl-x use-super-as-ctl-x ignore)))
  '(my-env-definitions
    '((68
-      (mouse-wheel-zoom pc-kbd  mouse-undo))
+      (mouse-wheel-zoom pc-kbd mouse-undo mouse-yank use-super-as-ctl-x))
      (77
       (german-kbd apple-kbd battery))))
  '(my-environment-mode t)
