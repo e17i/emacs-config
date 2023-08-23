@@ -1556,6 +1556,7 @@ We also want to jump to beginning/end in other window by =C-M-<= and =C-M->=
 (cf. =C-M-v= and =C-M-V= to scroll pagewise in other window).
 
 #+BEGIN_SRC emacs-lisp
+(global-set-key "\221" 'quit-restore-other-window)
 (global-set-key [201326652] #'beginning-of-other-window)
 (global-set-key [201326654] #'end-of-other-window)
 (global-set-key "\C-x4<" #'beginning-of-other-window)
@@ -1612,12 +1613,9 @@ Load and enable different additional packages
 (load-library "evil")
 (require 'wdired)  ;; edit dired buffers with C-x C-q
 (load "dired-x.el") ;; also enable dired-jump with C-x C-j
-;(require 'helm-config)
 (require 'ox-rst)
 (require 'yaml-mode)
 (global-undo-tree-mode)
-;;(global-magit-file-mode t)
-(setq erc-autojoin-channels-alist '(("freenode.net" "#latex-de" "##latinitas" "#NetBSD" "##bash-de" "#git" "#vim" "#emacs" "#erc" "#oberon" "#macosx")))
 (which-key-mode 1)  ;; not only for spacemacs..
 #+END_SRC
 
