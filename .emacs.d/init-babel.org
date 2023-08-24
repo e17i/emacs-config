@@ -1369,9 +1369,13 @@ words. When combined with /Shift/, navigates to the end/beginning of words.
 (global-set-key "\M-p" #'previous-logical-line)
 (global-set-key "\M-n" #'next-logical-line)
 (global-set-key "\M-P" #'scroll-down-line)
+(global-set-key (kbd "M-s-p") #'scroll-down-line)
 (global-set-key "\M-N" #'scroll-up-line)
+(global-set-key (kbd "M-s-n") #'scroll-up-line)
 (global-set-key "\M-F" #'forward-to-word)
+(global-set-key (kbd "M-s-f") #'forward-to-word)
 (global-set-key "\M-B" #'backward-to-word)
+(global-set-key (kbd "M-s-b") #'backward-to-word)
 (global-set-key [end] #'move-end-of-line)
 (global-set-key [home] #'move-beginning-of-line)
 #+END_SRC
@@ -1513,100 +1517,117 @@ used as /AltGr/.
 
 The idea is to use /super/ instead of =C-x=. Especially for combinations
 whose second key doesn't want a /Control/ modifier, this might be a saver of
-keystrokes. So instead of pressing =C-x z=, you just hold /super/ and
-repeatedly press =z=.
+keystrokes. So instead of pressing =C-x o=, you just hold /super/ and
+repeatedly press =o= to iterate through windows. For this application, we also
+bind =s--= to ~negative-argument~, allowing us to easily go backwards through
+the window list.
+
+Also, combinations that were not practical before can be used now. For
+example, a combination like =C-x M-g=, which involves changing the modifiers,
+violates the usage patterns. But, when using /super/ instead, it translates to
+=M-s-g= which is completely viable. This way, a complete set of combinations
+with modifier sets =M-s= and =C-M-s=, which are almost unused so far, is now
+easily reachable.
 
 #+begin_src emacs-lisp
 (defun use-super-as-ctl-x ()
-  (keymap-global-set "s-@" #'pop-global-mark)
-  (keymap-global-set "C-s-b" #'bs-show)
-  (keymap-global-set "C-s-d" #'list-directory)
-  (keymap-global-set "C-s-e" #'eval-last-sexp)
-  (keymap-global-set "C-s-f" #'find-file)
-  (keymap-global-set "C-s-i" #'indent-rigidly)
-  (keymap-global-set "C-s-j" #'dired-jump)
-  (keymap-global-set "C-s-k" #'kmacro-keymap)
-  (keymap-global-set "C-s-k k" #'kmacro-end-or-call-macro)
-  (keymap-global-set "C-s-l" #'downcase-region)
-  (keymap-global-set "C-s-m" (keymap-global-lookup "C-x C-m"))
-  (keymap-global-set "C-s-n" #'set-goal-column)
-  (keymap-global-set "C-s-o" #'delete-blank-lines)
-  (keymap-global-set "C-s-p" #'mark-page)
-  (keymap-global-set "C-s-q" #'read-only-mode)
-  (keymap-global-set "C-s-r" #'find-file-read-only)
-  (keymap-global-set "C-s-s" #'save-buffer)
-  (keymap-global-set "C-s-t" #'transpose-lines)
-  (keymap-global-set "C-s-u" #'upcase-region)
-  (keymap-global-set "C-s-v" #'navigate-window)
-  (keymap-global-set "C-s-w" #'write-file)
-  (keymap-global-set "C-s-x" #'exchange-point-and-mark)
-  (keymap-global-set "C-s-z" #'repeat)
-  (keymap-global-set "C-s-;" #'comment-line)
-  (keymap-global-set "C-s-0" #'text-scale-adjust)
-  (keymap-global-set "C-s-+" #'text-scale-adjust)
-  (keymap-global-set "C-s--" #'text-scale-adjust)
-  (keymap-global-set "C-s-=" #'text-scale-adjust)
-  (keymap-global-set "M-s-g" #'magit-dispatch)
-  (keymap-global-set "C-M-s-0" #'global-text-scale-adjust)
-  (keymap-global-set "C-M-s--" #'global-text-scale-adjust)
-  (keymap-global-set "C-M-s-+" #'global-text-scale-adjust)
-  (keymap-global-set "C-M-s-=" #'global-text-scale-adjust)
-  (keymap-global-set "M-s-;" #'repeat-complex-command)
-  (keymap-global-set "M-s-:" #'repeat-complex-command)
-  (keymap-global-set "s-SPC" #'rectangle-mark-mode)
-  (keymap-global-set "s-#" #'server-edit)
-  (keymap-global-set "s-$" #'set-selective-display)
-  (keymap-global-set "s-'" #'expand-abbrev)
-  (keymap-global-set "s-(" #'kmacro-start-macro)
-  (keymap-global-set "s-)" #'kmacro-end-macro)
-  (keymap-global-set "s-*" #'calc-dispatch)
-  (keymap-global-set "s-+" #'balance-windows)
-  ;; this is actually #'fit-window-to-buffer - see also #'tear-off-window
-                                        ;(keymap-global-set "s--" #'shrink-window-if-larger-than-buffer)
-  (keymap-global-set "s-." #'set-fill-prefix)
-  (keymap-global-set "s-0" #'delete-window)
-  (keymap-global-set "s-1" #'delete-other-windows)
-  (keymap-global-set "s-2" #'split-window-below)
-  (keymap-global-set "s-3" #'split-window-right)
-  (keymap-global-set "s-4" #'ctl-x-4-prefix)
-  (keymap-global-set "s-5" #'ctl-x-5-prefix)
-  (keymap-global-set "s-6" #'2C-command)
-  (keymap-global-set "s-8 RET" #'insert-char)
-  (keymap-global-set "s-8 e" (keymap-global-lookup "C-x 8 e"))
-  (keymap-global-set "s-;" #'comment-set-column)
-  (keymap-global-set "s-<" #'scroll-left)
-  (keymap-global-set "s-=" #'what-cursor-position)
-  (keymap-global-set "s->" #'scroll-right)
-  (keymap-global-set "s-[" #'backward-page)
-                                        ;(keymap-global-set "s-\\" #'activate-transient-input-method)
-  (keymap-global-set "s-]" #'forward-page)
-  (keymap-global-set "s-^" #'enlarge-window)
-  (keymap-global-set "s-&" #'enlarge-window)
-  (keymap-global-set "s-`" #'next-error)
-  (keymap-global-set "s-a" (keymap-global-lookup "C-x a"))
-  (keymap-global-set "s-b" #'switch-to-buffer)
-  (keymap-global-set "s-d" #'dired)
-  (keymap-global-set "s-g" #'magit-status)
-  (keymap-global-set "s-h" #'mark-whole-buffer)
-  (keymap-global-set "s-i" #'insert-file)
-  (keymap-global-set "s-k" #'kill-buffer)
-  (keymap-global-set "s-l" #'count-lines-page)
-  (keymap-global-set "s-n" (keymap-global-lookup "C-x n"))
-  (keymap-global-set "s-o" #'other-window)
-  (keymap-global-set "s-p" (keymap-global-lookup "C-x p"))
-  (keymap-global-set "s-q" #'kbd-macro-query)
-  (keymap-global-set "s-r" (keymap-global-lookup "C-x r"))
-  (keymap-global-set "s-s" #'save-some-buffers)
-  (keymap-global-set "s-t" (keymap-global-lookup "C-x t"))
-  (keymap-global-set "s-u" #'undo)
-  (keymap-global-set "s-v" (keymap-global-lookup "C-x v"))
-  (keymap-global-set "s-w" (keymap-global-lookup "C-x w"))
-  (keymap-global-set "s-x" (keymap-global-lookup "C-x x"))
-  (keymap-global-set "s-z" #'repeat)
-  (keymap-global-set "s-{" #'shrink-window-horizontally)
-  (keymap-global-set "s-}" #'enlarge-window-horizontally)
-  (keymap-global-set "s-<backspace>" #'backward-kill-sentence)
-  (keymap-global-set "s-<return>" #'execute-extended-command))
+  (let ((kmap (make-sparse-keymap)))
+    (define-key kmap (kbd "s-SPC") #'rectangle-mark-mode)  ; on mac this is spotlight, see next for an alternative
+    (define-key kmap (kbd "C-s-@") #'rectangle-mark-mode)
+    ;; s-@ not (yet) working, see C-x @ for event modifier adding
+    (define-key kmap (kbd "C-s-SPC") #'pop-global-mark)
+    (define-key kmap (kbd "s-a") (keymap-global-lookup "C-x a"))
+    (define-key kmap (kbd "s-b") #'switch-to-buffer)
+    (define-key kmap (kbd "C-s-b") #'bs-show)
+    (define-key kmap (kbd "C-s-c") #'save-buffers-kill-terminal)
+    (define-key kmap (kbd "s-d") #'dired)
+    (define-key kmap (kbd "C-s-d") #'list-directory)
+    (define-key kmap (kbd "s-e") #'kmacro-end-and-call-macro)
+    (define-key kmap (kbd "C-s-e") #'eval-last-sexp)
+    (define-key kmap (kbd "s-f") #'set-fill-column)
+    (define-key kmap (kbd "C-s-f") #'find-file)
+    (define-key kmap (kbd "s-g") #'magit-status)
+    (define-key kmap (kbd "M-s-g") #'magit-dispatch)
+    (define-key kmap (kbd "s-h") #'mark-whole-buffer)
+    (define-key kmap (kbd "s-i") #'insert-file)
+    (define-key kmap (kbd "C-s-i") #'indent-rigidly)
+    (define-key kmap (kbd "C-s-j") #'dired-jump)
+    (define-key kmap (kbd "s-k") #'kill-buffer)
+    (define-key kmap (kbd "C-s-k") #'kmacro-keymap)
+    (define-key kmap (kbd "C-s-k k") #'kmacro-end-or-call-macro)
+    (define-key kmap (kbd "s-l") #'count-lines-page)
+    (define-key kmap (kbd "C-s-l") #'downcase-region)
+    (define-key kmap (kbd "C-s-m") (keymap-global-lookup "C-x C-m"))
+    (define-key kmap (kbd "s-n") (keymap-global-lookup "C-x n"))
+    (define-key kmap (kbd "C-s-n") #'set-goal-column)
+    (define-key kmap (kbd "s-o") #'other-window)
+    (define-key kmap (kbd "C-s-o") #'delete-blank-lines)
+    (define-key kmap (kbd "s-p") (keymap-global-lookup "C-x p"))
+    (define-key kmap (kbd "C-s-p") #'mark-page)
+    (define-key kmap (kbd "s-q") #'kbd-macro-query)
+    (define-key kmap (kbd "C-s-q") #'read-only-mode)  ; on mac this is lock screen, but this works with shift-q
+    (define-key kmap (kbd "C-M-s-q") #'quit-restore-other-window)
+    (define-key kmap (kbd "s-r") (keymap-global-lookup "C-x r"))
+    (define-key kmap (kbd "C-s-r") #'find-file-read-only)
+    (define-key kmap (kbd "s-s") #'save-some-buffers)
+    (define-key kmap (kbd "C-s-s") #'save-buffer)
+    (define-key kmap (kbd "s-t") (keymap-global-lookup "C-x t"))
+    (define-key kmap (kbd "C-s-t") #'transpose-lines)
+    ; (define-key kmap "s-u" #'undo)  ; here is revert-buffer
+    (define-key kmap (kbd "C-s-u") #'upcase-region)
+    (define-key kmap (kbd "s-v") (keymap-global-lookup "C-x v"))
+    (define-key kmap (kbd "C-s-v") #'navigate-window)
+    (define-key kmap (kbd "s-w") (keymap-global-lookup "C-x w"))
+    (define-key kmap (kbd "C-s-w") #'write-file)
+    (define-key kmap (kbd "s-x") (keymap-global-lookup "C-x x"))
+    (define-key kmap (kbd "C-s-x") #'exchange-point-and-mark)
+    (define-key kmap (kbd "s-z") #'repeat)
+    (define-key kmap (kbd "C-s-z") #'repeat)
+    (define-key kmap (kbd "s-;") #'comment-set-column)
+    (define-key kmap (kbd "C-s-;") #'comment-line)
+    (define-key kmap (kbd "s-0") #'delete-window)
+    (define-key kmap (kbd "s-1") #'delete-other-windows)
+    (define-key kmap (kbd "s-2") #'split-window-below)
+    (define-key kmap (kbd "s-3") #'split-window-right)
+    (define-key kmap (kbd "s-4") #'ctl-x-4-prefix)
+    (define-key kmap (kbd "C-M-s-SPC") #'jump-global-mark-other-window)
+    (define-key kmap (kbd "s-5") #'ctl-x-5-prefix)
+    (define-key kmap (kbd "s-6") #'2C-command)
+    (define-key kmap (kbd "s-8 RET") #'insert-char)
+    (define-key kmap (kbd "s-8 e") (keymap-global-lookup "C-x 8 e"))
+    (define-key kmap (kbd "C-s-0") #'text-scale-adjust)
+    (define-key kmap (kbd "C-s-+") #'text-scale-adjust)
+    (define-key kmap (kbd "C-s--") #'text-scale-adjust)
+    (define-key kmap (kbd "C-s-=") #'text-scale-adjust)
+    (define-key kmap (kbd "C-M-s-0") #'global-text-scale-adjust)
+    (define-key kmap (kbd "C-M-s--") #'global-text-scale-adjust)
+    (define-key kmap (kbd "C-M-s-+") #'global-text-scale-adjust)
+    (define-key kmap (kbd "C-M-s-=") #'global-text-scale-adjust)
+    (define-key kmap (kbd "s-#") #'server-edit)
+    (define-key kmap (kbd "s-$") #'set-selective-display)
+    (define-key kmap (kbd "s-'") #'expand-abbrev)
+    (define-key kmap (kbd "s-(") #'kmacro-start-macro)
+    (define-key kmap (kbd "s-)") #'kmacro-end-macro)
+    (define-key kmap (kbd "s-<") #'scroll-left)
+    (define-key kmap (kbd "s-=") #'what-cursor-position)
+    (define-key kmap (kbd "s->") #'scroll-right)
+    (define-key kmap (kbd "s-[") #'backward-page)
+    (define-key kmap (kbd "s-\\") #'activate-transient-input-method)
+    (define-key kmap (kbd "s-]") #'forward-page)
+    (define-key kmap (kbd "s-{") #'shrink-window-horizontally)
+    (define-key kmap (kbd "s-}") #'enlarge-window-horizontally)
+    (define-key kmap (kbd "s-*") #'calc-dispatch)
+    (define-key kmap (kbd "s-+") #'balance-windows)
+    ;; this is actually #'fit-window-to-buffer - see also #'tear-off-window
+                                        ;(define-key kmap "s--" #'shrink-window-if-larger-than-buffer)
+    (define-key kmap (kbd "s--") #'negative-argument)
+    (define-key kmap (kbd "s-.") #'set-fill-prefix)
+    (define-key kmap (kbd "s-^") #'enlarge-window)
+    (define-key kmap (kbd "s-&") #'enlarge-window)
+    (define-key kmap (kbd "s-`") #'next-error)
+    (define-key kmap (kbd "s-<backspace>") #'backward-kill-sentence)
+    (define-key kmap (kbd "s-<return>") #'execute-extended-command)
+    (my-env-add-map kmap)))
 #+end_src
 
 *** Window handling
@@ -1628,7 +1649,7 @@ decorations.
 (global-set-key (kbd "<M-f11>") #'toggle-maximize-frame)
 #+END_SRC
 
-*** Remote controlling other window
+*** Remote controlling of other window
 
 As I got quite used to remote control the other window using =C-x 4= keys, 
 I'm adding a few ones which I missed so far.
@@ -1656,15 +1677,17 @@ We also want to jump to beginning/end in other window by =C-M-<= and =C-M->=
 (cf. =C-M-v= and =C-M-V= to scroll pagewise in other window).
 
 #+BEGIN_SRC emacs-lisp
-(global-set-key "\221" 'quit-restore-other-window)
-(global-set-key [201326652] #'beginning-of-other-window)
-(global-set-key [201326654] #'end-of-other-window)
+(global-set-key "\221" 'quit-restore-other-window)  ;; C-M-q
+(global-set-key [201326652] #'beginning-of-other-window)  ;; C-M-<
+(global-set-key [201326654] #'end-of-other-window)  ;; C-M->
 (global-set-key "\C-x4<" #'beginning-of-other-window)
 (global-set-key "\C-x4>" #'end-of-other-window)
 (global-set-key "\C-x4 " #'jump-mark-other-window)
+(global-set-key (kbd "C-M-s-s") #'isearch-forward-other-window)
 (global-set-key [24 52 24 67108896] #'jump-global-mark-other-window)  ;; C-x 4 C-x C-SPC
 (global-set-key [remap scroll-other-window] #'my-scroll-other-window)
 (global-set-key [remap scroll-other-window-down] #'my-scroll-other-window-down)
+(global-set-key [142606358] #'my-scroll-other-window-down)  ;; C-M-s-v
 #+END_SRC
 
 How to get these codes? Call =M-x global-set-key RET C-M-< beg=.. to manually
@@ -1689,7 +1712,7 @@ other window.
 (global-set-key "\C-x4v" #'navigate-other-window)
 #+END_SRC
 
-*** Remote controlling other frame
+*** Remote controlling of other frame
 
 Push current window buffer to own frame and revert current window to previous frame.
 
