@@ -17,7 +17,7 @@ instead. The second part defines global key bindings. This is the main
 part, as the overall emacs behaviour is defined there.
 In the third part, configurations for the packages I use are placed.
 
-I'm not using =use-package=. I want to distribute my config over
+I'm not (yet) using =use-package=. I want to distribute my config over
 several machines, so I'm setting config defaults in this file. Each
 machine uses it's local =custom.el=, which is adopted by using the
 =customize= functions and may or may not overwrite the defaults
@@ -102,6 +102,8 @@ As a fallback we add a function to recursively edit with original behaviour.
     (recursive-edit)))
 #+END_SRC
 
+**** debugging display buffers
+
 When constructing a display buffer alist, it can be useful to see the
 arguments sent down the display action pipeline. Just put it into the alist
 to get a logging in the message buffer.
@@ -112,6 +114,59 @@ to get a logging in the message buffer.
   (message "display buffer '%s'\nwith alist:\n%s" buffer alist)
   nil)
 #+END_SRC
+
+In ~ielm~, you can show the markers of the current window configuration using
+something like this:
+~(walk-windows (lambda (w)
+                (print (format "window %s orig %s" w (window-parameter w 'orig-window)))))~
+
+Use ~(set-orig-window (selected-window) :dired)~ to explicitely set the
+current window as dired origin.
+
+Check for current dired origin with this: ~(find-orig-window :dired)~.
+Remove dired marker with this: ~(clear-orig-window-marker :dired)~.
+
+When having set the orig window as :dired window, you subsequently want to
+open further buffers in other window using the orig-window system (e.g. occur
+or deadgrep). To make this work, each window can get different orig-window
+markers without overwriting each other.
+
+This corresponds to "the emacs way" of editing, so you don't have just one
+editing area but instead can start from each window, opening occur/grep/dired
+others to select and open files in the corresponding originating window,
+whether it is the same for all these operations or not.
+
+When designating an origin window, a target window is not yet known. Insofar
+the target buffer is used. So the designated window is then origin for the
+given buffer. This might work for occur and deadgrep, but for dired it is
+common to navigate and this way to change the current buffer in the dired
+window. Thats why instead a :dired marker has been used. So each dired buffer
+visible in any window will open new files in the same origin window.
+
+**** Using side windows
+
+You can push existing buffers into side windows, so they wont be replaced by
+other buffers when pushing buffers into other windows in the main working
+area. Also the visibility of side windows can be triggered by =C-x w s=
+respective =s-w s=.
+
+As triggering the visibility possibly constructs new windows, the window
+parameters and origin designations get lost.
+
+#+begin_src emacs-lisp
+(defun push-buffer-to-side (prefix buffer)
+  "Push buffer into a new side window specified by prefix arg, where 0 is left,
+1 is right, 2 is top and 3 is bottom."
+  (interactive "p\nbbuffer: ")
+  (let ((where (cond
+                ((= prefix 0) 'left)
+                ((= prefix 1) 'right)
+                ((= prefix 2) 'top)
+                ((= prefix 3) 'bottom)))
+        (display-buffer-alist nil))
+    (display-buffer buffer
+                    `(display-buffer-in-side-window . ((side . ,where))))))
+#+end_src
 
 **** Help and Apropos buffers
 
@@ -186,37 +241,32 @@ window is easily possible.
 First, some helper functions, setting and removing orig-window markers and
 finding a window with a certain marker.
 
-In ~ielm~, you can show the markers of the current window configuration using
-something like this:
-~(walk-windows (lambda (w)
-    (print (window-parameter w 'orig-window))))~
+See above for debugging aids when working with window markers.
 
 #+BEGIN_SRC emacs-lisp
 (defun clear-orig-window-marker (marker-or-buffer)
   "remove the given marker or buffer from any windows, so afterwards, no
 window can be found containing this marker."
   (walk-windows (lambda (w)
-                  (if (eq marker-or-buffer
-                          (window-parameter w 'orig-window))
-                      (set-window-parameter w 'orig-window nil)))))
+                  (set-window-parameter w 'orig-window
+                                        (remove marker-or-buffer (window-parameter w 'orig-window))))))
 
 (defun find-orig-window (marker-or-buffer)
   "find the first window whose `orig-window' parameter is set to the given
 marker or buffer. If no such window is found, return nil."
   (get-window-with-predicate
    (lambda (w)
-     (eq marker-or-buffer
-         (window-parameter w 'orig-window)))))
+     (member marker-or-buffer
+             (window-parameter w 'orig-window)))))
 
 (defun set-orig-window (window marker-or-buffer)
   "mark the given window as origin of operation specific to
 buffer, removing the mark from other windows this buffer was
 assgned to. This way, a dired buffer in other window can push its
 subsequent other window view buffers into the origin window."
-  (if (not (eq (window-buffer window) marker-or-buffer))
-      (progn
-        (clear-orig-window-marker marker-or-buffer)
-        (set-window-parameter window 'orig-window marker-or-buffer))))
+  (unless (eq (window-buffer window) marker-or-buffer)
+    (clear-orig-window-marker marker-or-buffer)
+    (push marker-or-buffer (window-parameter window 'orig-window))))
 #+END_SRC
 
 If a marked window exists, we want to be able to select it.
