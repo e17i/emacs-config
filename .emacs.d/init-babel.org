@@ -773,7 +773,7 @@ Keys are:
 When scrolling page wise, these functions help to control how much of the
 previous page stays visible. ~scroll-slow~ leaves visible 90% of the previous
 screen, doing only small scroll steps. ~scroll-fast~ still leaves 80%.
-~scroll-halve~ jumps halve of the screen size. Each of them enable a recursive
+~scroll-half~ jumps half of the screen size. Each of them enable a recursive
 edit, which can be cancelled with =C-M-c=.
 
 Probably to be unified into a single function with argument..
@@ -791,7 +791,7 @@ Probably to be unified into a single function with argument..
   (let ((next-screen-context-lines (round (* (frame-height) 0.9))))
     (recursive-edit)))
 
-(defun scroll-halve ()
+(defun scroll-half ()
   "When scrolling pagewise, set the context lines to roughly 50% of screen height. This way, you need two steps to scroll one page."
   (interactive)
   (let ((next-screen-context-lines (round (* (frame-height) 0.5))))
@@ -846,7 +846,7 @@ normal, maximized and visually attractive. "Visually attractive" would
 then be something like "leave a small configurable space outside the
 frame and use the rest of screen". For this, we use a customizable
 variable constructing a list of frame styling functions. The functions
-receive an argument list of (FRAME MAX-LINES MAX-COLS).
+receive their current FRAME as argument.
 
 Note there is another function for switching to full size besides of this one.
 
@@ -865,7 +865,7 @@ Note there is another function for switching to full size besides of this one.
   "Set frame to reasonable position and size based on some heuristics.
   Alternatively, toggles size to maximized."
   (interactive)
-  (let ((maximized (frame-parameter nil 'fullscreen))
+  (let ((maximized (frame-parameter nil 'my-fullscreen))
         (confectioned (frame-parameter nil 'my-confectioned)))
     (cond
      ((eq confectioned 't)
@@ -875,42 +875,58 @@ Note there is another function for switching to full size besides of this one.
         (set-frame-height nil (caddr geom))
         (set-frame-position nil (caar geom) (cdar geom))))
      ((eq maximized 'maximized)
-      (let ((max-lines (frame-parameter nil 'height))
-            (max-cols (frame-parameter nil 'width)))
-	(set-frame-parameter nil 'fullscreen nil)
-        (set-frame-parameter nil 'my-confectioned 't)
-        (dolist (fnc my-frame-stylings)
-                (funcall fnc (selected-frame) max-lines max-cols))))
+      (set-frame-parameter nil 'my-fullscreen nil)
+      (set-frame-parameter nil 'my-confectioned 't)
+      (dolist (fnc my-frame-stylings)
+        (funcall fnc (selected-frame))))
      ((eq maximized nil)
       (set-frame-parameter nil 'my-geometry
                            (list (frame-position)
                                  (frame-width)
                                  (frame-height)))
-      (set-frame-parameter nil 'fullscreen 'maximized)))))
+      ;; on xquartz overwrite maximized with workarea values
+      ;; (set-frame-parameter nil 'fullscreen 'maximized)
+      (set-frame-parameter nil 'my-fullscreen 'maximized)
+      (let ((geom (cdr (frame-geom nil))))
+        (set-frame-position nil (car geom) (cadr geom))
+        (set-frame-size nil (caddr geom) (- (cadddr geom) 20) t))))))
 
-(defun frame-width-below-threshold (frame lines cols)
+(defun frame-width-below-threshold (frame)
   "Set frame with smaller than split width threshold. This way,
   info windows are split below. Otherwise, they might be split to
   the right."
   (set-frame-width frame (- split-width-threshold 1)))
 
-(defun frame-width-dec (frame lines cols)
-  "Set frame width a little bit smaller than display width."
-  (set-frame-width frame (- cols 1)))
+(defun frame-width-half (frame)
+  "Set frame width half of display width."
+  (set-frame-width frame (/ (frame-parameter frame 'width) 2)))
 
-(defun frame-width-abs (frame lines cols)
+(defun frame-width-half-plus (frame)
+  "Set frame width to some more than half of display width."
+  (set-frame-width frame
+                   (+ (/ (frame-parameter frame 'width) 2) 12)))
+
+(defun frame-width-dec (frame)
+  "Set frame width a little bit smaller than display width."
+  (set-frame-width frame (- (frame-parameter frame 'width) 1)))
+
+(defun frame-width-abs (frame)
   "Set frame width to absolute size of current frame"
   (let ((geom (frame-geom frame)))
     (let ((width (cadddr geom)))
       (set-frame-width frame width nil 't))))
 
-(defun frame-height-dec(frame lines cols)
+(defun frame-height-dec(frame)
   "Set frame height a little bit smaller than display height."
-  (set-frame-height frame (- lines 1)))
+  (set-frame-height frame (- (frame-parameter frame 'height) 1)))
 
-(defun frame-height-dec-two(frame lines cols)
+(defun frame-height-dec-two(frame)
   "Set frame height a little bit smaller than display height."
-  (set-frame-height frame (- lines 2)))
+  (set-frame-height frame (- (frame-parameter frame 'height) 2)))
+
+(defun frame-height-dec-three(frame)
+  "Set frame height a little bit smaller than display height."
+  (set-frame-height frame (- (frame-parameter frame 'height) 3)))
 
 (defun frame-geom (&optional frame)
   "Helper returning the current display geometry."
@@ -923,7 +939,7 @@ Note there is another function for switching to full size besides of this one.
     (let ((geom (assq 'workarea current-display)))
       geom)))
 
-(defun frame-to-left (frame lines cols)
+(defun frame-to-left (frame)
   "Position frame to the left of current display. Works best when
   before frame is made smaller than maximized."
   (let ((geom (frame-geom frame)))
@@ -932,7 +948,7 @@ Note there is another function for switching to full size besides of this one.
                           x
                           (cdr (frame-position frame))))))
 
-(defun frame-to-top (frame lines cols)
+(defun frame-to-top (frame)
   "Position frame to the top of current display. Works best when
   before frame is made smaller than maximized."
   (let ((geom (frame-geom frame)))
@@ -941,14 +957,14 @@ Note there is another function for switching to full size besides of this one.
                           (car (frame-position frame))
                           y))))
 
-(defun frame-to-center (frame lines cols)
+(defun frame-to-center (frame)
   "Position frame to the center of current display. Works best when
   before frame is made smaller than maximized."
-  (let ((geom (frame-geom frame)))
-    (let ((x (cadr geom))
-          (y (caddr geom))
-          (width (cadddr geom))
-          (height (cadr (cdddr geom))))
+  (let ((geom (cdr (frame-geom frame))))
+    (let ((x (car geom))
+          (y (cadr geom))
+          (width (caddr geom))
+          (height (cadddr geom)))
       (let ((dwidth (- width
                        (frame-pixel-width)))
             (dheight (- height
@@ -956,9 +972,9 @@ Note there is another function for switching to full size besides of this one.
         (set-frame-position
          frame
          (+ x (round dwidth 2.1))
-         (+ y (round dheight 2.1)))))))
+         (+ y (round dheight 3)))))))
 
-(defun frame-to-right (frame lines cols)
+(defun frame-to-right (frame)
   "Position frame to the right of current display. Works best when
   before frame is made smaller than maximized."
   (let ((geom (frame-geom frame)))
@@ -971,16 +987,6 @@ Note there is another function for switching to full size besides of this one.
          frame
          (+ x dwidth)
          py)))))
-
-(defun frame-to-top-x11 (frame lines cols)
-  "Position frame to the top of current x11 display. Works best when
-  before frame is made smaller than maximized."
-  (set-frame-position frame (car (frame-position frame)) 0))
-
-(defun frame-to-second-x11 (frame lines cols)
-  "(Questionable) function to position frame to the second x11
-  display."
-  (set-frame-position frame 1441 0))
 #+END_SRC
 
 **** Frame full screen switching

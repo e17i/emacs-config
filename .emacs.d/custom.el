@@ -59,7 +59,7 @@
  '(my-environment-mode t)
  '(my-frame-background "NavajoWhite3")
  '(my-frame-foreground "Black")
- '(my-frame-stylings '(frame-width-below-threshold frame-to-right frame-to-top))
+ '(my-frame-stylings '(frame-width-half-plus frame-to-left frame-to-top))
  '(my-frame-transparency 85)
  '(nxml-sexp-element-flag t)
  '(org-agenda-files nil)
@@ -127,7 +127,7 @@ emacs org-mode with <a href=\"https://jessekelly881-rethink.surge.sh/\">Rethink<
  '(ediff-odd-diff-B ((t (:background "purple3"))))
  '(ediff-odd-diff-C ((t (:background "purple4"))))
  '(fringe ((((class color) (background light)) (:background "grey50"))))
- '(highlight-indentation-current-column-face ((t (:background "NavajoWhite5"))))
- '(highlight-indentation-face ((t (:background "NavajoWhite4")))))
+ '(highlight-indentation-current-column-face ((t (:background "NavajoWhite4"))))
+ '(highlight-indentation-face ((t (:background "burlywood")))))
 ;; '(package-selected-packages
 ;;   '(smartparens tagedit ob-restclient company-restclient restclient py-autopep8 flycheck elpy company-jedi json-mode jedi-direx jedi ox-rst magit zzz-to-char ace-jump-mode helm realgud evil markdown-mode cider web-mode org-plus-contrib js2-mode electric-spacing auctex))
