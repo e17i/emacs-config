@@ -132,6 +132,15 @@
  '(sql-oracle-options (list oracle-startup-script))
  '(svn-status-hide-unmodified t)
  '(tool-bar-mode nil)
+ '(tramp-connection-properties
+   '(("/sshfs:" "direct-async-process" t)
+     ("/ssh:con-jko-linux.local:" "login-args"
+      (("-A")
+       ("-l" "%u")
+       ("-p" "%p")
+       ("%c")
+       ("-e" "none")
+       ("%h")))))
  '(undo-tree-auto-save-history nil)
  '(wdired-allow-to-change-permissions 'advanced)
  '(which-key-idle-delay 2.0)
