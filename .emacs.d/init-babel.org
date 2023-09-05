@@ -198,7 +198,7 @@ use something like this:
     (elpy-occur-definitions)
     (select-window w)
     (display-buffer (if term term
-                      (ansi-term shell-file-name)))
+                      (my-term)))
     (switch-to-buffer b)))
 #+end_src
 
@@ -1837,6 +1837,33 @@ Accept simplified answers.
 #+END_SRC
 
 ** Mode-specific customizations
+*** Auto-fill-mode
+
+#+BEGIN_SRC emacs-lisp
+(add-hook 'fundamental-mode-hook
+         (lambda () (auto-fill-mode 1)))
+(add-hook 'text-mode-hook
+         (lambda () (auto-fill-mode 1)))
+(add-hook 'org-mode-hook
+         (lambda () (auto-fill-mode 1)))
+#+END_SRC
+
+*** C++ mode customizations, in use for aeons now
+
+#+BEGIN_SRC emacs-lisp
+(add-hook 'c-mode-common-hook
+          (lambda ()
+            (c-toggle-auto-hungry-state 1)
+            (c-set-style "Stroustrup")
+	    (setq c-basic-offset 2)
+            (setq c-hanging-braces-alist '((brace-list-open)
+                                           (brace-list-close after)
+                                           (defun-open after)
+                                           (class-open after)
+                                           (inline-open after)
+                                           (substatement-open after)))))
+#+END_SRC
+
 *** dired
 **** convenience
 In dired, to select a file or directory, often it is easier to type =C-m=
@@ -1934,57 +1961,6 @@ displaying them in the other window.
             ;; (define-key deadgrep-mode-map "\M-g\M-n" #'deadgrep-display-next)
             ;; (define-key deadgrep-mode-map "\M-g\M-p" #'deadgrep-display-prev)
             (define-key deadgrep-mode-map "\C-o" #'deadgrep-display-result-other-window)))
-#+END_SRC
-
-*** org
-
-The well known template mechanism =<s TAB= has been replaced by a
-mechanism based on the tempo package. This is activated by
-
-#+begin_src emacs-lisp
-(require 'org-tempo)
-#+end_src
-
-Besides that, =C-c C-,= can be used to insert structure templates,
-which also works with regions.
-
-**** org present
-
-Org present presents each top level element as a page. It only has a few
-simple keys. Use left/right to go through the presentation, =C-c <= and =C-c
->= for first and last page. Switch to large presentation mode and back by =C-c
-C-== and =C-c C--=. Quit the presentation with =C-c C-q=.
-
-=org-present= shows the presentation in a normal window, allowing it to be
-used besides other windows and also to change it's contents while presenting.
-For a full presentation, use the =my-org-present-full= command. Switch back
-with the corresponding =tiny= command.
-
-#+BEGIN_SRC emacs-lisp
-(defun my-org-present-full ()
-  (interactive)
-  (progn
-    (add-hook 'org-present-mode-hook
-              (lambda ()
-                (org-present-big)
-                (org-display-inline-images)
-                (toggle-frame-fullscreen)
-                (org-present-hide-cursor)
-                (org-present-read-only)
-                (turn-on-hide-mode-line-mode)))
-    (add-hook 'org-present-mode-quit-hook
-              (lambda ()
-                (turn-off-hide-mode-line-mode)
-                (org-present-small)
-                (org-remove-inline-images)
-                (toggle-frame-fullscreen)
-                (org-present-show-cursor)
-                (org-present-read-write)))))
-
-(defun my-org-present-tiny ()
-  (interactive)
-  (setq org-present-mode-hook nil)
-  (setq org-present-mode-quit-hook nil))
 #+END_SRC
 
 *** Evil mode
@@ -2097,31 +2073,65 @@ Now, after Initializing evil, we may probably also activate it in all buffers.
 (evil-rc)
 #+END_SRC
 
-*** C++ mode customizations, in use for aeons now
+*** markdown mode
 
 #+BEGIN_SRC emacs-lisp
-(add-hook 'c-mode-common-hook
-          (lambda ()
-            (c-toggle-auto-hungry-state 1)
-            (c-set-style "Stroustrup")
-	    (setq c-basic-offset 2)
-            (setq c-hanging-braces-alist '((brace-list-open)
-                                           (brace-list-close after)
-                                           (defun-open after)
-                                           (class-open after)
-                                           (inline-open after)
-                                           (substatement-open after)))))
+(autoload 'markdown-mode "markdown-mode"
+  "Major mode for editing Markdown files" t)
+(add-to-list 'auto-mode-alist '("\\.markdown\\'" . markdown-mode))
+(add-to-list 'auto-mode-alist '("\\.md\\'" . markdown-mode))
+(setq markdown-command "/Users/jko/Programming/node/node_modules/.bin/md2html")
 #+END_SRC
 
-*** Auto-fill-mode
+*** org
+
+The well known template mechanism =<s TAB= has been replaced by a
+mechanism based on the tempo package. This is activated by
+
+#+begin_src emacs-lisp
+(require 'org-tempo)
+#+end_src
+
+Besides that, =C-c C-,= can be used to insert structure templates,
+which also works with regions.
+
+**** org present
+
+Org present presents each top level element as a page. It only has a few
+simple keys. Use left/right to go through the presentation, =C-c <= and =C-c
+>= for first and last page. Switch to large presentation mode and back by =C-c
+C-== and =C-c C--=. Quit the presentation with =C-c C-q=.
+
+=org-present= shows the presentation in a normal window, allowing it to be
+used besides other windows and also to change it's contents while presenting.
+For a full presentation, use the =my-org-present-full= command. Switch back
+with the corresponding =tiny= command.
 
 #+BEGIN_SRC emacs-lisp
-(add-hook 'fundamental-mode-hook
-         (lambda () (auto-fill-mode 1)))
-(add-hook 'text-mode-hook
-         (lambda () (auto-fill-mode 1)))
-(add-hook 'org-mode-hook
-         (lambda () (auto-fill-mode 1)))
+(defun my-org-present-full ()
+  (interactive)
+  (progn
+    (add-hook 'org-present-mode-hook
+              (lambda ()
+                (org-present-big)
+                (org-display-inline-images)
+                (toggle-frame-fullscreen)
+                (org-present-hide-cursor)
+                (org-present-read-only)
+                (turn-on-hide-mode-line-mode)))
+    (add-hook 'org-present-mode-quit-hook
+              (lambda ()
+                (turn-off-hide-mode-line-mode)
+                (org-present-small)
+                (org-remove-inline-images)
+                (toggle-frame-fullscreen)
+                (org-present-show-cursor)
+                (org-present-read-write)))))
+
+(defun my-org-present-tiny ()
+  (interactive)
+  (setq org-present-mode-hook nil)
+  (setq org-present-mode-quit-hook nil))
 #+END_SRC
 
 *** python mode
@@ -2272,54 +2282,6 @@ react-mode? Otherwise, combine it with more up-to-date html-mode?
 (add-hook 'web-mode-hook 'js2-minor-mode)
 #+END_SRC
 
-*** XML-mode 
-
-**** hiding of subtrees
-
-Here we use ~hs-mode~, enabling tag view toggling and tag level hiding. Also
-~S-mouse-2~ can be used to toggle tag views.
-
-#+BEGIN_SRC emacs-lisp
-(setq sgml-quick-keys t)
-(require 'hideshow)
-(require 'sgml-mode)
-(require 'nxml-mode)
-
-(add-to-list 'hs-special-modes-alist
-             '(nxml-mode
-               "<!--\\|<[^/>]*[^/]>"
-               "-->\\|</[^/>]*[^/]>"
-
-               "<!--"
-               sgml-skip-tag-forward
-               nil))
-
-(add-hook 'nxml-mode-hook #'hs-minor-mode)
-
-(define-key nxml-mode-map (kbd "C-c C-h") #'hs-toggle-hiding)
-(define-key nxml-mode-map (kbd "C-c C-l") #'hs-hide-level)
-#+END_SRC
-
-**** tagedit-mode
-
-#+BEGIN_SRC emacs-lisp
-(add-hook 'nxml-mode-hook #'sgml-electric-tag-pair-mode)
-#+END_SRC
-
-#+BEGIN_SRC emacs-lisp
-(eval-after-load "sgml-mode"
-  '(progn
-     (require 'tagedit)
-     (add-hook 'html-mode-hook (lambda () (tagedit-mode 1)))
-     (add-hook 'nxml-mode-hook (lambda () (tagedit-mode 1)))))
-
-(define-key tagedit-mode-map (kbd "C-c )") #'tagedit-forward-slurp-tag)
-(define-key tagedit-mode-map (kbd "C-c }") #'tagedit-forward-barf-tag)
-(define-key tagedit-mode-map (kbd "C-c s") #'tagedit-raise-tag)
-(define-key tagedit-mode-map (kbd "C-M-k") #'tagedit-kill)
-(define-key tagedit-mode-map (kbd "C-c a") #'tagedit-kill-attribute)
-#+END_SRC
-
 *** smartparens mode
 
 In emacs lisp, we want slurp and barf support via smartparens. As the default
@@ -2366,14 +2328,104 @@ is ="=, unsplice is ~'~. ~(~ and ~)~ slurp in corresponding direction, ~{~ and
 (add-hook 'emacs-lisp-mode-hook #'smartparens-mode)
 #+END_SRC
 
-*** markdown mode
+*** tramp mode
+
+Using ~customize~, tramp can be configured (via ~tramp-connection-properties~)
+to export ssh-agent to certain target hosts. This comes in handy when using
+magit on remote connections.
+
+When using the tramp ssh method, opening a term should re-use the ssh control.
+This code should check if a controlled connection is actually established
+before trying to use it. On the other side, this can be accessed only from
+within a file opened via tramp. At least, the host name check could re-use the
+~tramp-connection-properties~ mechanism.
+
+#+begin_src emacs-lisp
+(defun my-term (&optional path name)
+  "Opens a terminal at PATH. If no PATH is given, it uses
+the value of `default-directory'. PATH may be a tramp remote path.
+The term buffer is named based on `name' and behaves like `ansi-term'."
+  (interactive)
+  (require 'term)
+  (require 'tramp)
+  (let ((path (replace-regexp-in-string "^file:" "" (or path default-directory)))
+        (name (or name "ansi-term"))
+        (cd-str "fn=%s; if test ! -d $fn; then fn=$(dirname $fn); fi; cd $fn; exec bash"))
+    (cl-labels ((start-term (termbuf)
+                  (set-buffer termbuf)
+                  (term-mode)
+                  (term-char-mode)
+                  (let (term-escape-char)
+                    (term-set-escape-char ?\C-x))
+                  (switch-to-buffer termbuf)))
+      (if (tramp-tramp-file-p path)
+          (let* ((tstruct (tramp-dissect-file-name path))
+                 (cd-str-ssh (format cd-str (tramp-file-name-localname tstruct)))
+                 (switches (list (if (equal (tramp-file-name-host tstruct) "con-jko-linux.local")
+                                     "-A" nil)
+                                 "-q"
+                                 "-o" "ControlMaster=auto"
+                                 "-o" "ControlPath='tramp.%C'"
+                                 "-o" "ControlPersist=no"
+                                 "-e" "none"
+                                 (tramp-file-name-host tstruct)))
+                 (termbuf (apply 'make-term name "ssh" nil switches)))
+            (cond
+             ((equal (tramp-file-name-method tstruct) "ssh")
+              (start-term termbuf))
+             (t (error "not implemented for method %s"
+                       (tramp-file-name-method tstruct)))))
+        (let* ((cd-str-local (format cd-str path))
+               (termbuf (apply 'make-term name "/bin/sh" nil (list "-c" cd-str-local))))
+          (start-term termbuf))))))
+#+end_src
+
+*** XML-mode
+
+**** hiding of subtrees
+
+Here we use ~hs-mode~, enabling tag view toggling and tag level hiding. Also
+~S-mouse-2~ can be used to toggle tag views.
 
 #+BEGIN_SRC emacs-lisp
-(autoload 'markdown-mode "markdown-mode"
-  "Major mode for editing Markdown files" t)
-(add-to-list 'auto-mode-alist '("\\.markdown\\'" . markdown-mode))
-(add-to-list 'auto-mode-alist '("\\.md\\'" . markdown-mode))
-(setq markdown-command "/Users/jko/Programming/node/node_modules/.bin/md2html")
+(setq sgml-quick-keys t)
+(require 'hideshow)
+(require 'sgml-mode)
+(require 'nxml-mode)
+
+(add-to-list 'hs-special-modes-alist
+             '(nxml-mode
+               "<!--\\|<[^/>]*[^/]>"
+               "-->\\|</[^/>]*[^/]>"
+
+               "<!--"
+               sgml-skip-tag-forward
+               nil))
+
+(add-hook 'nxml-mode-hook #'hs-minor-mode)
+
+(define-key nxml-mode-map (kbd "C-c C-h") #'hs-toggle-hiding)
+(define-key nxml-mode-map (kbd "C-c C-l") #'hs-hide-level)
+#+END_SRC
+
+**** tagedit-mode
+
+#+BEGIN_SRC emacs-lisp
+(add-hook 'nxml-mode-hook #'sgml-electric-tag-pair-mode)
+#+END_SRC
+
+#+BEGIN_SRC emacs-lisp
+(eval-after-load "sgml-mode"
+  '(progn
+     (require 'tagedit)
+     (add-hook 'html-mode-hook (lambda () (tagedit-mode 1)))
+     (add-hook 'nxml-mode-hook (lambda () (tagedit-mode 1)))))
+
+(define-key tagedit-mode-map (kbd "C-c )") #'tagedit-forward-slurp-tag)
+(define-key tagedit-mode-map (kbd "C-c }") #'tagedit-forward-barf-tag)
+(define-key tagedit-mode-map (kbd "C-c s") #'tagedit-raise-tag)
+(define-key tagedit-mode-map (kbd "C-M-k") #'tagedit-kill)
+(define-key tagedit-mode-map (kbd "C-c a") #'tagedit-kill-attribute)
 #+END_SRC
 
 *** yaml mode
