@@ -3,10 +3,13 @@
 # emacs org-mode</p>"));
 # org-html-postamble: t -*-
 #
-# #+HTML_HEAD: <link rel="stylesheet" type="text/css" href="chrome/rethink.css" />
+#+HTML_HEAD: <link rel="stylesheet" type="text/css" href="chrome/rethink.css" />
 #+HTML_HEAD_EXTRA: <img src="image1.jpg"/><div style="padding:2vh"><a style="font-weight:900; text-decoration:none" href="/">Home</a></div>
 #+OPTIONS: toc:nil num:nil html-style:nil
 #+INFOJS_OPT: view:info toc:nil path:chrome/org-info.js
+#+LATEX_CLASS: article
+#+LATEX_CLASS_OPTIONS: [landscape]
+#+LATEX_HEADER: \usepackage[a4paper]{anysize}
 #+AUTHOR: Jörg Kollmann
 #+TITLE: My Emacs init
 * Emacs Configuration
@@ -154,18 +157,49 @@ As triggering the visibility possibly constructs new windows, the window
 parameters and origin designations get lost.
 
 #+begin_src emacs-lisp
-(defun push-buffer-to-side (prefix buffer)
+(defun push-buffer-to-side (buffer prefix)
   "Push buffer into a new side window specified by prefix arg, where 0 is left,
 1 is right, 2 is top and 3 is bottom."
-  (interactive "p\nbbuffer: ")
+  (interactive "bbuffer: \ncdirection (l, r, t, b): ")
   (let ((where (cond
-                ((= prefix 0) 'left)
-                ((= prefix 1) 'right)
-                ((= prefix 2) 'top)
-                ((= prefix 3) 'bottom)))
+                ((equal prefix ?l) 'left)
+                ((equal prefix ?r) 'right)
+                ((equal prefix ?t) 'top)
+                ((equal prefix ?b) 'bottom)))
         (display-buffer-alist nil))
     (display-buffer buffer
                     `(display-buffer-in-side-window . ((side . ,where))))))
+#+end_src
+
+And, using a similar approach to set up a common working environment, we could
+use something like this:
+#+begin_src emacs-lisp
+(defun my-ide ()
+  "When called with a source file inside of some project
+ directory opened, push corresponding dired, occur and ansi-term
+ buffers into side windows."
+  (interactive)
+  (let ((display-buffer-alist
+         '((new-buffer-is-dired-p
+            (make-dired-window-origin display-buffer-in-side-window)
+            (side . left))
+           ("\\*Occur\\*"
+            (make-buffer-window-origin display-buffer-in-side-window)
+            (side . right))
+           ("\\*ansi"
+            display-buffer-in-side-window
+            (side . bottom))))
+        (term (car (cl-remove-if-not (lambda (name) (string-match "\\*ansi" name)) (mapcar #'buffer-name (buffer-list)))))
+        (w (selected-window))
+        (b (current-buffer)))
+    (dired-jump-other-window)
+    (dired-hide-details-mode)
+    (select-window w)
+    (elpy-occur-definitions)
+    (select-window w)
+    (display-buffer (if term term
+                      (my-term)))
+    (switch-to-buffer b)))
 #+end_src
 
 **** Help and Apropos buffers
@@ -402,7 +436,7 @@ display the dired buffer."
   (let ((my-window (find-orig-window :dired)))
     (if (and my-window (window-live-p my-window))
         (progn
-          (set-other-window-dired-orig (selected-window))
+          ;; (set-other-window-dired-orig (selected-window))
           (window-update-buffer buffer my-window 'reuse alist)))))
 
 (defun display-dired-maybe-in-orig (buffer alist)
@@ -1843,56 +1877,64 @@ Accept simplified answers.
 #+END_SRC
 
 ** Mode-specific customizations
-*** dired
-**** convenience
-In dired, to select a file or directory, often it is easier to type =C-m=
-than =RET= (because easier within reach of base row than the ret key, being
-two keys away). To get up a directory in the opposite direction via =^= is
-also not within easy reach. So going up also with =;= and =C-,= seems
-reasonable. BTW, selecting a file or directory is also possible with =f= and
-=e=.
+*** Auto-fill-mode
 
 #+BEGIN_SRC emacs-lisp
-(define-key dired-mode-map "," #'dired-up-directory)
-(define-key dired-mode-map ";" #'dired-up-directory)
-(define-key dired-mode-map "ö" #'dired-up-directory)  ;; on german keyboard same key like ;
-(define-key dired-mode-map [67108908] #'dired-up-directory)
+(add-hook 'fundamental-mode-hook
+         (lambda () (auto-fill-mode 1)))
+(add-hook 'text-mode-hook
+         (lambda () (auto-fill-mode 1)))
+(add-hook 'org-mode-hook
+         (lambda () (auto-fill-mode 1)))
 #+END_SRC
 
-**** dired-ediff
-Enable simple access to  ~ediff~ within ~dired~. Select two files with
-mark and point, then press ~=~ to compare.
+*** C++ mode customizations, in use for aeons now
 
 #+BEGIN_SRC emacs-lisp
-(define-key dired-mode-map "="
-  (lambda ()
-    "ediff file at mark and file at point."
-    (interactive)
-    (let ((file (dired-get-filename))
-          (prev (if mark-active 
-                    (save-excursion (goto-char (mark t))(dired-get-filename))
-                  nil)))
-      (if (and file prev)
-          (ediff-files prev file)))))
+;;(defun my-c++-hook ()
+;;  (outline-minor-mode)
+;;  (make-local-variable 'outline-regexp)
+;;  (setq outline-regexp "[ \t]*// -+ "))
+;;(add-hook 'c++-mode-hook 'my-c++-hook)
+(add-hook 'c-mode-common-hook
+          (lambda ()
+            (c-toggle-auto-hungry-state 1)
+            (c-set-style "Stroustrup")
+	    (setq c-basic-offset 2)
+            (setq c-hanging-braces-alist '((brace-list-open)
+                                           (brace-list-close after)
+                                           (defun-open after)
+                                           (class-open after)
+                                           (inline-open after)
+                                           (substatement-open after)))))
+;; (autoload 'c++-mode   "cc-mode" "C++ Editing Mode" t)  ;; needed?
+;; (autoload 'c-mode "cc-mode" "C Editing Mode" t)
+;; re-check
+(setq auto-mode-alist
+      (append '(("\\.C$"  . c++-mode)
+                ("\\.cc$" . c++-mode)
+                ("\\.m$" . objc-mode)
+                ("\\.c$"  . c-mode)   ; to edit C code
+                ("\\.h$"  . c-mode)   ; to edit C code
+                ) auto-mode-alist))
 #+END_SRC
 
-**** dired-multi-occur
-As suggested by Nicolas Petton
-(https://nicolas.petton.fr/blog/mutli-occur-on-projects.html), selecting files
-as source for =multi-occur= can be handy. This is done here:
+*** calendar/diary
 
 #+BEGIN_SRC emacs-lisp
-(defun dired-occur (regexp &optional nlines)
-  "Perform `multi-occur' with REGEXP in all dired marked files.
-When called with a prefix argument NLINES, display NLINES lines before and after."
-  (interactive (occur-read-primary-args))
-  (multi-occur (mapcar #'find-file (dired-get-marked-files)) regexp nlines))
-
-(define-key dired-mode-map "\C-c\C-o" #'dired-occur)
+(setq view-diary-entries-initially t)
+(setq view-calendar-holidays-initially t)
+(setq mark-diary-entries-in-calendar t)
+(setq mark-holidays-in-calendar t)
 #+END_SRC
 
-Besides that, using the =ibuffer= multi-occur feature to search in buffers is
-also handy.
+*** compilation mode
+
+#+BEGIN_SRC emacs-lisp
+;; (global-set-key "\C-cc" 'compile)
+;; (global-set-key "\C-cn" 'next-error)  ;;  this is now M-g M-n
+;; (global-set-key "\C-cl" 'goto-line)
+#+END_SRC
 
 *** deadgrep
 
@@ -1942,56 +1984,56 @@ displaying them in the other window.
             (define-key deadgrep-mode-map "\C-o" #'deadgrep-display-result-other-window)))
 #+END_SRC
 
-*** org
-
-The well known template mechanism =<s TAB= has been replaced by a
-mechanism based on the tempo package. This is activated by
-
-#+begin_src emacs-lisp
-(require 'org-tempo)
-#+end_src
-
-Besides that, =C-c C-,= can be used to insert structure templates,
-which also works with regions.
-
-**** org present
-
-Org present presents each top level element as a page. It only has a few
-simple keys. Use left/right to go through the presentation, =C-c <= and =C-c
->= for first and last page. Switch to large presentation mode and back by =C-c
-C-== and =C-c C--=. Quit the presentation with =C-c C-q=.
-
-=org-present= shows the presentation in a normal window, allowing it to be
-used besides other windows and also to change it's contents while presenting.
-For a full presentation, use the =my-org-present-full= command. Switch back
-with the corresponding =tiny= command.
+*** dired
+**** convenience
+In dired, to select a file or directory, often it is easier to type =C-m=
+than =RET= (because easier within reach of base row than the ret key, being
+two keys away). To get up a directory in the opposite direction via =^= is
+also not within easy reach. So going up also with =;= and =C-,= seems
+reasonable. BTW, selecting a file or directory is also possible with =f= and
+=e=.
 
 #+BEGIN_SRC emacs-lisp
-(defun my-org-present-full ()
-  (interactive)
-  (progn
-    (add-hook 'org-present-mode-hook
-              (lambda ()
-                (org-present-big)
-                (org-display-inline-images)
-                (toggle-frame-fullscreen)
-                (org-present-hide-cursor)
-                (org-present-read-only)
-                (turn-on-hide-mode-line-mode)))
-    (add-hook 'org-present-mode-quit-hook
-              (lambda ()
-                (turn-off-hide-mode-line-mode)
-                (org-present-small)
-                (org-remove-inline-images)
-                (toggle-frame-fullscreen)
-                (org-present-show-cursor)
-                (org-present-read-write)))))
-
-(defun my-org-present-tiny ()
-  (interactive)
-  (setq org-present-mode-hook nil)
-  (setq org-present-mode-quit-hook nil))
+(define-key dired-mode-map "," #'dired-up-directory)
+(define-key dired-mode-map ";" #'dired-up-directory)
+(define-key dired-mode-map "ö" #'dired-up-directory)  ;; on german keyboard same key like ;
+(define-key dired-mode-map [67108908] #'dired-up-directory)
 #+END_SRC
+
+**** dired-ediff
+Enable simple access to  ~ediff~ within ~dired~. Select two files with
+mark and point, then press ~=~ to compare.
+
+#+BEGIN_SRC emacs-lisp
+(define-key dired-mode-map "="
+  (lambda ()
+    "ediff file at mark and file at point."
+    (interactive)
+    (let ((file (dired-get-filename))
+          (prev (if mark-active
+                    (save-excursion (goto-char (mark t))(dired-get-filename))
+                  nil)))
+      (if (and file prev)
+          (ediff-files prev file)))))
+#+END_SRC
+
+**** dired-multi-occur
+As suggested by Nicolas Petton
+(https://nicolas.petton.fr/blog/mutli-occur-on-projects.html), selecting files
+as source for =multi-occur= can be handy. This is done here:
+
+#+BEGIN_SRC emacs-lisp
+(defun dired-occur (regexp &optional nlines)
+  "Perform `multi-occur' with REGEXP in all dired marked files.
+When called with a prefix argument NLINES, display NLINES lines before and after."
+  (interactive (occur-read-primary-args))
+  (multi-occur (mapcar #'find-file (dired-get-marked-files)) regexp nlines))
+
+(define-key dired-mode-map "\C-c\C-o" #'dired-occur)
+#+END_SRC
+
+Besides that, using the =ibuffer= multi-occur feature to search in buffers is
+also handy.
 
 *** Evil mode
 
@@ -2122,54 +2164,86 @@ Now, after Initializing evil, we may probably also activate it in all buffers.
 (global-set-key "\C-ci" 'my-generate-etags)
 #+END_SRC
 
-*** C++ mode customizations, in use for aeons now
+*** markdown mode
 
 #+BEGIN_SRC emacs-lisp
-;;(defun my-c++-hook () 
-;;  (outline-minor-mode)
-;;  (make-local-variable 'outline-regexp)
-;;  (setq outline-regexp "[ \t]*// -+ "))
-;;(add-hook 'c++-mode-hook 'my-c++-hook)
-(add-hook 'c-mode-common-hook
-          (lambda ()
-            (c-toggle-auto-hungry-state 1)
-            (c-set-style "Stroustrup")
-	    (setq c-basic-offset 2)
-            (setq c-hanging-braces-alist '((brace-list-open)
-                                           (brace-list-close after)
-                                           (defun-open after)
-                                           (class-open after)
-                                           (inline-open after)
-                                           (substatement-open after)))))
-;; (autoload 'c++-mode   "cc-mode" "C++ Editing Mode" t)  ;; needed?
-;; (autoload 'c-mode "cc-mode" "C Editing Mode" t)
-;; re-check
+(autoload 'markdown-mode "markdown-mode"
+  "Major mode for editing Markdown files" t)
+(add-to-list 'auto-mode-alist '("\\.markdown\\'" . markdown-mode))
+(add-to-list 'auto-mode-alist '("\\.md\\'" . markdown-mode))
+(setq markdown-command "/Users/jko/Programming/node/node_modules/.bin/md2html")
+#+END_SRC
+
+*** MIX (GNU MDK)
+
+#+BEGIN_SRC emacs-lisp
+(setq load-path (cons "/opt/local/share/mdk" load-path))
+(autoload 'mixal-mode "mixal-mode" t)
+(add-to-list 'auto-mode-alist '("\\.mixal\\'" . mixal-mode))
+(autoload 'mixvm "mixvm" "mixvm/gud interaction" t)
+#+END_SRC
+
+*** org
+
+The well known template mechanism =<s TAB= has been replaced by a
+mechanism based on the tempo package. This is activated by
+
+#+begin_src emacs-lisp
+(require 'org-tempo)
+#+end_src
+
+Besides that, =C-c C-,= can be used to insert structure templates,
+which also works with regions.
+
+**** org present
+
+Org present presents each top level element as a page. It only has a few
+simple keys. Use left/right to go through the presentation, =C-c <= and =C-c
+>= for first and last page. Switch to large presentation mode and back by =C-c
+C-== and =C-c C--=. Quit the presentation with =C-c C-q=.
+
+=org-present= shows the presentation in a normal window, allowing it to be
+used besides other windows and also to change it's contents while presenting.
+For a full presentation, use the =my-org-present-full= command. Switch back
+with the corresponding =tiny= command.
+
+#+BEGIN_SRC emacs-lisp
+(defun my-org-present-full ()
+  (interactive)
+  (progn
+    (add-hook 'org-present-mode-hook
+              (lambda ()
+                (org-present-big)
+                (org-display-inline-images)
+                (toggle-frame-fullscreen)
+                (org-present-hide-cursor)
+                (org-present-read-only)
+                (turn-on-hide-mode-line-mode)))
+    (add-hook 'org-present-mode-quit-hook
+              (lambda ()
+                (turn-off-hide-mode-line-mode)
+                (org-present-small)
+                (org-remove-inline-images)
+                (toggle-frame-fullscreen)
+                (org-present-show-cursor)
+                (org-present-read-write)))))
+
+(defun my-org-present-tiny ()
+  (interactive)
+  (setq org-present-mode-hook nil)
+  (setq org-present-mode-quit-hook nil))
+#+END_SRC
+
+*** POV-Ray
+
+#+BEGIN_SRC emacs-lisp
+(setq load-path (cons "~/.emacs.d/lisp" load-path))
+(autoload 'pov-mode "pov-mode.el" "PoVray scene file mode" t)
 (setq auto-mode-alist
-      (append '(("\\.C$"  . c++-mode)
-                ("\\.cc$" . c++-mode)
-                ("\\.m$" . objc-mode)
-                ("\\.c$"  . c-mode)   ; to edit C code
-                ("\\.h$"  . c-mode)   ; to edit C code
-                ) auto-mode-alist))
-#+END_SRC
-
-*** compilation mode
-
-#+BEGIN_SRC emacs-lisp
-;; (global-set-key "\C-cc" 'compile)
-;; (global-set-key "\C-cn" 'next-error)  ;;  this is now M-g M-n
-;; (global-set-key "\C-cl" 'goto-line)
-#+END_SRC
-
-*** Auto-fill-mode
-
-#+BEGIN_SRC emacs-lisp
-(add-hook 'fundamental-mode-hook
-          (lambda () (auto-fill-mode 1)))
-(add-hook 'text-mode-hook
-          (lambda () (auto-fill-mode 1)))
-(add-hook 'org-mode-hook
-          (lambda () (auto-fill-mode 1)))
+      (append '(("\\.pov$" . pov-mode)
+		("\\.inc$" . pov-mode)
+		) auto-mode-alist))
+(setq pov-indent-level '2)
 #+END_SRC
 
 *** python mode
@@ -2299,16 +2373,6 @@ tools mode, which binds =C-c >= as hydra.
 ;;               (add-hook 'write-contents-hooks 'python-mode-untabify)))
 #+END_SRC
 
-*** realgud debugging
-
-We want to use middle mouse button on a variable to show the containing value.
-On mac, this works only good in combination with some modifier, so we use
-/super/ here.
-
-#+BEGIN_SRC emacs-lisp
-(global-set-key [(s-mouse-2)] #'realgud:tooltip-eval)
-#+END_SRC
-
 *** React programming
 
 Combine javascript and web-mode, supporting ~jsx~ templates within. This is
@@ -2320,52 +2384,14 @@ react-mode? Otherwise, combine it with more up-to-date html-mode?
 (add-hook 'web-mode-hook 'js2-minor-mode)
 #+END_SRC
 
-*** XML-mode 
+*** realgud debugging
 
-**** hiding of subtrees
-
-Here we use ~hs-mode~, enabling tag view toggling and tag level hiding. Also
-~S-mouse-2~ can be used to toggle tag views.
-
-#+BEGIN_SRC emacs-lisp
-(setq sgml-quick-keys t)
-(require 'hideshow)
-(require 'sgml-mode)
-(require 'nxml-mode)
-
-(add-to-list 'hs-special-modes-alist
-             '(nxml-mode
-               "<!--\\|<[^/>]*[^/]>"
-               "-->\\|</[^/>]*[^/]>"
-
-               "<!--"
-               sgml-skip-tag-forward
-               nil))
-
-(add-hook 'nxml-mode-hook #'hs-minor-mode)
-
-(define-key nxml-mode-map (kbd "C-c C-h") #'hs-toggle-hiding)
-(define-key nxml-mode-map (kbd "C-c C-l") #'hs-hide-level)
-#+END_SRC
-
-**** tagedit-mode
+We want to use middle mouse button on a variable to show the containing value.
+On mac, this works only good in combination with some modifier, so we use
+/super/ here.
 
 #+BEGIN_SRC emacs-lisp
-(add-hook 'nxml-mode-hook #'sgml-electric-tag-pair-mode)
-#+END_SRC
-
-#+BEGIN_SRC emacs-lisp
-(eval-after-load "sgml-mode"
-  '(progn
-     (require 'tagedit)
-     (add-hook 'html-mode-hook (lambda () (tagedit-mode 1)))
-     (add-hook 'nxml-mode-hook (lambda () (tagedit-mode 1)))))
-
-(define-key tagedit-mode-map (kbd "C-c )") #'tagedit-forward-slurp-tag)
-(define-key tagedit-mode-map (kbd "C-c }") #'tagedit-forward-barf-tag)
-(define-key tagedit-mode-map (kbd "C-c s") #'tagedit-raise-tag)
-(define-key tagedit-mode-map (kbd "C-M-k") #'tagedit-kill)
-(define-key tagedit-mode-map (kbd "C-c a") #'tagedit-kill-attribute)
+(global-set-key [(s-mouse-2)] #'realgud:tooltip-eval)
 #+END_SRC
 
 *** smartparens mode
@@ -2414,14 +2440,104 @@ is ="=, unsplice is ~'~. ~(~ and ~)~ slurp in corresponding direction, ~{~ and
 (add-hook 'emacs-lisp-mode-hook #'smartparens-mode)
 #+END_SRC
 
-*** markdown mode
+*** tramp mode
+
+Using ~customize~, tramp can be configured (via ~tramp-connection-properties~)
+to export ssh-agent to certain target hosts. This comes in handy when using
+magit on remote connections.
+
+When using the tramp ssh method, opening a term should re-use the ssh control.
+This code should check if a controlled connection is actually established
+before trying to use it. On the other side, this can be accessed only from
+within a file opened via tramp. At least, the host name check could re-use the
+~tramp-connection-properties~ mechanism.
+
+#+begin_src emacs-lisp
+(defun my-term (&optional path name)
+  "Opens a terminal at PATH. If no PATH is given, it uses
+the value of `default-directory'. PATH may be a tramp remote path.
+The term buffer is named based on `name' and behaves like `ansi-term'."
+  (interactive)
+  (require 'term)
+  (require 'tramp)
+  (let ((path (replace-regexp-in-string "^file:" "" (or path default-directory)))
+        (name (or name "ansi-term"))
+        (cd-str "fn=%s; if test ! -d $fn; then fn=$(dirname $fn); fi; cd $fn; exec bash"))
+    (cl-labels ((start-term (termbuf)
+                  (set-buffer termbuf)
+                  (term-mode)
+                  (term-char-mode)
+                  (let (term-escape-char)
+                    (term-set-escape-char ?\C-x))
+                  (switch-to-buffer termbuf)))
+      (if (tramp-tramp-file-p path)
+          (let* ((tstruct (tramp-dissect-file-name path))
+                 (cd-str-ssh (format cd-str (tramp-file-name-localname tstruct)))
+                 (switches (list (if (equal (tramp-file-name-host tstruct) "con-jko-linux.local")
+                                     "-A" nil)
+                                 "-q"
+                                 "-o" "ControlMaster=auto"
+                                 "-o" "ControlPath='tramp.%C'"
+                                 "-o" "ControlPersist=no"
+                                 "-e" "none"
+                                 (tramp-file-name-host tstruct)))
+                 (termbuf (apply 'make-term name "ssh" nil switches)))
+            (cond
+             ((equal (tramp-file-name-method tstruct) "ssh")
+              (start-term termbuf))
+             (t (error "not implemented for method %s"
+                       (tramp-file-name-method tstruct)))))
+        (let* ((cd-str-local (format cd-str path))
+               (termbuf (apply 'make-term name "/bin/sh" nil (list "-c" cd-str-local))))
+          (start-term termbuf))))))
+#+end_src
+
+*** XML-mode
+
+**** hiding of subtrees
+
+Here we use ~hs-mode~, enabling tag view toggling and tag level hiding. Also
+~S-mouse-2~ can be used to toggle tag views.
 
 #+BEGIN_SRC emacs-lisp
-(autoload 'markdown-mode "markdown-mode"
-  "Major mode for editing Markdown files" t)
-(add-to-list 'auto-mode-alist '("\\.markdown\\'" . markdown-mode))
-(add-to-list 'auto-mode-alist '("\\.md\\'" . markdown-mode))
-(setq markdown-command "/Users/jko/Programming/node/node_modules/.bin/md2html")
+(setq sgml-quick-keys t)
+(require 'hideshow)
+(require 'sgml-mode)
+(require 'nxml-mode)
+
+(add-to-list 'hs-special-modes-alist
+             '(nxml-mode
+               "<!--\\|<[^/>]*[^/]>"
+               "-->\\|</[^/>]*[^/]>"
+
+               "<!--"
+               sgml-skip-tag-forward
+               nil))
+
+(add-hook 'nxml-mode-hook #'hs-minor-mode)
+
+(define-key nxml-mode-map (kbd "C-c C-h") #'hs-toggle-hiding)
+(define-key nxml-mode-map (kbd "C-c C-l") #'hs-hide-level)
+#+END_SRC
+
+**** tagedit-mode
+
+#+BEGIN_SRC emacs-lisp
+(add-hook 'nxml-mode-hook #'sgml-electric-tag-pair-mode)
+#+END_SRC
+
+#+BEGIN_SRC emacs-lisp
+(eval-after-load "sgml-mode"
+  '(progn
+     (require 'tagedit)
+     (add-hook 'html-mode-hook (lambda () (tagedit-mode 1)))
+     (add-hook 'nxml-mode-hook (lambda () (tagedit-mode 1)))))
+
+(define-key tagedit-mode-map (kbd "C-c )") #'tagedit-forward-slurp-tag)
+(define-key tagedit-mode-map (kbd "C-c }") #'tagedit-forward-barf-tag)
+(define-key tagedit-mode-map (kbd "C-c s") #'tagedit-raise-tag)
+(define-key tagedit-mode-map (kbd "C-M-k") #'tagedit-kill)
+(define-key tagedit-mode-map (kbd "C-c a") #'tagedit-kill-attribute)
 #+END_SRC
 
 *** yaml mode
@@ -2434,36 +2550,6 @@ Have RET indent like in python mode:
           (lambda () (indent-tools-minor-mode))
           (lambda ()
             (define-key yaml-mode-map "\C-m" 'newline-and-indent)))
-#+END_SRC
-
-*** calendar/diary
-
-#+BEGIN_SRC emacs-lisp
-(setq view-diary-entries-initially t)
-(setq view-calendar-holidays-initially t)
-(setq mark-diary-entries-in-calendar t)
-(setq mark-holidays-in-calendar t)
-#+END_SRC
-
-*** POV-Ray
-
-#+BEGIN_SRC emacs-lisp
-(setq load-path (cons "~/.emacs.d/lisp" load-path))
-(autoload 'pov-mode "pov-mode.el" "PoVray scene file mode" t)
-(setq auto-mode-alist
-      (append '(("\\.pov$" . pov-mode)
-		("\\.inc$" . pov-mode)
-		) auto-mode-alist))
-(setq pov-indent-level '2)
-#+END_SRC
-
-*** MIX (GNU MDK)
-
-#+BEGIN_SRC emacs-lisp
-(setq load-path (cons "/opt/local/share/mdk" load-path))
-(autoload 'mixal-mode "mixal-mode" t)
-(add-to-list 'auto-mode-alist '("\\.mixal\\'" . mixal-mode))
-(autoload 'mixvm "mixvm" "mixvm/gud interaction" t)
 #+END_SRC
 
 ** Disabled commands
