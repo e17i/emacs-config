@@ -69,7 +69,7 @@
    '((68
       (mouse-wheel-zoom pc-kbd mouse-undo mouse-yank use-super-as-ctl-x))
      (77
-      (german-kbd notebook-kbd battery use-super-as-ctl-x))))
+      (german-kbd apple-kbd battery use-super-as-ctl-x))))
  '(my-environment-mode t)
  '(my-frame-stylings
    '(frame-width-below-threshold frame-height-dec frame-to-top))
@@ -112,6 +112,7 @@
  '(sentence-end-double-space nil)
  '(server-mode t)
  '(sgml-xml-mode t)
+ '(show-paren-mode t)
  '(size-indication-mode t)
  '(sp-base-key-bindings nil)
  '(split-height-threshold 90)
