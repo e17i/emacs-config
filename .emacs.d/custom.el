@@ -58,6 +58,7 @@
      (german-kbd activate-german-keymap my-env-reset-keymap)
      (apple-kbd on-apple-keyboard ignore)
      (pc-kbd on-pc-keyboard ignore)
+     (notebook-kbd on-notebook-keyboard ignore)
      (battery
       (lambda nil
         (display-battery-mode 1))
@@ -68,7 +69,7 @@
    '((68
       (mouse-wheel-zoom pc-kbd mouse-undo mouse-yank use-super-as-ctl-x))
      (77
-      (german-kbd apple-kbd battery))))
+      (german-kbd notebook-kbd battery use-super-as-ctl-x))))
  '(my-environment-mode t)
  '(my-frame-stylings
    '(frame-width-below-threshold frame-height-dec frame-to-top))
@@ -90,7 +91,7 @@
      ("melpa-stable" . "https://stable.melpa.org/packages/")
      ("melpa" . "https://melpa.org/packages/")))
  '(package-selected-packages
-   '(org expand-region hide-mode-line org-present epresent yaml-mode indent-tools solarized-theme deadgrep use-package which-key smartparens tagedit ob-restclient company-restclient restclient py-autopep8 flycheck elpy company-jedi json-mode jedi-direx jedi ox-rst magit zzz-to-char ace-jump-mode helm realgud evil markdown-mode cider web-mode js2-mode electric-spacing auctex))
+   '(undo-tree docker-tramp docker org expand-region hide-mode-line org-present epresent yaml-mode indent-tools solarized-theme deadgrep use-package which-key smartparens tagedit ob-restclient company-restclient restclient py-autopep8 flycheck elpy company-jedi json-mode jedi-direx jedi ox-rst magit zzz-to-char ace-jump-mode helm realgud evil markdown-mode cider web-mode js2-mode electric-spacing auctex))
  '(python-mode-hook
    '((lambda nil "Turn off Indent Tabs mode."
        (setq indent-tabs-mode nil))
@@ -111,7 +112,6 @@
  '(sentence-end-double-space nil)
  '(server-mode t)
  '(sgml-xml-mode t)
- '(show-paren-mode t)
  '(size-indication-mode t)
  '(sp-base-key-bindings nil)
  '(split-height-threshold 90)
