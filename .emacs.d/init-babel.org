@@ -27,6 +27,11 @@ machine uses it's local =custom.el=, which is adopted by using the
 defined here. To make this effective, the =custom.el= file is loaded
 after this one has been processed.
 
+To bootstrap a new emacs, after importing this file the packages required here
+must be installed. To achieve this, just start =emacs --no-init=, set the
+=package-archives= and =package-selected-packages= variables to the lists given
+in custom.el, and call =M-x package-install-selected-packages=.
+
 Some nice customizations are still hidden in =custom.el= and probably
 should be moved here..
 
@@ -1595,6 +1600,19 @@ used as /AltGr/.
    '(ns-right-alternate-modifier 'alternate)
    '(ns-command-modifier 'super)
    '(ns-right-command-modifier 'meta)))
+#+END_SRC
+
+Now, on a Linux notebook keyboard, again we want /Meta/ to be positioned left
+of space and /Super/ to be left of that.
+As a side note, in gnome different /Super/ shortcuts are defined; you may want
+to undefine them. The key for =s-p= is not found in settings so use =gsettings
+set org.gnome.mutter.keybindings switch-monitor "[]"= to unset it.
+
+#+BEGIN_SRC emacs-lisp
+(defun on-notebook-keyboard ()
+  (custom-set-variables
+   '(x-meta-keysym 'super)
+   '(x-super-keysym 'meta)))
 #+END_SRC
 
 **** experimental handling of super modifier
