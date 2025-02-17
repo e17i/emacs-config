@@ -2297,7 +2297,7 @@ Because of this, provision of a function to reenable it after reloading
 
 (defun elpy-reenable ()
   "make sure elpy is put into `python-mode-hook'."
-  (interactive))
+  (interactive)
   (setq elpy-enabled-p nil)
   (elpy-enable))
 #+END_SRC

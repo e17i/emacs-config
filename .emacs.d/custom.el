@@ -86,7 +86,7 @@
      ("melpa-stable" . "https://stable.melpa.org/packages/")
      ("melpa" . "https://melpa.org/packages/")))
  '(package-selected-packages
-   '(ace-jump-zap htmlize undo-tree docker-tramp docker org expand-region hide-mode-line org-present epresent yaml-mode indent-tools solarized-theme deadgrep use-package which-key smartparens tagedit ob-restclient company-restclient restclient py-autopep8 flycheck elpy company-jedi json-mode jedi-direx jedi ox-rst magit zzz-to-char ace-jump-mode helm realgud evil markdown-mode cider web-mode js2-mode electric-spacing auctex))
+   '(0blayout ace-window ace-jump-zap htmlize undo-tree docker-tramp docker org org-plus-contrib expand-region hide-mode-line org-present epresent yaml-mode indent-tools solarized-theme deadgrep use-package which-key smartparens tagedit ob-restclient company-restclient restclient py-autopep8 flycheck elpy company-jedi json-mode jedi-direx jedi ox-rst magit zzz-to-char ace-jump-mode helm realgud evil markdown-mode cider web-mode js2-mode electric-spacing auctex))
  '(paren-match-face 'paren-face-match-light)
  '(paren-sexp-mode t)
  '(python-mode-hook
@@ -135,5 +135,3 @@
  '(fringe ((((class color) (background light)) (:background "grey50"))))
  '(highlight-indentation-current-column-face ((t (:background "gray25"))))
  '(highlight-indentation-face ((t (:background "gray12")))))
-;; '(package-selected-packages
-;;   '(smartparens tagedit ob-restclient company-restclient restclient py-autopep8 flycheck elpy company-jedi json-mode jedi-direx jedi ox-rst magit zzz-to-char ace-jump-mode helm realgud evil markdown-mode cider web-mode org-plus-contrib js2-mode electric-spacing auctex))
