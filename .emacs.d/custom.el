@@ -53,16 +53,18 @@
      (german-kbd activate-german-keymap my-env-reset-keymap)
      (apple-kbd on-apple-keyboard ignore)
      (pc-kbd on-pc-keyboard ignore)
+     (notebook-kbd on-notebook-keyboard ignore)
      (battery
       (lambda nil
         (display-battery-mode 1))
       (lambda nil
-        (display-battery-mode 0)))))
+        (display-battery-mode 0)))
+     (use-super-as-ctl-x use-super-as-ctl-x ignore)))
  '(my-env-definitions
    '((68
-      (mouse-wheel-zoom pc-kbd mouse-undo))
+      (mouse-wheel-zoom pc-kbd mouse-undo mouse-yank use-super-as-ctl-x))
      (77
-      (german-kbd apple-kbd battery))))
+      (german-kbd apple-kbd battery use-super-as-ctl-x))))
  '(my-environment-mode t)
  '(my-frame-background "White")
  '(my-frame-foreground "Black")
@@ -84,7 +86,7 @@
      ("melpa-stable" . "https://stable.melpa.org/packages/")
      ("melpa" . "https://melpa.org/packages/")))
  '(package-selected-packages
-   '(expand-region yaml-mode indent-tools ox-rst which-key zzz-to-char htmlize smartparens magit ace-jump-zap helm realgud evil auctex))
+   '(ace-jump-zap htmlize undo-tree docker-tramp docker org expand-region hide-mode-line org-present epresent yaml-mode indent-tools solarized-theme deadgrep use-package which-key smartparens tagedit ob-restclient company-restclient restclient py-autopep8 flycheck elpy company-jedi json-mode jedi-direx jedi ox-rst magit zzz-to-char ace-jump-mode helm realgud evil markdown-mode cider web-mode js2-mode electric-spacing auctex))
  '(paren-match-face 'paren-face-match-light)
  '(paren-sexp-mode t)
  '(python-mode-hook

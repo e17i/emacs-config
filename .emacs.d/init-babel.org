@@ -3,10 +3,13 @@
 # emacs org-mode</p>"));
 # org-html-postamble: t -*-
 #
-# #+HTML_HEAD: <link rel="stylesheet" type="text/css" href="chrome/rethink.css" />
+#+HTML_HEAD: <link rel="stylesheet" type="text/css" href="chrome/rethink.css" />
 #+HTML_HEAD_EXTRA: <img src="image1.jpg"/><div style="padding:2vh"><a style="font-weight:900; text-decoration:none" href="/">Home</a></div>
 #+OPTIONS: toc:nil num:nil html-style:nil
 #+INFOJS_OPT: view:info toc:nil path:chrome/org-info.js
+#+LATEX_CLASS: article
+#+LATEX_CLASS_OPTIONS: [landscape]
+#+LATEX_HEADER: \usepackage[a4paper]{anysize}
 #+AUTHOR: Jörg Kollmann
 #+TITLE: My Emacs init
 * Emacs Configuration
@@ -17,12 +20,17 @@ instead. The second part defines global key bindings. This is the main
 part, as the overall emacs behaviour is defined there.
 In the third part, configurations for the packages I use are placed.
 
-I'm not using =use-package=. I want to distribute my config over
+I'm not (yet) using =use-package=. I want to distribute my config over
 several machines, so I'm setting config defaults in this file. Each
 machine uses it's local =custom.el=, which is adopted by using the
 =customize= functions and may or may not overwrite the defaults
 defined here. To make this effective, the =custom.el= file is loaded
 after this one has been processed.
+
+To bootstrap a new emacs, after importing this file the packages required here
+must be installed. To achieve this, just start =emacs --no-init=, set the
+=package-archives= and =package-selected-packages= variables to the lists given
+in custom.el, and call =M-x package-install-selected-packages=.
 
 Some nice customizations are still hidden in =custom.el= and probably
 should be moved here..
@@ -102,6 +110,8 @@ As a fallback we add a function to recursively edit with original behaviour.
     (recursive-edit)))
 #+END_SRC
 
+**** debugging display buffers
+
 When constructing a display buffer alist, it can be useful to see the
 arguments sent down the display action pipeline. Just put it into the alist
 to get a logging in the message buffer.
@@ -112,6 +122,90 @@ to get a logging in the message buffer.
   (message "display buffer '%s'\nwith alist:\n%s" buffer alist)
   nil)
 #+END_SRC
+
+In ~ielm~, you can show the markers of the current window configuration using
+something like this:
+~(walk-windows (lambda (w)
+                (print (format "window %s orig %s" w (window-parameter w 'orig-window)))))~
+
+Use ~(set-orig-window (selected-window) :dired)~ to explicitely set the
+current window as dired origin.
+
+Check for current dired origin with this: ~(find-orig-window :dired)~.
+Remove dired marker with this: ~(clear-orig-window-marker :dired)~.
+
+When having set the orig window as :dired window, you subsequently want to
+open further buffers in other window using the orig-window system (e.g. occur
+or deadgrep). To make this work, each window can get different orig-window
+markers without overwriting each other.
+
+This corresponds to "the emacs way" of editing, so you don't have just one
+editing area but instead can start from each window, opening occur/grep/dired
+others to select and open files in the corresponding originating window,
+whether it is the same for all these operations or not.
+
+When designating an origin window, a target window is not yet known. Insofar
+the target buffer is used. So the designated window is then origin for the
+given buffer. This might work for occur and deadgrep, but for dired it is
+common to navigate and this way to change the current buffer in the dired
+window. Thats why instead a :dired marker has been used. So each dired buffer
+visible in any window will open new files in the same origin window.
+
+**** Using side windows
+
+You can push existing buffers into side windows, so they wont be replaced by
+other buffers when pushing buffers into other windows in the main working
+area. Also the visibility of side windows can be triggered by =C-x w s=
+respective =s-w s=.
+
+As triggering the visibility possibly constructs new windows, the window
+parameters and origin designations get lost.
+
+#+begin_src emacs-lisp
+(defun push-buffer-to-side (buffer prefix)
+  "Push buffer into a new side window specified by prefix arg, where 0 is left,
+1 is right, 2 is top and 3 is bottom."
+  (interactive "bbuffer: \ncdirection (l, r, t, b): ")
+  (let ((where (cond
+                ((equal prefix ?l) 'left)
+                ((equal prefix ?r) 'right)
+                ((equal prefix ?t) 'top)
+                ((equal prefix ?b) 'bottom)))
+        (display-buffer-alist nil))
+    (display-buffer buffer
+                    `(display-buffer-in-side-window . ((side . ,where))))))
+#+end_src
+
+And, using a similar approach to set up a common working environment, we could
+use something like this:
+#+begin_src emacs-lisp
+(defun my-ide ()
+  "When called with a source file inside of some project
+ directory opened, push corresponding dired, occur and ansi-term
+ buffers into side windows."
+  (interactive)
+  (let ((display-buffer-alist
+         '((new-buffer-is-dired-p
+            (make-dired-window-origin display-buffer-in-side-window)
+            (side . left))
+           ("\\*Occur\\*"
+            (make-buffer-window-origin display-buffer-in-side-window)
+            (side . right))
+           ("\\*ansi"
+            display-buffer-in-side-window
+            (side . bottom))))
+        (term (car (cl-remove-if-not (lambda (name) (string-match "\\*ansi" name)) (mapcar #'buffer-name (buffer-list)))))
+        (w (selected-window))
+        (b (current-buffer)))
+    (dired-jump-other-window)
+    (dired-hide-details-mode)
+    (select-window w)
+    (elpy-occur-definitions)
+    (select-window w)
+    (display-buffer (if term term
+                      (my-term)))
+    (switch-to-buffer b)))
+#+end_src
 
 **** Help and Apropos buffers
 
@@ -186,37 +280,32 @@ window is easily possible.
 First, some helper functions, setting and removing orig-window markers and
 finding a window with a certain marker.
 
-In ~ielm~, you can show the markers of the current window configuration using
-something like this:
-~(walk-windows (lambda (w)
-    (print (window-parameter w 'orig-window))))~
+See above for debugging aids when working with window markers.
 
 #+BEGIN_SRC emacs-lisp
 (defun clear-orig-window-marker (marker-or-buffer)
   "remove the given marker or buffer from any windows, so afterwards, no
 window can be found containing this marker."
   (walk-windows (lambda (w)
-                  (if (eq marker-or-buffer
-                          (window-parameter w 'orig-window))
-                      (set-window-parameter w 'orig-window nil)))))
+                  (set-window-parameter w 'orig-window
+                                        (remove marker-or-buffer (window-parameter w 'orig-window))))))
 
 (defun find-orig-window (marker-or-buffer)
   "find the first window whose `orig-window' parameter is set to the given
 marker or buffer. If no such window is found, return nil."
   (get-window-with-predicate
    (lambda (w)
-     (eq marker-or-buffer
-         (window-parameter w 'orig-window)))))
+     (member marker-or-buffer
+             (window-parameter w 'orig-window)))))
 
 (defun set-orig-window (window marker-or-buffer)
   "mark the given window as origin of operation specific to
 buffer, removing the mark from other windows this buffer was
 assgned to. This way, a dired buffer in other window can push its
 subsequent other window view buffers into the origin window."
-  (if (not (eq (window-buffer window) marker-or-buffer))
-      (progn
-        (clear-orig-window-marker marker-or-buffer)
-        (set-window-parameter window 'orig-window marker-or-buffer))))
+  (unless (eq (window-buffer window) marker-or-buffer)
+    (clear-orig-window-marker marker-or-buffer)
+    (push marker-or-buffer (window-parameter window 'orig-window))))
 #+END_SRC
 
 If a marked window exists, we want to be able to select it.
@@ -352,7 +441,7 @@ display the dired buffer."
   (let ((my-window (find-orig-window :dired)))
     (if (and my-window (window-live-p my-window))
         (progn
-          (set-other-window-dired-orig (selected-window))
+          ;; (set-other-window-dired-orig (selected-window))
           (window-update-buffer buffer my-window 'reuse alist)))))
 
 (defun display-dired-maybe-in-orig (buffer alist)
@@ -1369,9 +1458,13 @@ words. When combined with /Shift/, navigates to the end/beginning of words.
 (global-set-key "\M-p" #'previous-logical-line)
 (global-set-key "\M-n" #'next-logical-line)
 (global-set-key "\M-P" #'scroll-down-line)
+(global-set-key (kbd "M-s-p") #'scroll-down-line)
 (global-set-key "\M-N" #'scroll-up-line)
+(global-set-key (kbd "M-s-n") #'scroll-up-line)
 (global-set-key "\M-F" #'forward-to-word)
+(global-set-key (kbd "M-s-f") #'forward-to-word)
 (global-set-key "\M-B" #'backward-to-word)
+(global-set-key (kbd "M-s-b") #'backward-to-word)
 (global-set-key [end] #'move-end-of-line)
 (global-set-key [home] #'move-beginning-of-line)
 #+END_SRC
@@ -1521,6 +1614,136 @@ used as /AltGr/.
    '(ns-right-command-modifier 'meta)))
 #+END_SRC
 
+Now, on a Linux notebook keyboard, again we want /Meta/ to be positioned left
+of space and /Super/ to be left of that.
+As a side note, in gnome different /Super/ shortcuts are defined; you may want
+to undefine them. The key for =s-p= is not found in settings so use =gsettings
+set org.gnome.mutter.keybindings switch-monitor "[]"= to unset it.
+
+#+BEGIN_SRC emacs-lisp
+(defun on-notebook-keyboard ()
+  (custom-set-variables
+   '(x-meta-keysym 'super)
+   '(x-super-keysym 'meta)))
+#+END_SRC
+
+**** experimental handling of super modifier
+
+The idea is to use /super/ instead of =C-x=. Especially for combinations
+whose second key doesn't want a /Control/ modifier, this might be a saver of
+keystrokes. So instead of pressing =C-x o=, you just hold /super/ and
+repeatedly press =o= to iterate through windows. For this application, we also
+bind =s--= to ~negative-argument~, allowing us to easily go backwards through
+the window list.
+
+Also, combinations that were not practical before can be used now. For
+example, a combination like =C-x M-g=, which involves changing the modifiers,
+violates the usage patterns. But, when using /super/ instead, it translates to
+=M-s-g= which is completely viable. This way, a complete set of combinations
+with modifier sets =M-s= and =C-M-s=, which are almost unused so far, is now
+easily reachable.
+
+#+begin_src emacs-lisp
+(defun use-super-as-ctl-x ()
+  (let ((kmap (make-sparse-keymap)))
+    (define-key kmap (kbd "s-SPC") #'rectangle-mark-mode)  ; on mac this is spotlight, see next for an alternative
+    (define-key kmap (kbd "C-s-@") #'rectangle-mark-mode)
+    ;; s-@ not (yet) working, see C-x @ for event modifier adding
+    (define-key kmap (kbd "C-s-SPC") #'pop-global-mark)
+    (define-key kmap (kbd "s-a") (keymap-global-lookup "C-x a"))
+    (define-key kmap (kbd "s-b") #'switch-to-buffer)
+    (define-key kmap (kbd "C-s-b") #'bs-show)
+    (define-key kmap (kbd "C-s-c") #'save-buffers-kill-terminal)
+    (define-key kmap (kbd "s-d") #'dired)
+    (define-key kmap (kbd "C-s-d") #'list-directory)
+    (define-key kmap (kbd "s-e") #'kmacro-end-and-call-macro)
+    (define-key kmap (kbd "C-s-e") #'eval-last-sexp)
+    (define-key kmap (kbd "s-f") #'set-fill-column)
+    (define-key kmap (kbd "C-s-f") #'find-file)
+    (define-key kmap (kbd "s-g") #'magit-status)
+    (define-key kmap (kbd "M-s-g") #'magit-dispatch)
+    (define-key kmap (kbd "s-h") #'mark-whole-buffer)
+    (define-key kmap (kbd "s-i") #'insert-file)
+    (define-key kmap (kbd "C-s-i") #'indent-rigidly)
+    (define-key kmap (kbd "C-s-j") #'dired-jump)
+    (define-key kmap (kbd "s-k") #'kill-buffer)
+    (define-key kmap (kbd "C-s-k") #'kmacro-keymap)
+    (define-key kmap (kbd "C-s-k k") #'kmacro-end-or-call-macro)
+    (define-key kmap (kbd "s-l") #'count-lines-page)
+    (define-key kmap (kbd "C-s-l") #'downcase-region)
+    (define-key kmap (kbd "C-s-m") (keymap-global-lookup "C-x C-m"))
+    (define-key kmap (kbd "s-n") (keymap-global-lookup "C-x n"))
+    (define-key kmap (kbd "C-s-n") #'set-goal-column)
+    (define-key kmap (kbd "s-o") #'other-window)
+    (define-key kmap (kbd "C-s-o") #'delete-blank-lines)
+    (define-key kmap (kbd "s-p") (keymap-global-lookup "C-x p"))
+    (define-key kmap (kbd "C-s-p") #'mark-page)
+    (define-key kmap (kbd "s-q") #'kbd-macro-query)
+    (define-key kmap (kbd "C-s-q") #'read-only-mode)  ; on mac this is lock screen, but this works with shift-q
+    (define-key kmap (kbd "C-M-s-q") #'quit-restore-other-window)
+    (define-key kmap (kbd "s-r") (keymap-global-lookup "C-x r"))
+    (define-key kmap (kbd "C-s-r") #'find-file-read-only)
+    (define-key kmap (kbd "s-s") #'save-some-buffers)
+    (define-key kmap (kbd "C-s-s") #'save-buffer)
+    (define-key kmap (kbd "s-t") (keymap-global-lookup "C-x t"))
+    (define-key kmap (kbd "C-s-t") #'transpose-lines)
+    ; (define-key kmap "s-u" #'undo)  ; here is revert-buffer
+    (define-key kmap (kbd "C-s-u") #'upcase-region)
+    (define-key kmap (kbd "s-v") (keymap-global-lookup "C-x v"))
+    (define-key kmap (kbd "C-s-v") #'navigate-window)
+    (define-key kmap (kbd "s-w") (keymap-global-lookup "C-x w"))
+    (define-key kmap (kbd "C-s-w") #'write-file)
+    (define-key kmap (kbd "s-x") (keymap-global-lookup "C-x x"))
+    (define-key kmap (kbd "C-s-x") #'exchange-point-and-mark)
+    (define-key kmap (kbd "s-z") #'repeat)
+    (define-key kmap (kbd "C-s-z") #'repeat)
+    (define-key kmap (kbd "s-;") #'comment-set-column)
+    (define-key kmap (kbd "C-s-;") #'comment-line)
+    (define-key kmap (kbd "s-0") #'delete-window)
+    (define-key kmap (kbd "s-1") #'delete-other-windows)
+    (define-key kmap (kbd "s-2") #'split-window-below)
+    (define-key kmap (kbd "s-3") #'split-window-right)
+    (define-key kmap (kbd "s-4") #'ctl-x-4-prefix)
+    (define-key kmap (kbd "C-M-s-SPC") #'jump-global-mark-other-window)
+    (define-key kmap (kbd "s-5") #'ctl-x-5-prefix)
+    (define-key kmap (kbd "s-6") #'2C-command)
+    (define-key kmap (kbd "s-8 RET") #'insert-char)
+    (define-key kmap (kbd "s-8 e") (keymap-global-lookup "C-x 8 e"))
+    (define-key kmap (kbd "C-s-0") #'text-scale-adjust)
+    (define-key kmap (kbd "C-s-+") #'text-scale-adjust)
+    (define-key kmap (kbd "C-s--") #'text-scale-adjust)
+    (define-key kmap (kbd "C-s-=") #'text-scale-adjust)
+    (define-key kmap (kbd "C-M-s-0") #'global-text-scale-adjust)
+    (define-key kmap (kbd "C-M-s--") #'global-text-scale-adjust)
+    (define-key kmap (kbd "C-M-s-+") #'global-text-scale-adjust)
+    (define-key kmap (kbd "C-M-s-=") #'global-text-scale-adjust)
+    (define-key kmap (kbd "s-#") #'server-edit)
+    (define-key kmap (kbd "s-$") #'set-selective-display)
+    (define-key kmap (kbd "s-'") #'expand-abbrev)
+    (define-key kmap (kbd "s-(") #'kmacro-start-macro)
+    (define-key kmap (kbd "s-)") #'kmacro-end-macro)
+    (define-key kmap (kbd "s-<") #'scroll-left)
+    (define-key kmap (kbd "s-=") #'what-cursor-position)
+    (define-key kmap (kbd "s->") #'scroll-right)
+    (define-key kmap (kbd "s-[") #'backward-page)
+    (define-key kmap (kbd "s-\\") #'activate-transient-input-method)
+    (define-key kmap (kbd "s-]") #'forward-page)
+    (define-key kmap (kbd "s-{") #'shrink-window-horizontally)
+    (define-key kmap (kbd "s-}") #'enlarge-window-horizontally)
+    (define-key kmap (kbd "s-*") #'calc-dispatch)
+    (define-key kmap (kbd "s-+") #'balance-windows)
+    ;; this is actually #'fit-window-to-buffer - see also #'tear-off-window
+                                        ;(define-key kmap "s--" #'shrink-window-if-larger-than-buffer)
+    (define-key kmap (kbd "s--") #'negative-argument)
+    (define-key kmap (kbd "s-.") #'set-fill-prefix)
+    (define-key kmap (kbd "s-^") #'enlarge-window)
+    (define-key kmap (kbd "s-&") #'enlarge-window)
+    (define-key kmap (kbd "s-`") #'next-error)
+    (define-key kmap (kbd "s-<backspace>") #'backward-kill-sentence)
+    (define-key kmap (kbd "s-<return>") #'execute-extended-command)
+    (my-env-add-map kmap)))
+#+end_src
+
 *** Window handling
 
 We overrule =C-x ^= to use our window resizing method.
@@ -1540,7 +1763,7 @@ decorations.
 (global-set-key (kbd "<M-f11>") #'toggle-maximize-frame)
 #+END_SRC
 
-*** Remote controlling other window
+*** Remote controlling of other window
 
 As I got quite used to remote control the other window using =C-x 4= keys, 
 I'm adding a few ones which I missed so far.
@@ -1568,14 +1791,17 @@ We also want to jump to beginning/end in other window by =C-M-<= and =C-M->=
 (cf. =C-M-v= and =C-M-V= to scroll pagewise in other window).
 
 #+BEGIN_SRC emacs-lisp
-(global-set-key [201326652] #'beginning-of-other-window)
-(global-set-key [201326654] #'end-of-other-window)
+(global-set-key "\221" 'quit-restore-other-window)  ;; C-M-q
+(global-set-key [201326652] #'beginning-of-other-window)  ;; C-M-<
+(global-set-key [201326654] #'end-of-other-window)  ;; C-M->
 (global-set-key "\C-x4<" #'beginning-of-other-window)
 (global-set-key "\C-x4>" #'end-of-other-window)
 (global-set-key "\C-x4 " #'jump-mark-other-window)
+(global-set-key (kbd "C-M-s-s") #'isearch-forward-other-window)
 (global-set-key [24 52 24 67108896] #'jump-global-mark-other-window)  ;; C-x 4 C-x C-SPC
 (global-set-key [remap scroll-other-window] #'my-scroll-other-window)
 (global-set-key [remap scroll-other-window-down] #'my-scroll-other-window-down)
+(global-set-key [142606358] #'my-scroll-other-window-down)  ;; C-M-s-v
 #+END_SRC
 
 How to get these codes? Call =M-x global-set-key RET C-M-< beg=.. to manually
@@ -1600,7 +1826,7 @@ other window.
 (global-set-key "\C-x4v" #'navigate-other-window)
 #+END_SRC
 
-*** Remote controlling other frame
+*** Remote controlling of other frame
 
 Push current window buffer to own frame and revert current window to previous frame.
 
@@ -1628,8 +1854,8 @@ Load and enable different additional packages
 (require 'yaml-mode)
 (global-undo-tree-mode)
 
-;; (add-hook 'emacs-lisp-mode-hook #'nameless-mode) ; not yet installed
-;; (add-hook 'org-mode-hook #'nameless-mode)
+(add-hook 'emacs-lisp-mode-hook #'nameless-mode)
+(add-hook 'org-mode-hook #'nameless-mode)
 
 (which-key-mode 1)  ;; not only for spacemacs..
 
@@ -1665,6 +1891,33 @@ Accept simplified answers.
 #+END_SRC
 
 ** Mode-specific customizations
+*** Auto-fill-mode
+
+#+BEGIN_SRC emacs-lisp
+(add-hook 'fundamental-mode-hook
+         (lambda () (auto-fill-mode 1)))
+(add-hook 'text-mode-hook
+         (lambda () (auto-fill-mode 1)))
+(add-hook 'org-mode-hook
+         (lambda () (auto-fill-mode 1)))
+#+END_SRC
+
+*** C++ mode customizations, in use for aeons now
+
+#+BEGIN_SRC emacs-lisp
+(add-hook 'c-mode-common-hook
+          (lambda ()
+            (c-toggle-auto-hungry-state 1)
+            (c-set-style "Stroustrup")
+	    (setq c-basic-offset 2)
+            (setq c-hanging-braces-alist '((brace-list-open)
+                                           (brace-list-close after)
+                                           (defun-open after)
+                                           (class-open after)
+                                           (inline-open after)
+                                           (substatement-open after)))))
+#+END_SRC
+
 *** dired
 **** convenience
 In dired, to select a file or directory, often it is easier to type =C-m=
@@ -1762,57 +2015,6 @@ displaying them in the other window.
             ;; (define-key deadgrep-mode-map "\M-g\M-n" #'deadgrep-display-next)
             ;; (define-key deadgrep-mode-map "\M-g\M-p" #'deadgrep-display-prev)
             (define-key deadgrep-mode-map "\C-o" #'deadgrep-display-result-other-window)))
-#+END_SRC
-
-*** org
-
-The well known template mechanism =<s TAB= has been replaced by a
-mechanism based on the tempo package. This is activated by
-
-#+begin_src emacs-lisp
-(require 'org-tempo)
-#+end_src
-
-Besides that, =C-c C-,= can be used to insert structure templates,
-which also works with regions.
-
-**** org present
-
-Org present presents each top level element as a page. It only has a few
-simple keys. Use left/right to go through the presentation, =C-c <= and =C-c
->= for first and last page. Switch to large presentation mode and back by =C-c
-C-== and =C-c C--=. Quit the presentation with =C-c C-q=.
-
-=org-present= shows the presentation in a normal window, allowing it to be
-used besides other windows and also to change it's contents while presenting.
-For a full presentation, use the =my-org-present-full= command. Switch back
-with the corresponding =tiny= command.
-
-#+BEGIN_SRC emacs-lisp
-(defun my-org-present-full ()
-  (interactive)
-  (progn
-    (add-hook 'org-present-mode-hook
-              (lambda ()
-                (org-present-big)
-                (org-display-inline-images)
-                (toggle-frame-fullscreen)
-                (org-present-hide-cursor)
-                (org-present-read-only)
-                (turn-on-hide-mode-line-mode)))
-    (add-hook 'org-present-mode-quit-hook
-              (lambda ()
-                (turn-off-hide-mode-line-mode)
-                (org-present-small)
-                (org-remove-inline-images)
-                (toggle-frame-fullscreen)
-                (org-present-show-cursor)
-                (org-present-read-write)))))
-
-(defun my-org-present-tiny ()
-  (interactive)
-  (setq org-present-mode-hook nil)
-  (setq org-present-mode-quit-hook nil))
 #+END_SRC
 
 *** Evil mode
@@ -1982,15 +2184,65 @@ Now, after Initializing evil, we may probably also activate it in all buffers.
 ;; (global-set-key "\C-cl" 'goto-line)
 #+END_SRC
 
-*** Auto-fill-mode
+*** markdown mode
 
 #+BEGIN_SRC emacs-lisp
-(add-hook 'fundamental-mode-hook
-          (lambda () (auto-fill-mode 1)))
-(add-hook 'text-mode-hook
-          (lambda () (auto-fill-mode 1)))
-(add-hook 'org-mode-hook
-          (lambda () (auto-fill-mode 1)))
+(autoload 'markdown-mode "markdown-mode"
+  "Major mode for editing Markdown files" t)
+(add-to-list 'auto-mode-alist '("\\.markdown\\'" . markdown-mode))
+(add-to-list 'auto-mode-alist '("\\.md\\'" . markdown-mode))
+(setq markdown-command "/Users/jko/Programming/node/node_modules/.bin/md2html")
+#+END_SRC
+
+*** org
+
+The well known template mechanism =<s TAB= has been replaced by a
+mechanism based on the tempo package. This is activated by
+
+#+begin_src emacs-lisp
+(require 'org-tempo)
+#+end_src
+
+Besides that, =C-c C-,= can be used to insert structure templates,
+which also works with regions.
+
+**** org present
+
+Org present presents each top level element as a page. It only has a few
+simple keys. Use left/right to go through the presentation, =C-c <= and =C-c
+>= for first and last page. Switch to large presentation mode and back by =C-c
+C-== and =C-c C--=. Quit the presentation with =C-c C-q=.
+
+=org-present= shows the presentation in a normal window, allowing it to be
+used besides other windows and also to change it's contents while presenting.
+For a full presentation, use the =my-org-present-full= command. Switch back
+with the corresponding =tiny= command.
+
+#+BEGIN_SRC emacs-lisp
+(defun my-org-present-full ()
+  (interactive)
+  (progn
+    (add-hook 'org-present-mode-hook
+              (lambda ()
+                (org-present-big)
+                (org-display-inline-images)
+                (toggle-frame-fullscreen)
+                (org-present-hide-cursor)
+                (org-present-read-only)
+                (turn-on-hide-mode-line-mode)))
+    (add-hook 'org-present-mode-quit-hook
+              (lambda ()
+                (turn-off-hide-mode-line-mode)
+                (org-present-small)
+                (org-remove-inline-images)
+                (toggle-frame-fullscreen)
+                (org-present-show-cursor)
+                (org-present-read-write)))))
+
+(defun my-org-present-tiny ()
+  (interactive)
+  (setq org-present-mode-hook nil)
+  (setq org-present-mode-quit-hook nil))
 #+END_SRC
 
 *** python mode
@@ -2004,7 +2256,7 @@ We use hippie-expand mapped to =M-/=
 We want to use flycheck in python.
 
 #+BEGIN_SRC emacs-lisp
-;; (require 'flycheck) ; not yet installed
+(require 'flycheck)
 #+END_SRC
 
 ~elpy-mode~ defines a bunch of useful support functions for navigating and
@@ -2041,13 +2293,13 @@ Because of this, provision of a function to reenable it after reloading
 ~custom.el~.
 
 #+BEGIN_SRC emacs-lisp
-;; (elpy-enable)  not yet installed
+(elpy-enable)
 
 (defun elpy-reenable ()
   "make sure elpy is put into `python-mode-hook'."
   (interactive))
-  ;; (setq elpy-enabled-p nil)  not yet installed
-  ;; (elpy-enable))
+  (setq elpy-enabled-p nil)
+  (elpy-enable))
 #+END_SRC
 
 To navigate using more convenient keys, we put the block navigation moves
@@ -2058,14 +2310,14 @@ Also the python indentation functions (=C-c <= and =C-c >=) are remapped to
 elpy. The =M-i= and =M-I= bindings first have to prove themselves.
 
 #+BEGIN_SRC emacs-lisp
-;; (define-key elpy-mode-map "\C-\M-p" #'elpy-nav-backward-block) ; not yet installed
-;; (define-key elpy-mode-map "\C-\M-n" #'elpy-nav-forward-block)
-;; (define-key elpy-mode-map "\C-\M-f" #'elpy-nav-forward-indent)
-;; (define-key elpy-mode-map "\C-\M-b" #'elpy-nav-backward-indent)
-;; (define-key elpy-mode-map "\M-i" #'elpy-nav-indent-shift-right)
-;; (define-key elpy-mode-map "\M-I" #'elpy-nav-indent-shift-left)
-;; (define-key elpy-mode-map [remap python-indent-shift-right] #'elpy-nav-indent-shift-right)
-;; (define-key elpy-mode-map [remap python-indent-shift-left] #'elpy-nav-indent-shift-left)
+(define-key elpy-mode-map "\C-\M-p" #'elpy-nav-backward-block)
+(define-key elpy-mode-map "\C-\M-n" #'elpy-nav-forward-block)
+(define-key elpy-mode-map "\C-\M-f" #'elpy-nav-forward-indent)
+(define-key elpy-mode-map "\C-\M-b" #'elpy-nav-backward-indent)
+(define-key elpy-mode-map "\M-i" #'elpy-nav-indent-shift-right)
+(define-key elpy-mode-map "\M-I" #'elpy-nav-indent-shift-left)
+(define-key elpy-mode-map [remap python-indent-shift-right] #'elpy-nav-indent-shift-right)
+(define-key elpy-mode-map [remap python-indent-shift-left] #'elpy-nav-indent-shift-left)
 #+END_SRC
 
 The visibility toggling is on completely brain damaged keys, so we put at
@@ -2074,7 +2326,7 @@ mode.
 
 #+BEGIN_SRC emacs-lisp
 ;; (w32-register-hot-key (kbd "<M-tab>")) ; example of hot key override, but not practical
-; (define-key elpy-mode-map (kbd "<S-tab>") #'elpy-folding-toggle-at-point) ; not yet installed
+(define-key elpy-mode-map (kbd "<S-tab>") #'elpy-folding-toggle-at-point)
 #+END_SRC
 
 Enable autopep8, but don't activate it on save. 
@@ -2084,10 +2336,10 @@ Instead, remap =M-g n= and =M-g p= to flycheck next and previous error, which
 also show pep8 errors. The flycheck menu can also be found with =C-c !=.
 
 #+BEGIN_SRC emacs-lisp
-; (require 'py-autopep8) ; not yet installed
+(require 'py-autopep8)
 ;;(add-hook 'elpy-mode-hook 'py-autopep8-enable-on-save)
-;; (define-key elpy-mode-map "\M-gp" #'flycheck-previous-error) ; not yet installed
-;; (define-key elpy-mode-map "\M-gn" #'flycheck-next-error)
+(define-key elpy-mode-map "\M-gp" #'flycheck-previous-error)
+(define-key elpy-mode-map "\M-gn" #'flycheck-next-error)
 #+END_SRC
 
 elpy makes indentation levels visible columnwise, so we also highlight the
@@ -2176,17 +2428,17 @@ Here we use ~hs-mode~, enabling tag view toggling and tag level hiding. Also
 #+END_SRC
 
 #+BEGIN_SRC emacs-lisp
-;; (eval-after-load "sgml-mode"  not yet installed
-;;   '(progn
-;;      (require 'tagedit)
-;;      (add-hook 'html-mode-hook (lambda () (tagedit-mode 1)))
-;;      (add-hook 'nxml-mode-hook (lambda () (tagedit-mode 1)))))
+(eval-after-load "sgml-mode"
+  '(progn
+     (require 'tagedit)
+     (add-hook 'html-mode-hook (lambda () (tagedit-mode 1)))
+     (add-hook 'nxml-mode-hook (lambda () (tagedit-mode 1)))))
 
-;; (define-key tagedit-mode-map (kbd "C-c )") #'tagedit-forward-slurp-tag)
-;; (define-key tagedit-mode-map (kbd "C-c }") #'tagedit-forward-barf-tag)
-;; (define-key tagedit-mode-map (kbd "C-c s") #'tagedit-raise-tag)
-;; (define-key tagedit-mode-map (kbd "C-M-k") #'tagedit-kill)
-;; (define-key tagedit-mode-map (kbd "C-c a") #'tagedit-kill-attribute)
+(define-key tagedit-mode-map (kbd "C-c )") #'tagedit-forward-slurp-tag)
+(define-key tagedit-mode-map (kbd "C-c }") #'tagedit-forward-barf-tag)
+(define-key tagedit-mode-map (kbd "C-c s") #'tagedit-raise-tag)
+(define-key tagedit-mode-map (kbd "C-M-k") #'tagedit-kill)
+(define-key tagedit-mode-map (kbd "C-c a") #'tagedit-kill-attribute)
 #+END_SRC
 
 *** smartparens mode
@@ -2235,14 +2487,104 @@ is ="=, unsplice is ~'~. ~(~ and ~)~ slurp in corresponding direction, ~{~ and
 (add-hook 'emacs-lisp-mode-hook #'smartparens-mode)
 #+END_SRC
 
-*** markdown mode
+*** tramp mode
+
+Using ~customize~, tramp can be configured (via ~tramp-connection-properties~)
+to export ssh-agent to certain target hosts. This comes in handy when using
+magit on remote connections.
+
+When using the tramp ssh method, opening a term should re-use the ssh control.
+This code should check if a controlled connection is actually established
+before trying to use it. On the other side, this can be accessed only from
+within a file opened via tramp. At least, the host name check could re-use the
+~tramp-connection-properties~ mechanism.
+
+#+begin_src emacs-lisp
+(defun my-term (&optional path name)
+  "Opens a terminal at PATH. If no PATH is given, it uses
+the value of `default-directory'. PATH may be a tramp remote path.
+The term buffer is named based on `name' and behaves like `ansi-term'."
+  (interactive)
+  (require 'term)
+  (require 'tramp)
+  (let ((path (replace-regexp-in-string "^file:" "" (or path default-directory)))
+        (name (or name "ansi-term"))
+        (cd-str "fn=%s; if test ! -d $fn; then fn=$(dirname $fn); fi; cd $fn; exec bash"))
+    (cl-labels ((start-term (termbuf)
+                  (set-buffer termbuf)
+                  (term-mode)
+                  (term-char-mode)
+                  (let (term-escape-char)
+                    (term-set-escape-char ?\C-x))
+                  (switch-to-buffer termbuf)))
+      (if (tramp-tramp-file-p path)
+          (let* ((tstruct (tramp-dissect-file-name path))
+                 (cd-str-ssh (format cd-str (tramp-file-name-localname tstruct)))
+                 (switches (list (if (equal (tramp-file-name-host tstruct) "con-jko-linux.local")
+                                     "-A" nil)
+                                 "-q"
+                                 "-o" "ControlMaster=auto"
+                                 "-o" "ControlPath='tramp.%C'"
+                                 "-o" "ControlPersist=no"
+                                 "-e" "none"
+                                 (tramp-file-name-host tstruct)))
+                 (termbuf (apply 'make-term name "ssh" nil switches)))
+            (cond
+             ((equal (tramp-file-name-method tstruct) "ssh")
+              (start-term termbuf))
+             (t (error "not implemented for method %s"
+                       (tramp-file-name-method tstruct)))))
+        (let* ((cd-str-local (format cd-str path))
+               (termbuf (apply 'make-term name "/bin/sh" nil (list "-c" cd-str-local))))
+          (start-term termbuf))))))
+#+end_src
+
+*** XML-mode
+
+**** hiding of subtrees
+
+Here we use ~hs-mode~, enabling tag view toggling and tag level hiding. Also
+~S-mouse-2~ can be used to toggle tag views.
 
 #+BEGIN_SRC emacs-lisp
-(autoload 'markdown-mode "markdown-mode"
-  "Major mode for editing Markdown files" t)
-(add-to-list 'auto-mode-alist '("\\.markdown\\'" . markdown-mode))
-(add-to-list 'auto-mode-alist '("\\.md\\'" . markdown-mode))
-(setq markdown-command "/Users/jko/Programming/node/node_modules/.bin/md2html")
+(setq sgml-quick-keys t)
+(require 'hideshow)
+(require 'sgml-mode)
+(require 'nxml-mode)
+
+(add-to-list 'hs-special-modes-alist
+             '(nxml-mode
+               "<!--\\|<[^/>]*[^/]>"
+               "-->\\|</[^/>]*[^/]>"
+
+               "<!--"
+               sgml-skip-tag-forward
+               nil))
+
+(add-hook 'nxml-mode-hook #'hs-minor-mode)
+
+(define-key nxml-mode-map (kbd "C-c C-h") #'hs-toggle-hiding)
+(define-key nxml-mode-map (kbd "C-c C-l") #'hs-hide-level)
+#+END_SRC
+
+**** tagedit-mode
+
+#+BEGIN_SRC emacs-lisp
+(add-hook 'nxml-mode-hook #'sgml-electric-tag-pair-mode)
+#+END_SRC
+
+#+BEGIN_SRC emacs-lisp
+(eval-after-load "sgml-mode"
+  '(progn
+     (require 'tagedit)
+     (add-hook 'html-mode-hook (lambda () (tagedit-mode 1)))
+     (add-hook 'nxml-mode-hook (lambda () (tagedit-mode 1)))))
+
+(define-key tagedit-mode-map (kbd "C-c )") #'tagedit-forward-slurp-tag)
+(define-key tagedit-mode-map (kbd "C-c }") #'tagedit-forward-barf-tag)
+(define-key tagedit-mode-map (kbd "C-c s") #'tagedit-raise-tag)
+(define-key tagedit-mode-map (kbd "C-M-k") #'tagedit-kill)
+(define-key tagedit-mode-map (kbd "C-c a") #'tagedit-kill-attribute)
 #+END_SRC
 
 *** yaml mode
