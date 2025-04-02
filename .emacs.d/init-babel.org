@@ -776,7 +776,8 @@ cancelled by using any other key.
   "Enter a temporary buffer navigation mode. WINDOW specifies an optional window pointer,
 allowing to specify a remote window to be controlled."
   (lexical-let ((arg-acc 0) (arg-neg nil) (consumed nil)
-		(window (or window (selected-window))))
+		(window (or window (selected-window)))
+                (exit-fnc))
     (labels ((set-consumed () (setq consumed 't))
 	     (acc-reset ()
 			(if consumed
@@ -786,7 +787,7 @@ allowing to specify a remote window to be controlled."
 					 (* arg-acc (if arg-neg -1 1))
 				       default)))
 			    res))
-	     (acc-status () (message "navigate ([-,0-9] n,p,v,V,<,>,[,],l, ) %c %d"
+	     (acc-status () (message "navigate ([-,0-9] n,p,/, ,v,V,<,>,[,],l,r,q) %c %d"
 				     (if arg-neg arg-neg '? ) arg-acc))
 	     (arg-negate ()
 			 (setq arg-neg (if arg-neg nil '?-))
@@ -801,35 +802,42 @@ allowing to specify a remote window to be controlled."
 				   ,@body
 				   (acc-status)))))
 	(acc-status)
-	(set-transient-map
-	 (let ((map (make-sparse-keymap)))
-	   (define-key map [?-] (lambda () (interactive) (acc-reset) (arg-negate)))
-	   (dolist (num '(?0 ?1 ?2 ?3 ?4 ?5 ?6 ?7 ?8 ?9))
-	     (define-key map (vector num)
-	       (lambda ()
-		 (interactive)
-		 (acc-reset)
-		 (let* ((ev last-command-event)
-			(base (event-basic-type ev)))
-		   (arg-accumulate (- base 48))))))
-	   (define-key map " " (with-window
-				(if (eq arg-acc 0)
-				    (progn (set-mark-command nil)(deactivate-mark))
-				  (set-mark-command (get-arg-acc)))))
-	   (define-key map "n" (with-window (scroll-up-line (get-arg-acc 1))))
-	   (define-key map "p" (with-window (scroll-down-line (get-arg-acc 1))))
-	   (define-key map "/" (with-window (isearch-forward))) ;not documented
-	   (define-key map "l" (with-window (recenter-top-bottom (get-arg-acc))))
-	   (define-key map "r" (with-window (move-to-window-line-top-bottom (get-arg-acc))))
-	   (define-key map "<" (with-window (beginning-of-buffer (get-arg-acc))))
-	   (define-key map ">" (with-window (end-of-buffer (get-arg-acc))))
-	   (define-key map "]" (with-window (forward-paragraph (get-arg-acc))))
-	   (define-key map "[" (with-window (backward-paragraph (get-arg-acc))))
-	   (define-key map "\M-n" (with-window (next-line (get-arg-acc 1))))
-	   (define-key map "\M-p" (with-window (previous-line (get-arg-acc 1))))
-	   (define-key map "v" (with-window (scroll-up-command (get-arg-acc))))
-	   (define-key map "V" (with-window (scroll-down-command (get-arg-acc))))
-	 map) 't)))))
+        (setq exit-fnc
+              (set-transient-map
+	       (let ((map (make-sparse-keymap)))
+	         (define-key map [?-] (lambda () (interactive) (acc-reset) (arg-negate)))
+	         (dolist (num '(?0 ?1 ?2 ?3 ?4 ?5 ?6 ?7 ?8 ?9))
+	           (define-key map (vector num)
+	                       (lambda ()
+		                 (interactive)
+		                 (acc-reset)
+		                 (let* ((ev last-command-event)
+			                (base (event-basic-type ev)))
+		                   (arg-accumulate (- base 48))))))
+	         (define-key map " " (with-window
+				      (if (eq arg-acc 0)
+				          (progn (set-mark-command nil)(deactivate-mark))
+				        (set-mark-command (get-arg-acc)))))
+	         (define-key map "n" (with-window (scroll-up-line (get-arg-acc 1))))
+	         (define-key map "p" (with-window (scroll-down-line (get-arg-acc 1))))
+	         (define-key map "/" (with-window (isearch-forward))) ;not documented
+	         (define-key map "l" (with-window (recenter-top-bottom (get-arg-acc))))
+	         (define-key map "r" (with-window (move-to-window-line-top-bottom (get-arg-acc))))
+	         (define-key map "<" (with-window (beginning-of-buffer (get-arg-acc))))
+	         (define-key map ">" (with-window (end-of-buffer (get-arg-acc))))
+	         (define-key map "]" (with-window (forward-paragraph (get-arg-acc))))
+	         (define-key map "[" (with-window (backward-paragraph (get-arg-acc))))
+	         (define-key map "\M-n" (with-window (next-line (get-arg-acc 1))))
+	         (define-key map "\M-p" (with-window (previous-line (get-arg-acc 1))))
+	         (define-key map "v" (with-window (scroll-up-command (get-arg-acc))))
+	         (define-key map "V" (with-window (scroll-down-command (get-arg-acc))))
+	         (define-key map "q" (lambda ()
+                                       (interactive)
+                                       (set-consumed)
+                                       (with-selected-window window
+                                         (quit-window))
+                                       (funcall exit-fnc)))
+	         map) 't))))))
 
 (defun navigate-window ()
   "like `navigate-other-window', but always use current window."
@@ -837,7 +845,7 @@ allowing to specify a remote window to be controlled."
   (navigate-buffer))
 
 (nth-window navigate-other-window
-  "Enter a temporary buffer navigation mode, allowing some window to be
+            "Enter a temporary buffer navigation mode, allowing some window to be
 controlled remotely. Default is the other window. Optional argument
 selects the nth window. This allows moving around some window without
 de-selecting the current window, enabling a very convenient means of
@@ -848,13 +856,15 @@ Keys are:
           reset (e.g. by pressing 0)
   space: set a mark; with arg jump to mark
   n, p: scroll up/down
+  /: isearch
   l: recenter buffer to point
   r: move point to window center
   <, >: move point to beginning/end of buffer
   [, ]: move point forward/backward in paragraphs
   M-n, M-p: move point to next/previous line
-  v, V: pagewise scroll up/down"
-  (navigate-buffer))
+  v, V: pagewise scroll up/down
+  q: quit and close window"
+            (navigate-buffer))
 #+END_SRC
 
 *** Scrolling functions
