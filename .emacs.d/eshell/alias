@@ -1,0 +1,4 @@
+alias ll ls -l $*
+alias less view-file-other-window $1
+alias emgit git --git-dir=$HOME/emacs-config/.git --work-tree=$HOME $*
+alias more cat $1 > /dev/view
