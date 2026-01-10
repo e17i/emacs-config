@@ -54,8 +54,6 @@
  '(evil-default-state 'emacs)
  '(evil-insert-state-modes nil)
  '(evil-motion-state-modes nil)
- '(exec-path
-   '("/usr/bin" "/bin" "/usr/sbin" "/sbin" "/Applications/MacPorts/Emacs.app/Contents/MacOS/bin" "/opt/local/bin"))
  '(frame-auto-hide-function #'delete-frame)
  '(fringe-mode 0 nil (fringe))
  '(gud-mixvm-command-name "/opt/local/bin/mixvm")
