@@ -54,6 +54,14 @@
  '(evil-default-state 'emacs)
  '(evil-insert-state-modes nil)
  '(evil-motion-state-modes nil)
+ '(exec-path
+   '("/Applications/MacPorts/Emacs.app/Contents/MacOS/bin"
+     "/opt/local/bin" "/opt/local/sbin" "/usr/local/bin" "/usr/bin"
+     "/bin" "/usr/sbin" "/sbin" "/opt/X11/bin"
+     "/Library/Apple/usr/bin"
+     "/Library/Frameworks/Mono.framework/Versions/Current/Commands"
+     "/Users/joergk/Programming/node/node_modules/.bin"
+     "/Applications/MacPorts/Emacs.app/Contents/MacOS/libexec"))
  '(frame-auto-hide-function #'delete-frame)
  '(fringe-mode 0 nil (fringe))
  '(gud-mixvm-command-name "/opt/local/bin/mixvm")
