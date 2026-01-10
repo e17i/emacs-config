@@ -86,7 +86,15 @@
      ("melpa-stable" . "https://stable.melpa.org/packages/")
      ("melpa" . "https://melpa.org/packages/")))
  '(package-selected-packages
-   '(0blayout ace-window ace-jump-zap htmlize undo-tree docker-tramp docker org org-plus-contrib expand-region hide-mode-line org-present epresent yaml-mode indent-tools solarized-theme deadgrep use-package which-key smartparens tagedit ob-restclient company-restclient restclient py-autopep8 flycheck elpy company-jedi json-mode jedi-direx jedi ox-rst magit zzz-to-char ace-jump-mode helm realgud evil markdown-mode cider web-mode js2-mode electric-spacing auctex))
+   '(0blayout ace-jump-mode ace-jump-zap ace-window auctex cider
+              company-jedi company-restclient deadgrep docker
+              docker-tramp electric-spacing elpy epresent evil
+              expand-region flycheck helm hide-mode-line htmlize
+              indent-tools jedi jedi-direx js2-mode json-mode magit
+              markdown-mode ob-restclient org org-plus-contrib
+              org-present ox-rst py-autopep8 realgud restclient
+              smartparens solarized-theme tagedit transient undo-tree
+              use-package web-mode which-key yaml-mode zzz-to-char))
  '(paren-match-face 'paren-face-match-light)
  '(paren-sexp-mode t)
  '(python-mode-hook
