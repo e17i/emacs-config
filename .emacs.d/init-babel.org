@@ -1890,8 +1890,8 @@ Load and enable different additional packages
 (require 'yaml-mode)
 (global-undo-tree-mode)
 
-(add-hook 'emacs-lisp-mode-hook #'nameless-mode)
-(add-hook 'org-mode-hook #'nameless-mode)
+;; (add-hook 'emacs-lisp-mode-hook #'nameless-mode)
+;; (add-hook 'org-mode-hook #'nameless-mode)
 
 (which-key-mode 1)  ;; not only for spacemacs..
 
@@ -2136,7 +2136,7 @@ Some more usefull commands:
 
 Reload our defined aliases:
 #+begin_src emacs-lisp
-(eshell-read-aliases-list)
+;;(eshell-read-aliases-list)
 #+end_src
 
 ** paging/viewing in eshell
