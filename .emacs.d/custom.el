@@ -3,13 +3,14 @@
  ;; If you edit it by hand, you could mess it up, so be careful.
  ;; Your init file should contain only one such instance.
  ;; If there is more than one, they won't work right.
+ '(Man-notify-method 'pushy)
  '(blink-cursor-mode nil)
  '(buffers-menu-show-directories t)
  '(c-basic-offset 2)
  '(column-number-mode t)
  '(comint-completion-autolist t)
  '(custom-file "~/.emacs.d/custom.el")
- '(default-input-method "german-postfix")
+ '(default-input-method "german-prefix")
  '(delete-selection-mode t)
  '(dired-dwim-target t)
  '(dired-recursive-deletes 'top)
@@ -29,6 +30,27 @@
  '(elpy-mode-hook '(hl-line-mode flycheck-mode))
  '(elpy-modules
    '(elpy-module-company elpy-module-eldoc elpy-module-folding elpy-module-pyvenv elpy-module-highlight-indentation elpy-module-yasnippet elpy-module-django elpy-module-sane-defaults))
+ '(eshell-destroy-buffer-when-process-dies t)
+ '(eshell-modules-list
+   '(eshell-alias eshell-banner eshell-basic eshell-cmpl eshell-dirs
+                  eshell-extpipe eshell-glob eshell-hist eshell-ls eshell-pred
+                  eshell-prompt eshell-script eshell-smart eshell-term
+                  eshell-unix))
+ '(eshell-review-quick-commands 'not-even-short-output)
+ '(eshell-virtual-targets
+   '(("/dev/null" (lambda (_mode) (throw 'eshell-null-device t)) t)
+     ("/dev/eshell" eshell-interactive-print nil)
+     ("/dev/kill"
+      (lambda (mode) (when (eq mode 'overwrite) (kill-new ""))
+        #'eshell-kill-append)
+      t)
+     ("/dev/clip"
+      (lambda (mode)
+        (when (eq mode 'overwrite)
+          (let ((select-enable-clipboard t)) (kill-new "")))
+        #'eshell-clipboard-append)
+      t)
+     ("/dev/view" my-eshell-to-view-buffer t)))
  '(evil-default-state 'emacs)
  '(evil-insert-state-modes nil)
  '(evil-motion-state-modes nil)
