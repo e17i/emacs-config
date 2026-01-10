@@ -121,6 +121,8 @@
  '(size-indication-mode t)
  '(sp-base-key-bindings nil)
  '(tool-bar-mode nil)
+ '(undo-tree-auto-save-history nil)
+ '(undo-tree-enable-undo-in-region t)
  '(wdired-allow-to-change-permissions 'advanced)
  '(which-key-idle-delay 2.0)
  '(which-key-idle-secondary-delay 0.5)
