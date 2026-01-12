@@ -1,12 +1,10 @@
-# -*- org-html-postamble-format:(("en" "<p class="author">Author: %a
-# (Reddit: <a href="https://www.reddit.com/user/e17i">u/e17i</a>)</p> <p>Made on
-# emacs org-mode</p>"));
+# -*- org-html-postamble-format:(("en" "<p class="author">Author: %a</p> <p>Made on emacs org-mode</p>"));
 # org-html-postamble: t -*-
 #
 #+HTML_HEAD: <link rel="stylesheet" type="text/css" href="chrome/rethink.css" />
 #+HTML_HEAD_EXTRA: <img src="image1.jpg"/><div style="padding:2vh"><a style="font-weight:900; text-decoration:none" href="/">Home</a></div>
 #+OPTIONS: toc:nil num:nil html-style:nil
-#+INFOJS_OPT: view:info toc:nil path:chrome/org-info.js
+#+INFOJS_OPT: view:showall toc:t path:chrome/org-info.js
 #+LATEX_CLASS: article
 #+LATEX_CLASS_OPTIONS: [landscape]
 #+LATEX_HEADER: \usepackage[a4paper]{anysize}
@@ -1932,15 +1930,25 @@ next n files after the file under point.
 
 *** some handy keys
  =C-x C-j= :: open dired of current dir
+
  =s-4 C-j= :: open dired of current dir in other window
+
  =C-o= :: open file under point without visiting it
+
  =v= :: open file under point in view-mode (=q= returns)
+
  =q= ::  close dired buffer
+
  =(= ::  toggle visibility of details
+
  =i= ::  insert directory into view
+
  =k= ::  hide files. =C-u k=: remove inserted directories
+
  =* %= :: mark files selected by regexp
+
  === ::  compare files at mark and point 
+
  =m= ::  mark files in region (or under point)
 
 *** convenience
@@ -2083,7 +2091,9 @@ as smart scrolling handles that case quite nicely.
 
 - There are virtual devices:
   ~/dev/eshell~ :: output into eshell window
+
   ~/dev/clip~   :: output to clipboard
+
   ~/dev/kill~   :: output into kill ring
 
 - copy some selected previous output to command line: =C-0 C-c RET=
@@ -2113,6 +2123,18 @@ If the lines contain shell commands, each of them can be executed with ~buffer "
 Reload our defined aliases:
 #+begin_src emacs-lisp
 ;;(eshell-read-aliases-list)
+#+end_src
+
+Enable copying of region with =C-u C-c RET=:
+#+begin_src emacs-lisp
+(defun eshell-copy-region (&optional arg)
+  "copy line or region to prompt, without executing it."
+  (interactive "P")
+  (let ((input (eshell-get-old-input arg)))
+    (goto-char eshell-last-output-end)
+    (insert-and-inherit input)))
+
+(define-key eshell-mode-map (kbd "C-c RET") #'eshell-copy-region)
 #+end_src
 
 *** paging/viewing in eshell
