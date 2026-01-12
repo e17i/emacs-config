@@ -35,8 +35,8 @@ in custom.el, and call =M-x package-install-selected-packages=.
 Some nice customizations are still hidden in =custom.el= and probably
 should be moved here..
 
-** Lisp functions
-*** Handling of other window
+* Lisp functions
+** Handling of other window
 
 A topic of long and outstanding troubles has been the question
 of seemingly eratically automatic selection of the /other window/.
@@ -123,7 +123,7 @@ below all other windows.
     (recursive-edit)))
 #+END_SRC
 
-**** debugging display buffers
+*** debugging display buffers
 
 When constructing a display buffer alist, it can be useful to see the
 arguments sent down the display action pipeline. Just put it into the alist
@@ -164,7 +164,7 @@ common to navigate and this way to change the current buffer in the dired
 window. Thats why instead a :dired marker has been used. So each dired buffer
 visible in any window will open new files in the same origin window.
 
-**** Using side windows
+*** Using side windows
 
 You can push existing buffers into side windows, so they wont be replaced by
 other buffers when pushing buffers into other windows in the main working
@@ -220,7 +220,7 @@ use something like this:
     (switch-to-buffer b)))
 #+end_src
 
-**** Help and Apropos buffers
+*** Help and Apropos buffers
 
 All help or apropos buffers to be pushed into the other window,
 recognized by a regex, receive a special list of display actions and
@@ -278,7 +278,7 @@ than half frame height or also to use height of original window before split.
     (fit-window-to-buffer window max-height)))
 #+END_SRC
 
-**** Dired and other file navigation buffers
+*** Dired and other file navigation buffers
 
 The same should work in a similar way for ~dired~ buffers. But here is
 more too do besides selecting a window for the dired buffer. If used
@@ -476,7 +476,7 @@ way enabling using occur buffers in a similar way as dired.
   (string-match regex (buffer-name (current-buffer))))
 #+END_SRC
 
-**** Dedicated window
+*** Dedicated window
 
 Use this to define a dedicated /other window/. Afterwards, the next
 operation selecting another window will choose the dedicated one.
@@ -522,7 +522,7 @@ selected. If none is selected, revert to the default behaviour."
             (setq dedicated-other-window nil)))))
 #+END_SRC
 
-**** Other window functions
+*** Other window functions
 
 This sorted out, I'm adding some useful functions for handling the other
 window. Most of them are aimed at navigating text within the other
@@ -632,7 +632,7 @@ The same for frames might also come in handy.
        (select-frame-set-input-focus current))))
 #+END_SRC
 
-**** Other window applications
+*** Other window applications
 
 And now some other-window-functions. The last one is generic: it allows to
 jump to a window, work there and afterwards return. It also allows nested
@@ -694,7 +694,7 @@ jumps and returning with =C-M-c= or =C-]=.
     (recursive-edit)))
 #+END_SRC
 
-**** Push buffer to frame
+*** Push buffer to frame
 
 Sometimes, auxiliary buffers to be displayed in the other window are
 eratically pushed into some well arranged window. While this can be configured
@@ -724,7 +724,7 @@ To make this work smoothly, we also change iconification of frames on close.
  '(frame-auto-hide-function #'delete-frame))
 #+END_SRC
 
-**** Misc
+*** Misc
 
 Split a window and select the new one. Use =C-u= to split vertically.
 
@@ -738,7 +738,7 @@ Split a window and select the new one. Use =C-u= to split vertically.
   (other-window 1))
 #+END_SRC
 
-*** Convenient error stepping
+** Convenient error stepping
 
 You often want to navigate quickly through a list of error messages or
 occurencies, jumping to the places the errors are indicating. There are
@@ -784,7 +784,7 @@ Of course, the altenative is using =occur-edit-mode=, being similarly cool.
        map) 't)))
 #+END_SRC
 
-*** Convenient Navigation Mode
+** Convenient Navigation Mode
 
 This is another feature in the spirit of other window handling, activating
 some kind of temporary navigation mode. Using this, you can conveniently
@@ -890,7 +890,7 @@ Keys are:
             (navigate-buffer))
 #+END_SRC
 
-*** Scrolling functions
+** Scrolling functions
 
 When scrolling page wise (=C-v= and =C-V=), these functions help to control how much of the
 previous page to stay visible. ~scroll-1~ leaves visible 90% of the previous
@@ -921,9 +921,9 @@ Probably to be unified into a single function with argument..
     (recursive-edit)))
 #+END_SRC
 
-*** Frame and window size
+** Frame and window size
 
-**** Window size
+*** Window size
 
 And another temporary pseudo mode, here for interactively resizing windows.
 
@@ -960,7 +960,7 @@ Keys supported:
        tmap) 't)))
 #+END_SRC
 
-**** Frame size maximizing/auto-resizing
+*** Frame size maximizing/auto-resizing
 
 The following used to be a pseudo frame maximizing function for Mac,
 which is no longer needed, since macos supports native full screen
@@ -1106,7 +1106,7 @@ Note there is another function for switching to full size besides of this one.
   (set-frame-position frame 1441 0))
 #+END_SRC
 
-**** Frame full screen switching
+*** Frame full screen switching
 
 Here we toggle native fullscreen, removing all frame decorations and
 transparency.
@@ -1155,7 +1155,7 @@ transparency.
     (apply (get 'my-frame-transparency 'custom-set) 'my-frame-transparency 100 nil))))
 #+END_SRC
 
-*** Frame Transparency
+** Frame Transparency
 
 I like to have an easy way of setting and changing colors and
 transparency for all frames, this way having a consistent appearance
@@ -1199,7 +1199,7 @@ them a little bit..
 	      (set-foreground-color my-frame-foreground))))
 #+END_SRC
 
-*** electric delimiter
+** electric delimiter
 
 Often I want to put some text into delimiters after writing it, for example a
 string or an argument list. So the reverse of a splicing operation is needed.
@@ -1224,7 +1224,7 @@ opening delimiter."
     (insert-pair pre open close)))
 #+END_SRC
 
-** Environment Minor Mode
+* Environment Minor Mode
 
 We want to easily be able to switch between different environments. For
 example, when using a notebook in mobile or in docked mode, you may
@@ -1304,7 +1304,7 @@ function should call this function to reset it."
   (setq my-env-maps nil))
 #+END_SRC
 
-*** Internals
+** Internals
 
 #+BEGIN_SRC emacs-lisp
 (defvar my-env-action nil) ; current env cell. car is the env, cdr the next cell..
@@ -1369,7 +1369,7 @@ default N id and no actions."
   (force-mode-line-update 't))
 #+END_SRC
 
-** Global key bindings
+* Global key bindings
 
 Controlling emacs works best with the ability of touch typing, combined with a
 sensible selection of modifier keys. Repetitive strain injury can be prevented
@@ -1399,7 +1399,7 @@ also adviced to define caps lock as /Control/. Doing the left-hand moves then
 gets quite easy. Time will tell if usage of these one-handed combinations will
 be replaced by the more healthy two-handed counterparts.
 
-*** Generic
+** Generic
 
 Some convenience keys for handling buffers and files. Use caution and check to
 not shadow future default functionality here.
@@ -1455,7 +1455,7 @@ Split window and select new one. With prefix arg, split vertically.
 (global-set-key "\C-x42" #'split-and-select-window)
 #+END_SRC
 
-*** Convenience for searching
+** Convenience for searching
 
 This one really is a small hidden diamond. Often you want to finish a
 search leaving the point on the first character of the string found.
@@ -1476,7 +1476,7 @@ spots. Make it visible with =C-x C-x=.
     (isearch-exit)))
 #+END_SRC
 
-*** Scrolling and Navigation
+** Scrolling and Navigation
 
 Convenience keys for buffer scrolling. Enables up/down also with /Meta/
 modifier. Together with /Shift/ this enables scrolling. This way you can very
@@ -1505,7 +1505,7 @@ words. When combined with /Shift/, navigates to the end/beginning of words.
 (global-set-key [home] #'move-beginning-of-line)
 #+END_SRC
 
-*** Ace zapping
+** Ace zapping
 
 Ace enables some more vi-style jumping and zapping. But not working
 iteratively, it's not really nicely integrating with typical emacs workflows.
@@ -1520,7 +1520,7 @@ prefix arg.
 (global-set-key "\M-Z" #'zap-up-to-char)
 #+END_SRC
 
-*** Mouse handling
+** Mouse handling
 
 Mouse keys: remember basic mouse button handling in emacs: left - set pointer,
 double left - select word, triple left - select line, drag - select, drag
@@ -1575,7 +1575,7 @@ in wheel-mode apparently works only with trackpad.
     (my-env-add-map kmap)))
 #+END_SRC
 
-*** Keyboard handling
+** Keyboard handling
 
 On a us keyboard, we also want to be able to use german umlauts. This is
 possible quite easily, courtesy of mule. =C-\= switches the default input
@@ -1603,7 +1603,7 @@ Augment as needed..
     (my-env-add-map kmap)))
 #+END_SRC
 
-**** Modifiers
+*** Modifiers
 
 The /Meta/ key should always be directly left and right of the space
 bar. At least on the right side, there should be an /Alt/ key.
@@ -1651,7 +1651,7 @@ set org.gnome.mutter.keybindings switch-monitor "[]"= to unset it.
    '(x-super-keysym 'meta)))
 #+END_SRC
 
-**** experimental handling of super modifier
+*** experimental handling of super modifier
 
 The idea is to use /super/ instead of =C-x=. Especially for combinations
 whose second key doesn't want a /Control/ modifier, this might be a saver of
@@ -1768,7 +1768,7 @@ easily reachable.
     (my-env-add-map kmap)))
 #+end_src
 
-*** Window handling
+** Window handling
 
 We overrule =C-x ^= to use our window resizing method.
 
@@ -1787,7 +1787,7 @@ decorations.
 (global-set-key (kbd "<M-f11>") #'toggle-maximize-frame)
 #+END_SRC
 
-*** Remote controlling of other window
+** Remote controlling of other window
 
 As I got quite used to remote control the other window using =C-x 4= keys, 
 I'm adding a few ones which I missed so far.
@@ -1850,7 +1850,7 @@ other window.
 (global-set-key "\C-x4v" #'navigate-other-window)
 #+END_SRC
 
-*** Remote controlling of other frame
+** Remote controlling of other frame
 
 Push current window buffer to own frame and revert current window to previous frame.
 
@@ -1858,7 +1858,7 @@ Push current window buffer to own frame and revert current window to previous fr
 (global-set-key "\C-x5p" #'push-buffer-to-frame)
 #+END_SRC
 
-** Misc
+* Misc
 
 How emacs finds its tools:
 
@@ -1890,8 +1890,8 @@ Accept simplified answers.
 (fset 'yes-or-no-p 'y-or-n-p)
 #+END_SRC
 
-** Mode-specific customizations
-*** Auto-fill-mode
+* Mode-specific customizations
+** Auto-fill-mode
 
 #+BEGIN_SRC emacs-lisp
 (add-hook 'fundamental-mode-hook
@@ -1902,7 +1902,7 @@ Accept simplified answers.
          (lambda () (auto-fill-mode 1)))
 #+END_SRC
 
-*** C++ mode customizations, in use for aeons now
+** C++ mode customizations, in use for aeons now
 
 #+BEGIN_SRC emacs-lisp
 (add-hook 'c-mode-common-hook
@@ -1918,8 +1918,8 @@ Accept simplified answers.
                                            (substatement-open after)))))
 #+END_SRC
 
-*** dired
-**** some general remarks
+** dired
+*** some general remarks
 dired is more than just a simple replacement for ~ls~. 
 When opening two dired buffers, the second one is used as default taget for
 copy/move operations from files of the first one.
@@ -1934,7 +1934,7 @@ or use =*= to insert list of all file names into a single call.
 If no files are marked, the file under point is target. Prefix arg additionally selects the
 next n files after the file under point.
 
-**** some handy keys
+*** some handy keys
  =C-x C-j= :: open dired of current dir
  =s-4 C-j= :: open dired of current dir in other window
  =C-o= :: open file under point without visiting it
@@ -1947,7 +1947,7 @@ next n files after the file under point.
  === ::  compare files at mark and point 
  =m= ::  mark files in region (or under point)
 
-**** convenience
+*** convenience
 In dired, to select a file or directory, often it is easier to type =C-m=
 than =RET= (because easier within reach of base row than the ret key, being
 two keys away). To get up a directory in the opposite direction via =^= is
@@ -1962,7 +1962,7 @@ reasonable. BTW, selecting a file or directory is also possible with =f= and
 (define-key dired-mode-map [67108908] #'dired-up-directory)
 #+END_SRC
 
-**** dired-ediff
+*** dired-ediff
 Enable simple access to  ~ediff~ within ~dired~. Select two files with
 mark and point, then press ~=~ to compare.
 
@@ -1979,7 +1979,7 @@ mark and point, then press ~=~ to compare.
           (ediff-files prev file)))))
 #+END_SRC
 
-**** dired-multi-occur
+*** dired-multi-occur
 As suggested by Nicolas Petton
 (https://nicolas.petton.fr/blog/mutli-occur-on-projects.html), selecting files
 as source for =multi-occur= can be handy. This is done here:
@@ -1997,7 +1997,7 @@ When called with a prefix argument NLINES, display NLINES lines before and after
 Besides that, using the =ibuffer= multi-occur feature to search in buffers is
 also handy.
 
-*** deadgrep
+** deadgrep
 
 deadgrep-mode is missing some typical navigational features like =next-error=,
 =previous-error=. Also it needs a function only displaying a result, not
@@ -2045,7 +2045,7 @@ displaying them in the other window.
             (define-key deadgrep-mode-map "\C-o" #'deadgrep-display-result-other-window)))
 #+END_SRC
 
-*** eshell mode
+** eshell mode
 
 General idea is to use all text filter commands in the usual way: a text
 filter (optionally) takes in some text from stdin, does something and outputs
@@ -2069,26 +2069,42 @@ terminals.
 Tools that would paginate, like git log, should be configured to just output away,
 as smart scrolling handles that case quite nicely.
 
-**** howtos
+*** howtos
 
-Buffers can be addressed like file redirection: #<buffer name>. This is the
-same as ~(get-buffer-create "name")~.
-A third redirection function ~>>>~ appends to current point if target is a
-buffer.
-Use lisp functions as shell commands: ~switch-to-buffer-other-window
-#<buffer>~.
+- Buffers can be addressed like file redirection: #<buffer name>. This is the
+  same as ~(get-buffer-create "name")~.
+  A third redirection function ~>>>~ appends to current point if target is a
+  buffer.
 
-See ~cd~ history: ~cd =~. Address old dirs: ~$-[n]~ or ~$OLDPWD[n]~.
+- Use lisp functions as shell commands: ~switch-to-buffer-other-window
+  #<buffer>~.
 
-Start a command sending output into extra buffer: ~compile <command>~. Async
-version with ~make <command>~. ~occur~: search in current eshell buffer.
+- See ~cd~ history: ~cd =~. Address old dirs: ~$-[n]~ or ~$OLDPWD[n]~.
 
-There are virtual devices:
- ~/dev/eshell~ :: output into eshell window
- ~/dev/clip~   :: output to clipboard
- ~/dev/kill~   :: output into kill ring
+- Start a command sending output into extra buffer: ~compile <command>~.
 
-Some more usefull commands:
+- ~occur~: search in current eshell buffer.
+
+- There are virtual devices:
+  ~/dev/eshell~ :: output into eshell window
+  ~/dev/clip~   :: output to clipboard
+  ~/dev/kill~   :: output into kill ring
+
+- copy some selected previous output to command line: =C-0 C-c RET=
+  directly execute it: =C-0 RET=
+  (to copy the respective lines, don't use the prefix command).
+
+**** smart scrolling
+
+*** Some more usefull commands:
+
+#+begin_src emacs-lisp
+(defun eshell/buffer (name)
+  (with-current-buffer name (buffer-string)))
+#+end_src
+This can be used to output the contents of a buffer: ~buffer "test" | cat~
+Narrow it (=C-x n=) to output only the narrowed part.
+If the lines contain shell commands, each of them can be executed with ~buffer "test" | sh~.
 
 #+begin_src emacs-lisp
 (defun eshell/la (&rest args)
@@ -2100,10 +2116,10 @@ Some more usefull commands:
 
 Reload our defined aliases:
 #+begin_src emacs-lisp
-(eshell-read-aliases-list)
+;;(eshell-read-aliases-list)
 #+end_src
 
-** paging/viewing in eshell
+*** paging/viewing in eshell
 
 We want to have an explicit way to paginate output, like ~more~ in traditional
 shells. There seems to be no easy way (currently) to implement eshell commands
@@ -2135,9 +2151,7 @@ otherwise we append to the end. The buffer is made visible and finally using
 Now, an alias of more 'cat $1 > /dev/view' does the trick. We can call ~more
 file~ or pipe to it: ~ls|more~. Both ways it works as expected.
 
-**** todo
- - build a function similar to =C-c RET=, but only copying the selected region
-   as new prompt.
+*** todo
  - use vi alias opening file in emacs in evil mode
  - use ls as alias to dired
  - find out about the pecularities of smart scrolling
@@ -2146,9 +2160,9 @@ file~ or pipe to it: ~ls|more~. Both ways it works as expected.
     see eshell-directory-change-hook
     see eshell-prompt-function
    
-*** Evil mode
+** Evil mode
 
-**** Evil defines
+*** Evil defines
 
 Here we implement some kind of =.vimrc= initialization.
 This is also an example of defining an evil leader key and some adjacent keymaps.
@@ -2175,7 +2189,7 @@ accessable by =SPC=. Lets see how this works out.
   (def-evil-scroll-state))
 #+END_SRC
 
-**** experimental evil scroll mode
+*** experimental evil scroll mode
 
 Example of defining an own evil mode. Motivated by the convenient navigation
 mode ([[Convenient Navigation Mode]]) and a vi configuration mapping j to jzz, k
@@ -2211,7 +2225,7 @@ to kzz, this allows probably easier scrolling in evil.
   (define-key leader-map "s" 'evil-scroll-state))
 #+END_SRC
 
-**** Evil Emacs config
+*** Evil Emacs config
 
 When using evil-mode, we set ~evil-exit-emacs-state~ to =C-M-z=, as I'm used to
 ~suspend-frame~. Additionally, always enter evil mode in emacs state (see custom). This
@@ -2256,7 +2270,7 @@ Now, after Initializing evil, we may probably also activate it in all buffers.
 (evil-rc)
 #+END_SRC
 
-*** markdown mode
+** markdown mode
 
 #+BEGIN_SRC emacs-lisp
 (autoload 'markdown-mode "markdown-mode"
@@ -2266,7 +2280,7 @@ Now, after Initializing evil, we may probably also activate it in all buffers.
 (setq markdown-command "/Users/jko/Programming/node/node_modules/.bin/md2html")
 #+END_SRC
 
-*** org
+** org
 The well known template mechanism =<s TAB= has been replaced by a
 mechanism based on the tempo package (but see also below). This is activated by
 
@@ -2274,7 +2288,7 @@ mechanism based on the tempo package (but see also below). This is activated by
 (require 'org-tempo)
 #+end_src
 
-**** org structures, templates and litterate programming
+*** org structures, templates and litterate programming
 =C-c C-,= can be used to insert structure templates,
 which also works with regions.
 Use =M-TAB= for completion. E.g. when inserting a src block, use this to
@@ -2284,7 +2298,7 @@ corresponding mode to edit. This way, write code or evaluate lisp forms using
 =C-M-x=. When writing interactive notebooks, use =C-c C-c= to execure code
 within a structure. The output will then be included in a result block.
 
-**** org outline editing, markup, lists, tables
+*** org outline editing, markup, lists, tables
 
 Use left, right, up, down with =M= to move nodes around (how to do this on
 keyboards without cursor keys?).
@@ -2297,7 +2311,7 @@ Use =C-c C-x C-f= as helper for marking regions.
 Lists can be unordered (-, +, *), ordered: 1. or 1) or use descriptions
 (separating term :: description).
 
-**** org present
+*** org present
 
 Org present presents each top level element as a page. It only has a few
 simple keys. Use left/right to go through the presentation, =C-c <= and =C-c
@@ -2336,7 +2350,7 @@ with the corresponding =tiny= command.
   (setq org-present-mode-quit-hook nil))
 #+END_SRC
 
-*** python mode
+** python mode
 
 We use hippie-expand mapped to =M-/=
 
@@ -2353,7 +2367,7 @@ We want to use flycheck in python.
 ~elpy-mode~ defines a bunch of useful support functions for navigating and
 indenting in python buffers.
 
-**** (Re-)Installing venv
+*** (Re-)Installing venv
 
 First, make sure to set custom variables like ~elpy-rpc-python-command~ to
 appropriate values. When resetting them, probably also remove the virtual env
@@ -2362,7 +2376,7 @@ directory in ~.emacs.d/elpy/rpc-venv~. Afterwards, use
 finding documentation and object definitions. See also ~elpy-rpc-restart~ and
 ~jedi:install-server~ etc.
 
-**** Using elpy
+*** Using elpy
 
 Use =C-c C-d= for documentation for item under
 point, =M-.= jump to definition of item under cursor, =M-*= pop back to where
@@ -2463,7 +2477,7 @@ tools mode, which binds =C-c >= as hydra.
 ;;               (add-hook 'write-contents-hooks 'python-mode-untabify)))
 #+END_SRC
 
-*** realgud debugging
+** realgud debugging
 
 We want to use middle mouse button on a variable to show the containing value.
 On mac, this works only good in combination with some modifier, so we use
@@ -2473,7 +2487,7 @@ On mac, this works only good in combination with some modifier, so we use
 (global-set-key [(s-mouse-2)] #'realgud:tooltip-eval)
 #+END_SRC
 
-*** React programming
+** React programming
 
 Combine javascript and web-mode, supporting ~jsx~ templates within. This is
 probably outdated and should be re-evaluated. Is there already a real
@@ -2484,7 +2498,7 @@ react-mode? Otherwise, combine it with more up-to-date html-mode?
 (add-hook 'web-mode-hook 'js2-minor-mode)
 #+END_SRC
 
-*** smartparens mode
+** smartparens mode
 
 In emacs lisp, we want slurp and barf support via smartparens. As the default
 conflicts with my habits, we define our own mapping here.
@@ -2530,7 +2544,7 @@ is ="=, unsplice is ~'~. ~(~ and ~)~ slurp in corresponding direction, ~{~ and
 (add-hook 'emacs-lisp-mode-hook #'smartparens-mode)
 #+END_SRC
 
-*** tramp mode
+** tramp mode
 
 Using ~customize~, tramp can be configured (via ~tramp-connection-properties~)
 to export ssh-agent to certain target hosts. This comes in handy when using
@@ -2582,9 +2596,9 @@ The term buffer is named based on `name' and behaves like `ansi-term'."
           (start-term termbuf))))))
 #+end_src
 
-*** XML-mode
+** XML-mode
 
-**** hiding of subtrees
+*** hiding of subtrees
 
 Here we use ~hs-mode~, enabling tag view toggling and tag level hiding. Also
 ~S-mouse-2~ can be used to toggle tag views.
@@ -2610,7 +2624,7 @@ Here we use ~hs-mode~, enabling tag view toggling and tag level hiding. Also
 (define-key nxml-mode-map (kbd "C-c C-l") #'hs-hide-level)
 #+END_SRC
 
-**** tagedit-mode
+*** tagedit-mode
 
 #+BEGIN_SRC emacs-lisp
 (add-hook 'nxml-mode-hook #'sgml-electric-tag-pair-mode)
@@ -2630,7 +2644,7 @@ Here we use ~hs-mode~, enabling tag view toggling and tag level hiding. Also
 (define-key tagedit-mode-map (kbd "C-c a") #'tagedit-kill-attribute)
 #+END_SRC
 
-*** yaml mode
+** yaml mode
 
 Have RET indent like in python mode:
 
@@ -2642,7 +2656,27 @@ Have RET indent like in python mode:
             (define-key yaml-mode-map "\C-m" 'newline-and-indent)))
 #+END_SRC
 
-** Disabled commands
+* Best practices
+** Modifying regions
+- use keyboard macro on region: =C-x C-k r=
+- use rectangular region:
+  - =C-x SPC= or =C-M-Mouse1=
+  - interactively replace each line with text: =C-x r t=
+    use this with rectangle of width 0, inserting text into each line at given column
+- use shell command on region: =M-|=
+  each line of region is input (stdin) of single instance of given shell
+  command. Output goes to command buffer (or, with =C-u= prefix, replaces region)
+  example:
+
+  awk '{print $1}' :: replace each line by first word of line
+  
+  sh :: execute each line
+** Replacements
+- use quoted characters to insert control characters into searches or
+  replacements:
+  =M-%= query replace SPC =C-q C-j= :: replace space by RET
+
+* Disabled commands
 
 #+BEGIN_SRC emacs-lisp
 (put 'narrow-to-region 'disabled nil)
@@ -2650,30 +2684,30 @@ Have RET indent like in python mode:
 (put 'set-goal-column 'disabled nil)
 #+END_SRC
 
-** Todo
-*** TODO split custom.el into site specific customization and global custom selection to be merged/distributed
+* Todo
+** TODO split custom.el into site specific customization and global custom selection to be merged/distributed
     - move mergeable options into init-babel.org?
-*** TODO read about tramp plugins
-*** TODO macro for command composition
+** TODO read about tramp plugins
+** TODO macro for command composition
     - compose key 1 and key 2
     - assign function name
     - where-is-internal - find key bindings for function
     - key-binding - find function for key binding
-*** DONE complete mouse/trackpad handling/switching
-*** DONE make window resize steps customizable, add center function
-*** DONE display-buffer
-**** DONE option close frame on quit instead of iconify
+** DONE complete mouse/trackpad handling/switching
+** DONE make window resize steps customizable, add center function
+** DONE display-buffer
+*** DONE option close frame on quit instead of iconify
      - frame-auto-hide-function to delete
-**** DONE build a function scaling selected window to fit buffer, but use max arg fract of frame
+*** DONE build a function scaling selected window to fit buffer, but use max arg fract of frame
      - fit-window-to-buffer-max-half-frame
-**** DONE how to make window dedicated? that is not 'dedicated' to a buffer, but not selected as other window
+*** DONE how to make window dedicated? that is not 'dedicated' to a buffer, but not selected as other window
      - probably mitigated by not using display-buffer-use-some-window
-**** DONE continue experiments with-current-buffer
-**** DONE read display-buffer
-**** DONE check dired buffer handling
+*** DONE continue experiments with-current-buffer
+*** DONE read display-buffer
+*** DONE check dired buffer handling
      - experiment with logging display-buffer function
-*** DONE find out about alist handling
-*** DONE finetune nth-window and other window handling
+** DONE find out about alist handling
+** DONE finetune nth-window and other window handling
     - s f. other-window-for-scrolling and v. other-window-scroll-buffer
     - select other window:
       - probably tag different windows with dedication tags (main work
@@ -2681,13 +2715,13 @@ Have RET indent like in python mode:
       - advice display-buffer functions not to use these
     - or define own actions
     - first see display-buffer docs
-*** DONE complete keyboard switching
-*** DONE cleanup misc, move to mode specific sections
-*** DONE env-mode: use make-composed-keymap, set-keymap-parent
+** DONE complete keyboard switching
+** DONE cleanup misc, move to mode specific sections
+** DONE env-mode: use make-composed-keymap, set-keymap-parent
     this way, each action can define an own keymap indefinitely existing and
     just adding/removing it on enter/exit. Advantage is, rebind commands
     should also be effective on these existing keymaps.
     - also: call first toggle-my-environment on mode init. So if envs are
       defined, we are always in one of the valid states.
-*** DONE think about movement/search placing point on beginning of adjacent object
+** DONE think about movement/search placing point on beginning of adjacent object
     done at least for searching
