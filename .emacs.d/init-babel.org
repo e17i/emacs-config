@@ -1,12 +1,10 @@
-# -*- org-html-postamble-format:(("en" "<p class="author">Author: %a
-# (Reddit: <a href="https://www.reddit.com/user/e17i">u/e17i</a>)</p> <p>Made on
-# emacs org-mode</p>"));
+# -*- org-html-postamble-format:(("en" "<p class="author">Author: %a</p> <p>Made on emacs org-mode</p>"));
 # org-html-postamble: t -*-
 #
 #+HTML_HEAD: <link rel="stylesheet" type="text/css" href="chrome/rethink.css" />
 #+HTML_HEAD_EXTRA: <img src="image1.jpg"/><div style="padding:2vh"><a style="font-weight:900; text-decoration:none" href="/">Home</a></div>
 #+OPTIONS: toc:nil num:nil html-style:nil
-#+INFOJS_OPT: view:info toc:nil path:chrome/org-info.js
+#+INFOJS_OPT: view:showall toc:t path:chrome/org-info.js
 #+LATEX_CLASS: article
 #+LATEX_CLASS_OPTIONS: [landscape]
 #+LATEX_HEADER: \usepackage[a4paper]{anysize}
@@ -2129,6 +2127,18 @@ If the lines contain shell commands, each of them can be executed with ~buffer "
 Reload our defined aliases:
 #+begin_src emacs-lisp
 ;;(eshell-read-aliases-list)
+#+end_src
+
+Enable copying of region with =C-u C-c RET=:
+#+begin_src emacs-lisp
+(defun eshell-copy-region (&optional arg)
+  "copy line or region to prompt, without executing it."
+  (interactive "P")
+  (let ((input (eshell-get-old-input arg)))
+    (goto-char eshell-last-output-end)
+    (insert-and-inherit input)))
+
+(define-key eshell-mode-map (kbd "C-c RET") #'eshell-copy-region)
 #+end_src
 
 *** paging/viewing in eshell
