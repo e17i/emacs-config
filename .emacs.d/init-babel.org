@@ -1936,15 +1936,25 @@ next n files after the file under point.
 
 *** some handy keys
  =C-x C-j= :: open dired of current dir
+
  =s-4 C-j= :: open dired of current dir in other window
+
  =C-o= :: open file under point without visiting it
+
  =v= :: open file under point in view-mode (=q= returns)
+
  =q= ::  close dired buffer
+
  =(= ::  toggle visibility of details
+
  =i= ::  insert directory into view
+
  =k= ::  hide files. =C-u k=: remove inserted directories
+
  =* %= :: mark files selected by regexp
+
  === ::  compare files at mark and point 
+
  =m= ::  mark files in region (or under point)
 
 *** convenience
@@ -2087,7 +2097,9 @@ as smart scrolling handles that case quite nicely.
 
 - There are virtual devices:
   ~/dev/eshell~ :: output into eshell window
+
   ~/dev/clip~   :: output to clipboard
+
   ~/dev/kill~   :: output into kill ring
 
 - copy some selected previous output to command line: =C-0 C-c RET=
