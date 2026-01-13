@@ -2453,7 +2453,8 @@ mode.
 
 #+BEGIN_SRC emacs-lisp
 ;; (w32-register-hot-key (kbd "<M-tab>")) ; example of hot key override, but not practical
-(define-key elpy-mode-map (kbd "<S-tab>") #'elpy-folding-toggle-at-point)
+(add-hook 'python-mode-hook 'hs-minor-mode)
+(define-key python-mode-map (kbd "<M-tab>") #'elpy-folding-toggle-at-point)
 #+END_SRC
 
 Enable autopep8, but don't activate it on save. 
