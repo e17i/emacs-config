@@ -2288,6 +2288,134 @@ Now, after Initializing evil, we may probably also activate it in all buffers.
 (evil-rc)
 #+END_SRC
 
+** hide-lines
+
+Lets try to put a hide-lines prefix on =C-c C-h=:
+#+begin_src emacs-lisp
+(define-prefix-command 'my-hide-lines-map)
+(global-set-key (kbd "C-c C-h") my-hide-lines-map)
+(define-key my-hide-lines-map (kbd "r") #'hide-lines)
+(define-key my-hide-lines-map (kbd "s") #'hide-lines-show-all)
+#+end_src
+Note with prefix, its function is reversed. With two prefixes (=C-u C-u=) all
+hidden lines are shown again.
+
+Now this works with regexes, which is cool. But more emacs-like would be to
+work on regions and lines.
+
+#+begin_src emacs-lisp
+(defun hide-lines-selection (&optional prefix)
+  "Hide lines. If a region is selected, hide that. Otherwise, hide the current
+line. With a numeric prefix argument, hide that number of lines."
+  (interactive "p")
+  (if (region-active-p)
+      (progn
+        (hide-lines-add-overlay (mark) (point))
+        (deactivate-mark))
+    (save-excursion
+      (beginning-of-line)
+      (let ((start (point)))
+        (forward-line prefix)
+        (hide-lines-add-overlay start (point))))))
+#+end_src
+
+#+begin_src emacs-lisp
+(define-key my-hide-lines-map (kbd "C-h") #'hide-lines-selection)
+#+end_src
+
+*** non-contiguous region on hide-lines
+
+Here we build an advice function for region-extract-function, setting a
+non-contiguous region containing selected visible lines.
+This way, we finally can hide some lines and then copy (or do whatever with)
+the rest (like pipe it to a shell).
+
+The first function transforms overlays of invisible areas into region
+descriptions. Then we have a function reversing them, effectively describing
+all remaining visible areas within the selected region.
+Finally, an advice function for ~region-extract-function~, using these
+noncontiguous bounds.
+
+#+begin_src emacs-lisp
+(defun my/region-from-overlay (overlay)
+  (let ((beg (overlay-start overlay))
+        (end (overlay-end overlay)))
+    `(,beg . ,end)))
+
+(defun my/visible-regions-helper (overlays beg end regions)
+  (cl-labels ((larger (a b)
+                (if (> a b) a b))
+              (smaller (a b)
+                (if (< a b) a b)))
+    (if (null overlays)
+        (remove-if
+         (lambda (elem)
+           (>= (car elem) (cdr elem)))
+         (append regions `((,beg . ,end))))
+      (let ((invs (caar overlays))
+            (inve (cdar overlays)))
+        (let ((start (if (> invs beg) beg
+                       (smaller (larger inve beg) end)))
+              (stop (if (< inve end) end
+                      (larger (smaller invs end) beg))))
+          (let ((inv (smaller invs stop))
+                (next (larger inve start)))
+            (my/visible-regions-helper
+             (cdr overlays)
+             next
+             stop
+             (append regions `((,start . ,inv))))))))))
+
+(defun my/visible-regions (prev-regions)
+  (let ((inv-regions (sort
+                      (mapcar #'my/region-from-overlay
+                              hide-lines-invisible-areas)
+                      :lessp (lambda (a b)
+                               (< (car a) (car b)))
+                      :in-place nil)))
+    (apply #'append
+           (mapcar
+            (lambda (region)
+              (my/visible-regions-helper
+               inv-regions
+               (car region) (cdr region) nil))
+            prev-regions))))
+
+(defun my/region-bounds-advice (orig method)
+  (cl-labels ((nl-string (str)
+                (if (string-equal (string-chop-newline str) str)
+                    (format "%s\n" str)
+                  str))
+              (del-region (bounds)
+                (mapcar
+                 (lambda (region) (delete-region (car region) (cdr region)))
+                 bounds))
+              (get-region (bounds)
+                (apply #'concat
+                       (mapcar
+                        (lambda (region)
+                          (nl-string (filter-buffer-substring (car region) (cdr region) nil)))
+                        bounds))))
+    (if (or
+         (not (region-active-p))
+         (not hide-lines-invisible-areas))
+        (funcall orig method)
+      (let ((my-bounds (my/visible-regions (funcall orig 'bounds))))
+        (cond
+         ((eq method 'bounds)
+          my-bounds)
+         ((eq method 'delete-only)
+          (del-region (reverse my-bounds)))
+         ((eq method 'delete)
+          (let ((region (get-region my-bounds)))
+            (del-region (reverse my-bounds))
+            region))
+         (t
+          (get-region my-bounds)))))))
+
+(add-function :around region-extract-function #'my/region-bounds-advice)
+#+end_src
+
 ** markdown mode
 
 #+BEGIN_SRC emacs-lisp
@@ -2449,7 +2577,8 @@ mode.
 
 #+BEGIN_SRC emacs-lisp
 ;; (w32-register-hot-key (kbd "<M-tab>")) ; example of hot key override, but not practical
-(define-key elpy-mode-map (kbd "<S-tab>") #'elpy-folding-toggle-at-point)
+(add-hook 'python-mode-hook 'hs-minor-mode)
+(define-key python-mode-map (kbd "<M-tab>") #'elpy-folding-toggle-at-point)
 #+END_SRC
 
 Enable autopep8, but don't activate it on save. 
