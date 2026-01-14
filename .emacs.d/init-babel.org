@@ -4,7 +4,7 @@
 #+HTML_HEAD: <link rel="stylesheet" type="text/css" href="chrome/rethink.css" />
 #+HTML_HEAD_EXTRA: <img src="image1.jpg"/><div style="padding:2vh"><a style="font-weight:900; text-decoration:none" href="/">Home</a></div>
 #+OPTIONS: toc:nil num:nil html-style:nil
-#+INFOJS_OPT: view:showall toc:t path:chrome/org-info.js
+#+INFOJS_OPT: view:overview toc:t path:chrome/org-info.js
 #+LATEX_CLASS: article
 #+LATEX_CLASS_OPTIONS: [landscape]
 #+LATEX_HEADER: \usepackage[a4paper]{anysize}
@@ -2297,7 +2297,7 @@ Lets try to put a hide-lines prefix on =C-c C-h=:
 (define-key my-hide-lines-map (kbd "r") #'hide-lines)
 (define-key my-hide-lines-map (kbd "s") #'hide-lines-show-all)
 #+end_src
-Note with prefix, its function is reversed. With two prefixes (=C-u C-u=) all
+Note with prefix, its function is inversed. With two prefixes (=C-u C-u=) all
 hidden lines are shown again.
 
 Now this works with regexes, which is cool. But more emacs-like would be to
@@ -2321,6 +2321,31 @@ line. With a numeric prefix argument, hide that number of lines."
 
 #+begin_src emacs-lisp
 (define-key my-hide-lines-map (kbd "C-h") #'hide-lines-selection)
+#+end_src
+
+*** invert visible lines
+
+Using the advice function of next section, it is quite easy to invert the
+whole buffer's visible lines. Marking the whole buffer will give just that
+non-contiguous list of ~region-bounds~ which we will use to hide each of them.
+
+#+begin_src emacs-lisp
+(defun my/hide-lines-inverse ()
+  "invert hidden lines. That is, hide all visible lines, show all others."
+  (interactive)
+  (save-excursion
+    (mark-whole-buffer)
+    (let ((visible-lines (region-bounds)))
+      (hide-lines-show-all)
+      (mapcar
+       (lambda (region)
+         (hide-lines-add-overlay (car region) (cdr region)))
+       visible-lines)))
+  (deactivate-mark))
+#+end_src
+
+#+begin_src emacs-lisp
+(define-key my-hide-lines-map (kbd "i") #'my/hide-lines-inverse)
 #+end_src
 
 *** non-contiguous region on hide-lines
