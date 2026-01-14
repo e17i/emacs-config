@@ -4,7 +4,7 @@
 #+HTML_HEAD: <link rel="stylesheet" type="text/css" href="chrome/rethink.css" />
 #+HTML_HEAD_EXTRA: <img src="image1.jpg"/><div style="padding:2vh"><a style="font-weight:900; text-decoration:none" href="/">Home</a></div>
 #+OPTIONS: toc:nil num:nil html-style:nil
-#+INFOJS_OPT: view:showall toc:t path:chrome/org-info.js
+#+INFOJS_OPT: view:overview toc:t path:chrome/org-info.js
 #+LATEX_CLASS: article
 #+LATEX_CLASS_OPTIONS: [landscape]
 #+LATEX_HEADER: \usepackage[a4paper]{anysize}
