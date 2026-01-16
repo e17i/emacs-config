@@ -2184,6 +2184,19 @@ file~ or pipe to it: ~ls|more~. Both ways it works as expected.
    
 ** Evil mode
 
+*** Preparations
+
+We want to enter evil only occasionally; we use it with the undo-tree package.
+
+#+begin_src emacs-lisp
+(custom-set-variables
+ '(evil-default-state 'emacs)
+ '(evil-undo-system 'undo-tree)
+ '(evil-want-C-h-delete t)
+ '(evil-want-C-u-delete t)
+ '(evil-want-C-u-scroll t))
+#+end_src
+
 *** Evil defines
 
 Here we implement some kind of =.vimrc= initialization.
@@ -2196,18 +2209,17 @@ accessable by =SPC=. Lets see how this works out.
 #+BEGIN_SRC emacs-lisp
 (defun evil-rc ()
   "evil local init/customization"
-  (define-prefix-command 'leader-map)
-
-  (define-key evil-normal-state-map " " leader-map)
-  ;; yes, we really want to scroll up in evil mode
-  (define-key evil-normal-state-map "\C-u" #'evil-scroll-up)
-
-  (define-key leader-map "#" #'list-buffers)
-  (define-key leader-map "l" #'global-linum-mode)
-
-  (define-key leader-map "x" (key-binding "\C-x"))
-  (set-keymap-parent leader-map (key-binding "\C-x"))
-  (define-key leader-map "c" (key-binding "\C-c"))
+  (evil-set-leader 'normal " ")
+  (evil-define-key 'normal 'global (kbd "<leader>#")
+    (lambda ()
+      (interactive)
+      (other-window-prefix)
+      (list-buffers)))
+  (evil-define-key 'normal 'global (kbd "<leader>n") #'evil-next-buffer)
+  (evil-define-key 'normal 'global (kbd "<leader>p") #'evil-prev-buffer)
+  (evil-define-key 'normal 'global (kbd "<leader>l") #'global-display-line-numbers-mode)
+  (evil-define-key 'normal 'global (kbd "<leader>x") (key-binding "\C-x"))
+  (evil-define-key 'normal 'global (kbd "<leader>c") (key-binding "\C-c"))
   (def-evil-scroll-state))
 #+END_SRC
 
@@ -2243,8 +2255,8 @@ to kzz, this allows probably easier scrolling in evil.
                                           (call-interactively #'evil-previous-line)
                                           (evil-scroll-line-to-center nil)))
   (define-key evil-scroll-state-map (kbd "<escape>") 'evil-normal-state)
-  (define-key evil-scroll-state-map "\C-\M-z" 'evil-emacs-state)
-  (define-key leader-map "s" 'evil-scroll-state))
+  (define-key  evil-scroll-state-map "\C-\M-z" 'evil-emacs-state)
+  (evil-define-key 'normal 'global (kbd "<leader>s") 'evil-scroll-state))
 #+END_SRC
 
 *** Evil Emacs config
@@ -2296,6 +2308,8 @@ Now, after Initializing evil, we may probably also activate it in all buffers.
 
 Lets try to put a hide-lines prefix on =C-c C-h=:
 #+begin_src emacs-lisp
+(autoload 'hide-lines "hide-lines"
+  "Hide lines based on a regexp" t)
 (define-prefix-command 'my-hide-lines-map)
 (global-set-key (kbd "C-c C-h") my-hide-lines-map)
 (define-key my-hide-lines-map (kbd "r") #'hide-lines)
