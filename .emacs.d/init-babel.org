@@ -2108,13 +2108,20 @@ as smart scrolling handles that case quite nicely.
 
 *** Some more usefull commands:
 
+This can be used to output the contents of a buffer: ~buffer "test" | cat~
+Narrow it (=C-x n=) to output only the narrowed part.
+If the lines contain shell commands, each of them can be executed with ~buffer "test" | sh~.
 #+begin_src emacs-lisp
 (defun eshell/buffer (name)
   (with-current-buffer name (buffer-string)))
 #+end_src
-This can be used to output the contents of a buffer: ~buffer "test" | cat~
-Narrow it (=C-x n=) to output only the narrowed part.
-If the lines contain shell commands, each of them can be executed with ~buffer "test" | sh~.
+
+A shortcut for ~dired~.
+#+begin_src emacs-lisp
+(defun eshell/els (&optional arg)
+  (dired
+   (if (null arg) "." arg)))
+#+end_src
 
 #+begin_src emacs-lisp
 (defun eshell/la (&rest args)
@@ -2135,6 +2142,7 @@ Enable copying of region with =C-u C-c RET=:
   "copy line or region to prompt, without executing it."
   (interactive "P")
   (let ((input (eshell-get-old-input arg)))
+    (deactivate-mark)
     (goto-char eshell-last-output-end)
     (insert-and-inherit input)))
 
@@ -2339,6 +2347,20 @@ line. With a numeric prefix argument, hide that number of lines."
 
 #+begin_src emacs-lisp
 (define-key my-hide-lines-map (kbd "C-h") #'hide-lines-selection)
+#+end_src
+
+And here a small helper, extracting the current, possibly non-contiguous region:
+#+begin_src emacs-lisp
+(defun region-string ()
+  (cl-labels
+       ((nl-string (str)
+          (if (string-equal (string-chop-newline str) str) (format "%s\n" str)
+            str)))
+     (apply #'concat
+            (mapcar
+             (lambda (region)
+               (nl-string (buffer-substring-no-properties (car region) (cdr region))))
+             (region-bounds)))))
 #+end_src
 
 *** invert visible lines
@@ -2865,6 +2887,17 @@ Have RET indent like in python mode:
 - use quoted characters to insert control characters into searches or
   replacements:
   =M-%= query replace SPC =C-q C-j= :: replace space by RET
+** Use diff-mode on diff-buffers
+- for example, in eshell: emgit diff file|more
+- M-x diff-mode
+- C-x C-q (read-only)
+  - M-n / M-p to step through diffs
+  - C-c C-n to narrow to current diff
+  - C-c C-r to reverse diff direction
+** Send CTRL-chars to attached process
+- for instance, when docker attach called in shell-mode or eshell-mode
+  - M-x term-char-mode
+  - afterwards the detach command seq C-p C-q works
 
 * Disabled commands
 
