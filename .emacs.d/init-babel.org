@@ -2104,6 +2104,11 @@ as smart scrolling handles that case quite nicely.
   directly execute it: =C-0 RET=
   (to copy the respective lines, don't use the prefix command).
 
+This works also with other-window-prefix:
+#+begin_src emacs-lisp
+(global-set-key (kbd "s-!") #'eshell)
+#+end_src
+
 **** smart scrolling
 
 *** Some more usefull commands:
@@ -2138,10 +2143,19 @@ Reload our defined aliases:
 
 Enable copying of region with =C-u C-c RET=:
 #+begin_src emacs-lisp
+(defun eshell-get-region-or-input (&optional use-current-region)
+  "Return the command input on the current line.
+If USE-CURRENT-REGION is non-nil, return the current region."
+  (if use-current-region
+      (buffer-substring-no-properties (min (point) (mark))
+			              (max (point) (mark)))
+    (eshell-get-old-input)))
+
 (defun eshell-copy-region (&optional arg)
-  "copy line or region to prompt, without executing it."
+  "copy line or region to prompt, without executing it.
+With prefix, use region."
   (interactive "P")
-  (let ((input (eshell-get-old-input arg)))
+  (let ((input (eshell-get-region-or-input arg)))
     (deactivate-mark)
     (goto-char eshell-last-output-end)
     (insert-and-inherit input)))
@@ -2183,7 +2197,6 @@ file~ or pipe to it: ~ls|more~. Both ways it works as expected.
 
 *** todo
  - use vi alias opening file in emacs in evil mode
- - use ls as alias to dired
  - find out about the pecularities of smart scrolling
  - output like git branch/infos on dir change:
    see eshell customizing options
@@ -2318,6 +2331,7 @@ Lets try to put a hide-lines prefix on =C-c C-h=:
 #+begin_src emacs-lisp
 (autoload 'hide-lines "hide-lines"
   "Hide lines based on a regexp" t)
+(require 'hide-lines)
 (define-prefix-command 'my-hide-lines-map)
 (global-set-key (kbd "C-c C-h") my-hide-lines-map)
 (define-key my-hide-lines-map (kbd "r") #'hide-lines)
@@ -2338,11 +2352,10 @@ line. With a numeric prefix argument, hide that number of lines."
       (progn
         (hide-lines-add-overlay (mark) (point))
         (deactivate-mark))
-    (save-excursion
       (beginning-of-line)
       (let ((start (point)))
         (forward-line prefix)
-        (hide-lines-add-overlay start (point))))))
+        (hide-lines-add-overlay start (point)))))
 #+end_src
 
 #+begin_src emacs-lisp
@@ -2408,28 +2421,24 @@ noncontiguous bounds.
     `(,beg . ,end)))
 
 (defun my/visible-regions-helper (overlays beg end regions)
-  (cl-labels ((larger (a b)
-                (if (> a b) a b))
-              (smaller (a b)
-                (if (< a b) a b)))
-    (if (null overlays)
-        (remove-if
-         (lambda (elem)
-           (>= (car elem) (cdr elem)))
-         (append regions `((,beg . ,end))))
-      (let ((invs (caar overlays))
-            (inve (cdar overlays)))
-        (let ((start (if (> invs beg) beg
-                       (smaller (larger inve beg) end)))
-              (stop (if (< inve end) end
-                      (larger (smaller invs end) beg))))
-          (let ((inv (smaller invs stop))
-                (next (larger inve start)))
-            (my/visible-regions-helper
-             (cdr overlays)
-             next
-             stop
-             (append regions `((,start . ,inv))))))))))
+  (if (null overlays)
+      (remove-if
+       (lambda (elem)
+         (>= (car elem) (cdr elem)))
+       (append regions `((,beg . ,end))))
+    (let ((invs (caar overlays))
+          (inve (cdar overlays)))
+      (let ((start (if (> invs beg) beg
+                     (min (max inve beg) end)))
+            (stop (if (< inve end) end
+                    (max (min invs end) beg))))
+        (let ((inv (min invs stop))
+              (next (max inve start)))
+          (my/visible-regions-helper
+           (cdr overlays)
+           next
+           stop
+           (append regions `((,start . ,inv)))))))))
 
 (defun my/visible-regions (prev-regions)
   (let ((inv-regions (sort
