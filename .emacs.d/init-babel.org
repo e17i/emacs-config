@@ -1442,7 +1442,7 @@ using =h= or =SPC=.
 
 #+BEGIN_SRC emacs-lisp
 (require 'expand-region)
-;; (global-set-key "\C-ch" 'er/expand-region)
+;; (global-set-key "\C-ch" 'er/expand-region) ::free this key for hide-lines
 (global-set-key " " 'er/expand-region)
 #+END_SRC
 
@@ -1927,7 +1927,7 @@ kill ring) the active region. After all, this should change even small single
 character delete actions into larger region-changing kill actions.
 
 So here is an experimental advice function, augmenting ~#'delete-selection-helper~ and
-changing the action type to ~'kill~ for certain types. 
+changing the action type to ~'kill~ for certain types.
 
 Now this way, you can use the pattern of selecting text, then typing on
 (replacing it) and finally using =C-y= to re-insert the original text (like
@@ -2368,7 +2368,8 @@ Now, after Initializing evil, we may probably also activate it in all buffers.
 
 ** hide-lines
 
-Lets try to put a hide-lines prefix on =C-c C-h=:
+Lets try to put a hide-lines prefix on =C-c h=:
+(side note, never put C-h into a key, as this shadows the help facility)
 #+begin_src emacs-lisp
 (autoload 'hide-lines "hide-lines"
   "Hide lines based on a regexp" t)
