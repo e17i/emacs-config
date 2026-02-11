@@ -9,6 +9,19 @@
  '(c-basic-offset 2)
  '(column-number-mode t)
  '(comint-completion-autolist t)
+ '(compilation-error-regexp-alist
+   '(absoft ada aix ant bash borland python-tracebacks-and-caml cmake cmake-info
+            comma msft edg-1 edg-2 epc ftnchek gradle-kotlin
+            gradle-kotlin-legacy gradle-android iar ibm irix java javac
+            jikes-file maven jikes-line clang-include gcc-include
+            ruby-Test::Unit lua lua-stack gmake gnu cucumber lcc makepp mips-1
+            mips-2 oracle perl php rxp shellcheck sparc-pascal-file
+            sparc-pascal-line sparc-pascal-example sun sun-ada watcom 4bsd
+            gcov-file gcov-header gcov-nomark gcov-called-line
+            gcov-never-called perl--Pod::Checker perl--Test perl--Test2
+            perl--Test::Harness weblint guile-file guile-line
+            typescript-tsc-plain typescript-tsc-pretty
+            ("\\[ERROR\\]\\W*\\[\\([^:]*\\):\\(.*\\)\\]" my-fqpn 2)))
  '(custom-file "~/.emacs.d/custom.el")
  '(deadgrep-project-root-function '(lambda nil default-directory))
  '(default-input-method "german-prefix")
@@ -32,6 +45,7 @@
  '(elpy-modules
    '(elpy-module-company elpy-module-eldoc elpy-module-folding elpy-module-pyvenv elpy-module-highlight-indentation elpy-module-yasnippet elpy-module-django elpy-module-sane-defaults))
  '(elpy-rpc-python-command "python3")
+ '(epe-git-untracked-char "")
  '(eshell-destroy-buffer-when-process-dies t)
  '(eshell-modules-list
    '(eshell-alias eshell-banner eshell-basic eshell-cmpl eshell-dirs
@@ -121,8 +135,8 @@
  '(ns-right-command-modifier 'meta)
  '(nxml-sexp-element-flag t)
  '(org-agenda-files nil)
- '(org-babel-python-command "python2")
  '(org-babel-load-languages '((shell . t) (emacs-lisp . t)))
+ '(org-babel-python-command "python3")
  '(org-file-apps
    '((auto-mode . emacs)
      ("\\.mm\\'" . default)
@@ -178,6 +192,7 @@
        ("-e" "none")
        ("%h")))))
  '(undo-tree-auto-save-history nil)
+ '(undo-tree-enable-undo-in-region t)
  '(wdired-allow-to-change-permissions 'advanced)
  '(which-key-idle-delay 2.0)
  '(which-key-idle-secondary-delay 0.5)
