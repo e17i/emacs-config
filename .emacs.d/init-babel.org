@@ -1442,7 +1442,7 @@ using =h= or =SPC=.
 
 #+BEGIN_SRC emacs-lisp
 (require 'expand-region)
-(global-set-key "\C-ch" 'er/expand-region)
+;; (global-set-key "\C-ch" 'er/expand-region)
 (global-set-key " " 'er/expand-region)
 #+END_SRC
 
@@ -1916,6 +1916,37 @@ Accept simplified answers.
                                            (substatement-open after)))))
 #+END_SRC
 
+** delete-selection minor mode
+This mode, when activated, deletes the active region (and probably also saves
+it into a register) if some kind of text insertion or modification command is
+issued. As a side note, when deactivated, you can just type without deleting
+the region.
+
+But instead, I'd expect this kind of actions to kill (that is, put it into the
+kill ring) the active region. After all, this should change even small single
+character delete actions into larger region-changing kill actions.
+
+So here is an experimental advice function, augmenting ~#'delete-selection-helper~ and
+changing the action type to ~'kill~ for certain types. 
+
+Now this way, you can use the pattern of selecting text, then typing on
+(replacing it) and finally using =C-y= to re-insert the original text (like
+select, then type =" C-y "=).
+
+#+begin_src emacs-lisp
+(defun my/selection-advice (oldfun type)
+         (let ((type
+                (if (and (not (null type))
+                         (not (functionp type))
+                         (not (eq type 'yank))
+                         (not (eq type 'supersede)))
+                    'kill
+                  type)))
+           (funcall oldfun type)))
+
+(advice-add 'delete-selection-helper :around #'my/selection-advice)
+#+end_src
+
 ** dired
 *** some general remarks
 dired is more than just a simple replacement for ~ls~. 
@@ -2111,6 +2142,15 @@ This works also with other-window-prefix:
 
 **** smart scrolling
 
+**** prompt extras
+
+#+begin_src emacs-lisp
+(with-eval-after-load "esh-opt"
+  (autoload 'epe-theme-lambda "eshell-prompt-extras")
+  (setq eshell-highlight-prompt nil
+        eshell-prompt-function 'epe-theme-lambda))
+#+end_src
+
 *** Some more usefull commands:
 
 This can be used to output the contents of a buffer: ~buffer "test" | cat~
@@ -2202,6 +2242,7 @@ file~ or pipe to it: ~ls|more~. Both ways it works as expected.
    see eshell customizing options
     see eshell-directory-change-hook
     see eshell-prompt-function
+    see epe (eshell prompt extras)
    
 ** Evil mode
 
@@ -2333,7 +2374,7 @@ Lets try to put a hide-lines prefix on =C-c C-h=:
   "Hide lines based on a regexp" t)
 (require 'hide-lines)
 (define-prefix-command 'my-hide-lines-map)
-(global-set-key (kbd "C-c C-h") my-hide-lines-map)
+(global-set-key (kbd "C-c h") my-hide-lines-map)
 (define-key my-hide-lines-map (kbd "r") #'hide-lines)
 (define-key my-hide-lines-map (kbd "s") #'hide-lines-show-all)
 #+end_src
@@ -2359,7 +2400,7 @@ line. With a numeric prefix argument, hide that number of lines."
 #+end_src
 
 #+begin_src emacs-lisp
-(define-key my-hide-lines-map (kbd "C-h") #'hide-lines-selection)
+(define-key my-hide-lines-map (kbd "h") #'hide-lines-selection)
 #+end_src
 
 And here a small helper, extracting the current, possibly non-contiguous region:
@@ -2878,6 +2919,23 @@ Have RET indent like in python mode:
 #+END_SRC
 
 * Best practices
+** customizing compilation buffers
+- M-x customize-option compilation-error-regexp-alist
+- add error spec: ("\\[ERROR\\]\\W*\\[\\([^:]*\\):\\(.*\\)\\]" my-fqpn 2)
+  so the regex string needs every "\" to be quoted
+  - convenience: use helm-regex, test it within log buffer
+  - when finished, RET quotes and copies it to kill ring
+- here match group 1 is file, group 2 is lineno
+  file is modified by a function, receiving no arg, so it fetches last match subgroup 1
+  (defun my-fqpn ()
+    (concat (replace-regexp-in-string "\\." "/" (match-string-no-properties 1)) ".py"))
+- open logfile
+- M-x compilation-minor-mode
+- convenience: (setq default-directory "/path/to/project_root")
+- convenience: use hide-lines to filter down log
+  C-u C-c C-h r \[cs.catalyst
+- convenience: M-x next-error-follow-minor-mode
+
 ** Modifying regions
 - use keyboard macro on region: =C-x C-k r=
 - use rectangular region:
