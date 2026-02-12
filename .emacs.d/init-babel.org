@@ -1716,7 +1716,7 @@ easily reachable.
     (define-key kmap (kbd "s-w") (keymap-global-lookup "C-x w"))
     (define-key kmap (kbd "C-s-w") #'write-file)
     (define-key kmap (kbd "s-x") (keymap-global-lookup "C-x x"))
-    (define-key kmap (kbd "C-s-x") #'exchange-point-and-mark)
+    (define-key kmap (kbd "C-s-x") (lambda (&optional arg) (interactive "P") (exchange-point-and-mark (not arg))))
     (define-key kmap (kbd "s-z") #'repeat)
     (define-key kmap (kbd "C-s-z") #'repeat)
     (define-key kmap (kbd "s-;") #'comment-set-column)
@@ -1765,6 +1765,56 @@ easily reachable.
     (define-key kmap (kbd "s-<return>") #'execute-extended-command)
     (my-env-add-map kmap)))
 #+end_src
+
+*** handling of mark, region and transient mark mode
+
+Using marks not only as region delimiters, but also as storage of previous
+locations is an intriguing idea. Supporting this, we use the /super/ key
+bindings introduced above to implement a variation of ~exchange-point-and-mark~,
+which reverses the effect of prefix arg. Now we can use =C-(x x)= as usual
+exchanging point and mark and activating the transient region; and =C-s-x=
+just exchanging point and mark without activating the region. This way it
+feels really simple to jump back and forth between current and previous
+location. Otherwise use =C-(u SPC)= repeatedly to iterate through the ring.
+In addition, using ~visible-mark-mode~ being able to see the mark makes this
+really convenient.
+
+#+begin_src emacs-lisp
+(defface visible-mark-active ;; put this before (require 'visible-mark)
+  '((((type tty) (class mono)) (:inverse-video t))
+    (t (:background "magenta")))
+  "Custom face for the active mark.")
+(setq visible-mark-max 1)
+(setq visible-mark-faces '(visible-mark-face1 visible-mark-face2))
+(require 'visible-mark)
+(global-visible-mark-mode 1)
+#+end_src
+
+Combined with ~delete-selection-mode~, this works nicely and as expected: when region is
+deactivated, we can just type ahead to write text. If the mark is on the same line
+as point, it moves on while typing. When region is activated, instead, it is
+replaced by the text typed, which is just what I want.
+
+In addition, the change below in [[*delete-selection minor mode][delete-selection minor mode]] makes sure the
+replaced region is also put into kill ring, making it very convenient
+to prepend or surround a region: just type the prepending text, then =C-y= and
+the final enclosing text.
+
+The last step now still missing: when yanking into an active region, while the
+region is replaced by the last (or previous) contents of the kill ring, the
+replaced contents of region, in this case, is not pushed to the kill ring.
+Which would make it very convenient (and conforming to expectations) to just
+use =C-(y y)=, first replacing the region with the head of the kill ring, then
+inserting the new head (the text just replaced). Of course, you can achieve
+exactly this by deactivating the region and then inserting the yank. But
+still, when assigning a register to ~delete-selection-save-to-register~, the
+text replaced by a yank is saved to that register. Now just re-insert it with
+=s-r i y= (for instance, if you assigned the =y= register). And again,
+~insert-register~ works as expected when applied to an active region by just
+pushing replaced regions to the kill ring.
+
+But see also [[https://spwhitton.name/blog/entry/transient-mark-mode/][GNU Emacs' Transient Mark mode]] regarding the question of
+(de)activating transient mark mode.
 
 ** Window handling
 
@@ -2011,9 +2061,7 @@ mark and point, then press ~=~ to compare.
     "ediff file at mark and file at point."
     (interactive)
     (let ((file (dired-get-filename))
-          (prev (if mark-active 
-                    (save-excursion (goto-char (mark t))(dired-get-filename))
-                  nil)))
+          (prev (save-excursion (goto-char (mark t))(dired-get-filename))))
       (if (and file prev)
           (ediff-files prev file)))))
 #+END_SRC
@@ -2531,6 +2579,32 @@ noncontiguous bounds.
 
 (add-function :around region-extract-function #'my/region-bounds-advice)
 #+end_src
+
+*** appending to buffers from non-contiguous regions
+
+#+begin_src emacs-lisp
+(defun my/append-to-buffer (buffer)
+  (interactive
+   (list
+    (read-buffer "Append to buffer: " (other-buffer (current-buffer) t))))
+  (let ((regions (region-bounds)))
+    (mapc (lambda (region)
+            (append-to-buffer buffer (car region) (cdr region)))
+          regions)))
+#+end_src
+
+This works in the same way as the original append-to-buffer, as in
+rectangle-mode, the selected line snippets are appended without line breaks.
+But this also happens if you just mark parts of a line and append them without
+editing the target buffer. So ~append-to-buffer~ works in a very rudimentary
+way, as long as you don't select full lines.
+
+This could be mitigated by advising to the original function, using
+~(region-string)~ if ~region-noncontiguous-p~, otherwise using the original
+function.
+
+But many other functions like ~occur~ also only work with simple contiguous
+regions.
 
 ** markdown mode
 
