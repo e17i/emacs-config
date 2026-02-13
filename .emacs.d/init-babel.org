@@ -1800,16 +1800,14 @@ replaced region is also put into kill ring, making it very convenient
 to prepend or surround a region: just type the prepending text, then =C-y= and
 the final enclosing text.
 
-The last step now still missing: when yanking into an active region, while the
-region is replaced by the last (or previous) contents of the kill ring, the
-replaced contents of region, in this case, is not pushed to the kill ring.
-Which would make it very convenient (and conforming to expectations) to just
-use =C-(y y)=, first replacing the region with the head of the kill ring, then
+The final adaptation, also pushing the replaced region of a yank to kill ring,
+makes it very convenient (and conforming to expectations) to just use =C-(y
+y)=, this way first replacing the region with the head of the kill ring, then
 inserting the new head (the text just replaced). Of course, you can achieve
-exactly this by deactivating the region and then inserting the yank. But
-still, when assigning a register to ~delete-selection-save-to-register~, the
+exactly this by deactivating the region and then inserting the yank. Also,
+when assigning a register to ~delete-selection-save-to-register~, the
 text replaced by a yank is saved to that register. Now just re-insert it with
-=s-r i y= (for instance, if you assigned the =y= register). And again,
+=s-r i y= (for instance, after assigning the =y= register). And again,
 ~insert-register~ works as expected when applied to an active region by just
 pushing replaced regions to the kill ring.
 
@@ -1982,16 +1980,40 @@ select, then type =" C-y "=).
 #+begin_src emacs-lisp
 (defun my/selection-advice (oldfun type)
          (let ((type
-                (if (and (not (null type))
-                         (not (functionp type))
-                         (not (eq type 'yank))
-                         (not (eq type 'supersede)))
-                    'kill
-                  type)))
+                (if (or (null type)
+                        (functionp type)
+                        (eq type 'yank)
+                        (eq type 'supersede))
+                    type
+                  'kill)))
+           (setq my/selection-type type)
            (funcall oldfun type)))
 
 (advice-add 'delete-selection-helper :around #'my/selection-advice)
+(setq delete-selection-save-to-register ?y)
 #+end_src
+
+In case of problems while testing this modification, use =(advice-remove 'delete-selection-helper #'my/selection-advice)=
+to deactivate it.
+
+Just for sake of consistency, a yank is handled the same way. That is, yanking
+first saves the replaced region into a temporary register, then yanks in the
+top of the kill ring, and finally puts the temporary register (the previously
+saved original region) on top of the kill ring.
+
+#+begin_src emacs-lisp
+(defun my/selection-post ()
+  (if (and (eq my/selection-type 'yank)
+           delete-selection-save-to-register)
+      (progn
+        (setq my/selection-type nil)
+        (kill-new (get-register delete-selection-save-to-register)))))
+
+(add-hook 'post-command-hook #'my/selection-post)
+#+end_src
+
+In case of problems while testing this modification, use =(remove-hook 'post-command-hook #'my/selection-post)=
+to deactivate it.
 
 ** dired
 *** some general remarks
