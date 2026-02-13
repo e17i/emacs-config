@@ -2504,6 +2504,25 @@ Now, after Initializing evil, we may probably also activate it in all buffers.
 (evil-rc)
 #+END_SRC
 
+** Etags
+
+#+BEGIN_SRC emacs-lisp
+(global-set-key "\C-ct" 'tag-complete-symbol)
+(global-set-key "\C-cs" 'tags-search)
+(global-set-key "\C-cr" 'tags-query-replace)
+(defun my-generate-etags ()
+  (interactive)
+  (let* ((dir (read-string "project: "))
+	 (cctarget (concat "../" dir "/*.cc"))
+	 (hhtarget (concat "../" dir "/*.hh"))
+	 (ctarget (concat "../" dir "/*.c"))
+	 (htarget (concat "../" dir "/*.h")))
+    (shell-command (concat "etags -a " cctarget " " hhtarget " " ctarget " " htarget " >/dev/null") nil)
+    )
+  )
+(global-set-key "\C-ci" 'my-generate-etags)
+#+END_SRC
+
 ** hide-lines
 
 Lets try to put a hide-lines prefix on =C-c h=:
@@ -2706,6 +2725,15 @@ regions.
 (setq markdown-command "/Users/jko/Programming/node/node_modules/.bin/md2html")
 #+END_SRC
 
+** MIX (GNU MDK)
+
+#+BEGIN_SRC emacs-lisp
+(setq load-path (cons "/opt/local/share/mdk" load-path))
+(autoload 'mixal-mode "mixal-mode" t)
+(add-to-list 'auto-mode-alist '("\\.mixal\\'" . mixal-mode))
+(autoload 'mixvm "mixvm" "mixvm/gud interaction" t)
+#+END_SRC
+
 ** org
 The well known template mechanism =<s TAB= has been replaced by a
 mechanism based on the tempo package (but see also below). This is activated by
@@ -2774,6 +2802,18 @@ with the corresponding =tiny= command.
   (interactive)
   (setq org-present-mode-hook nil)
   (setq org-present-mode-quit-hook nil))
+#+END_SRC
+
+** POV-Ray
+
+#+BEGIN_SRC emacs-lisp
+(setq load-path (cons "~/.emacs.d/lisp" load-path))
+(autoload 'pov-mode "pov-mode.el" "PoVray scene file mode" t)
+(setq auto-mode-alist
+      (append '(("\\.pov$" . pov-mode)
+		("\\.inc$" . pov-mode)
+		) auto-mode-alist))
+(setq pov-indent-level '2)
 #+END_SRC
 
 ** python mode
