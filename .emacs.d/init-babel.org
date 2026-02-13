@@ -1,12 +1,10 @@
-# -*- org-html-postamble-format:(("en" "<p class="author">Author: %a
-# (Reddit: <a href="https://www.reddit.com/user/e17i">u/e17i</a>)</p> <p>Made on
-# emacs org-mode</p>"));
+# -*- org-html-postamble-format:(("en" "<p class="author">Author: %a</p> <p>Made on emacs org-mode</p>"));
 # org-html-postamble: t -*-
 #
 #+HTML_HEAD: <link rel="stylesheet" type="text/css" href="chrome/rethink.css" />
 #+HTML_HEAD_EXTRA: <img src="image1.jpg"/><div style="padding:2vh"><a style="font-weight:900; text-decoration:none" href="/">Home</a></div>
 #+OPTIONS: toc:nil num:nil html-style:nil
-#+INFOJS_OPT: view:info toc:nil path:chrome/org-info.js
+#+INFOJS_OPT: view:overview toc:t path:chrome/org-info.js
 #+LATEX_CLASS: article
 #+LATEX_CLASS_OPTIONS: [landscape]
 #+LATEX_HEADER: \usepackage[a4paper]{anysize}
@@ -18,7 +16,7 @@ This configuration consists of three parts. In the first one, I'm collecting
 all kinds of lisp functions. Some of them probably should be put into proper packages
 instead. The second part defines global key bindings. This is the main
 part, as the overall emacs behaviour is defined there.
-In the third part, configurations for the packages I use are placed.
+In the third part, package configurations for all packages I use are collected.
 
 I'm not (yet) using =use-package=. I want to distribute my config over
 several machines, so I'm setting config defaults in this file. Each
@@ -26,6 +24,11 @@ machine uses it's local =custom.el=, which is adopted by using the
 =customize= functions and may or may not overwrite the defaults
 defined here. To make this effective, the =custom.el= file is loaded
 after this one has been processed.
+
+To bootstrap a new emacs, after importing this file the packages required here
+must be installed. To achieve this, just start =emacs --no-init=, set the
+=package-archives= and =package-selected-packages= variables to the lists given
+in custom.el, and call =M-x package-install-selected-packages=.
 
 Some nice customizations are still hidden in =custom.el= and probably
 should be moved here..
@@ -48,9 +51,9 @@ will, generating this behaviour.
 
 A first mitigation may be to sensibly change the
 ~display-buffer-fallback-action~, overriding it in
-~display-buffer-base-action~. Here we just replace the
+~display-buffer-base-action~ or in ~display-buffer-alist~. Here we just replace the
 ~display-buffer-use-some-window~ function which probably is the source of
-those erratic behaviour. Our replacement is a combination of
+those erratic behaviours. Our replacement is a combination of
 ~display-buffer-below-selected~ and ~display-buffer-at-bottom~, which on first
 view seems to be not such a bad selection for frames using a large screen
 space. This way, info/occur/magit windows which you want to pop up on
@@ -87,7 +90,7 @@ initiating actions come first.
         (display-buffer-as-scroll-buffer display-buffer-dedicated-window display-buffer-reuse-help display-buffer-at-bottom)
         (window-height . fit-window-to-buffer-max-half-frame))
        ("\\*ansi"
-        display-buffer-at-bottom)))
+        (display-buffer-at-bottom))))
    '(display-buffer-base-action
      '((display-buffer-maybe-as-scroll-buffer display-buffer-dedicated-window display-buffer--maybe-same-window display-buffer-reuse-window display-buffer--maybe-pop-up-frame-or-window display-buffer-in-previous-window display-buffer-below-selected display-buffer-at-bottom display-buffer-pop-up-frame)))
    '(window-min-height 8)
@@ -95,13 +98,26 @@ initiating actions come first.
 #+END_SRC
 
 As a fallback we add a function to recursively edit with original behaviour.
+=C-M-c= leaves a level of recursion.
 
 #+BEGIN_SRC emacs-lisp
 (defun edit-with-fallback-display ()
-  "reset `display-buffer-base-action' and edit recursively, to
+  "reset `display-buffer-alist' and edit recursively, to
   have the original buffer sharing behaviour."
   (interactive)
-  (let ((display-buffer-base-action nil))
+  (let ((display-buffer-alist nil))
+    (recursive-edit)))
+#+END_SRC
+
+And, similarly, use this to make sure the next other windows will be opened
+below all other windows.
+
+#+BEGIN_SRC emacs-lisp
+(defun edit-with-display-at-bottom ()
+  "set `display-buffer-alist' and edit recursively, to
+  push the next buffer to the screen's bottom."
+  (interactive)
+  (let ((display-buffer-alist '((display-buffer-at-bottom))))
     (recursive-edit)))
 #+END_SRC
 
@@ -205,7 +221,7 @@ use something like this:
 *** Help and Apropos buffers
 
 All help or apropos buffers to be pushed into the other window,
-recognized by a regex, receive a special list if display actions and
+recognized by a regex, receive a special list of display actions and
 also attributes modifying the window size. We want to put those
 buffers into windows at bottom, where they are unobtrusive and can
 stay as long as we want. If such a window already exists, it should be
@@ -658,6 +674,14 @@ jumps and returning with =C-M-c= or =C-]=.
   "do incremental search forward in other window."
   (isearch-forward))
 
+(nth-window scroll-down-line-other-window
+  "scroll down in other window."
+  (scroll-down-line))
+
+(nth-window scroll-up-line-other-window
+  "scroll up in other window."
+  (scroll-up-line))
+
 (nth-window edit-other-window
   "recursively edit in other buffer, allowing to return later. Save
 `other-window-scroll-buffer', reverting it after finishing."
@@ -675,6 +699,8 @@ eratically pushed into some well arranged window. While this can be configured
 through action variables used by ~display-buffer~, this is a complex and
 error-prone configuration. To mitigate, use this function to push a buffer into its
 own frame and revert the previously crafted window arrangement.
+
+This is now also implemented in the default window functions (=s-w ^ f=).
 
 This also calls a little bit for some further 'remote control other frame'
 functions..
@@ -771,7 +797,8 @@ cancelled by using any other key.
   "Enter a temporary buffer navigation mode. WINDOW specifies an optional window pointer,
 allowing to specify a remote window to be controlled."
   (lexical-let ((arg-acc 0) (arg-neg nil) (consumed nil)
-		(window (or window (selected-window))))
+		(window (or window (selected-window)))
+                (exit-fnc))
     (labels ((set-consumed () (setq consumed 't))
 	     (acc-reset ()
 			(if consumed
@@ -781,7 +808,7 @@ allowing to specify a remote window to be controlled."
 					 (* arg-acc (if arg-neg -1 1))
 				       default)))
 			    res))
-	     (acc-status () (message "navigate ([-,0-9] n,p,v,V,<,>,[,],l, ) %c %d"
+	     (acc-status () (message "navigate ([-,0-9] n,p,/, ,v,V,<,>,[,],l,r,q) %c %d"
 				     (if arg-neg arg-neg '? ) arg-acc))
 	     (arg-negate ()
 			 (setq arg-neg (if arg-neg nil '?-))
@@ -796,35 +823,42 @@ allowing to specify a remote window to be controlled."
 				   ,@body
 				   (acc-status)))))
 	(acc-status)
-	(set-transient-map
-	 (let ((map (make-sparse-keymap)))
-	   (define-key map [?-] (lambda () (interactive) (acc-reset) (arg-negate)))
-	   (dolist (num '(?0 ?1 ?2 ?3 ?4 ?5 ?6 ?7 ?8 ?9))
-	     (define-key map (vector num)
-	       (lambda ()
-		 (interactive)
-		 (acc-reset)
-		 (let* ((ev last-command-event)
-			(base (event-basic-type ev)))
-		   (arg-accumulate (- base 48))))))
-	   (define-key map " " (with-window
-				(if (eq arg-acc 0)
-				    (progn (set-mark-command nil)(deactivate-mark))
-				  (set-mark-command (get-arg-acc)))))
-	   (define-key map "n" (with-window (scroll-up-line (get-arg-acc 1))))
-	   (define-key map "p" (with-window (scroll-down-line (get-arg-acc 1))))
-	   (define-key map "/" (with-window (isearch-forward))) ;not documented
-	   (define-key map "l" (with-window (recenter-top-bottom (get-arg-acc))))
-	   (define-key map "r" (with-window (move-to-window-line-top-bottom (get-arg-acc))))
-	   (define-key map "<" (with-window (beginning-of-buffer (get-arg-acc))))
-	   (define-key map ">" (with-window (end-of-buffer (get-arg-acc))))
-	   (define-key map "]" (with-window (forward-paragraph (get-arg-acc))))
-	   (define-key map "[" (with-window (backward-paragraph (get-arg-acc))))
-	   (define-key map "\M-n" (with-window (next-line (get-arg-acc 1))))
-	   (define-key map "\M-p" (with-window (previous-line (get-arg-acc 1))))
-	   (define-key map "v" (with-window (scroll-up-command (get-arg-acc))))
-	   (define-key map "V" (with-window (scroll-down-command (get-arg-acc))))
-	 map) 't)))))
+        (setq exit-fnc
+              (set-transient-map
+	       (let ((map (make-sparse-keymap)))
+	         (define-key map [?-] (lambda () (interactive) (acc-reset) (arg-negate)))
+	         (dolist (num '(?0 ?1 ?2 ?3 ?4 ?5 ?6 ?7 ?8 ?9))
+	           (define-key map (vector num)
+	                       (lambda ()
+		                 (interactive)
+		                 (acc-reset)
+		                 (let* ((ev last-command-event)
+			                (base (event-basic-type ev)))
+		                   (arg-accumulate (- base 48))))))
+	         (define-key map " " (with-window
+				      (if (eq arg-acc 0)
+				          (progn (set-mark-command nil)(deactivate-mark))
+				        (set-mark-command (get-arg-acc)))))
+	         (define-key map "n" (with-window (scroll-up-line (get-arg-acc 1))))
+	         (define-key map "p" (with-window (scroll-down-line (get-arg-acc 1))))
+	         (define-key map "/" (with-window (isearch-forward))) ;not documented
+	         (define-key map "l" (with-window (recenter-top-bottom (get-arg-acc))))
+	         (define-key map "r" (with-window (move-to-window-line-top-bottom (get-arg-acc))))
+	         (define-key map "<" (with-window (beginning-of-buffer (get-arg-acc))))
+	         (define-key map ">" (with-window (end-of-buffer (get-arg-acc))))
+	         (define-key map "]" (with-window (forward-paragraph (get-arg-acc))))
+	         (define-key map "[" (with-window (backward-paragraph (get-arg-acc))))
+	         (define-key map "\M-n" (with-window (next-line (get-arg-acc 1))))
+	         (define-key map "\M-p" (with-window (previous-line (get-arg-acc 1))))
+	         (define-key map "v" (with-window (scroll-up-command (get-arg-acc))))
+	         (define-key map "V" (with-window (scroll-down-command (get-arg-acc))))
+	         (define-key map "q" (lambda ()
+                                       (interactive)
+                                       (set-consumed)
+                                       (with-selected-window window
+                                         (quit-window))
+                                       (funcall exit-fnc)))
+	         map) 't))))))
 
 (defun navigate-window ()
   "like `navigate-other-window', but always use current window."
@@ -832,7 +866,7 @@ allowing to specify a remote window to be controlled."
   (navigate-buffer))
 
 (nth-window navigate-other-window
-  "Enter a temporary buffer navigation mode, allowing some window to be
+            "Enter a temporary buffer navigation mode, allowing some window to be
 controlled remotely. Default is the other window. Optional argument
 selects the nth window. This allows moving around some window without
 de-selecting the current window, enabling a very convenient means of
@@ -843,42 +877,45 @@ Keys are:
           reset (e.g. by pressing 0)
   space: set a mark; with arg jump to mark
   n, p: scroll up/down
+  /: isearch
   l: recenter buffer to point
   r: move point to window center
   <, >: move point to beginning/end of buffer
   [, ]: move point forward/backward in paragraphs
   M-n, M-p: move point to next/previous line
-  v, V: pagewise scroll up/down"
-  (navigate-buffer))
+  v, V: pagewise scroll up/down
+  q: quit and close window"
+            (navigate-buffer))
 #+END_SRC
 
 ** Scrolling functions
 
-When scrolling page wise, these functions help to control how much of the
-previous page stays visible. ~scroll-slow~ leaves visible 90% of the previous
-screen, doing only small scroll steps. ~scroll-fast~ still leaves 80%.
-~scroll-half~ jumps half of the screen size. Each of them enable a recursive
+When scrolling page wise (=C-v= and =C-V=), these functions help to control how much of the
+previous page to stay visible. ~scroll-1~ leaves visible 90% of the previous
+screen, doing only small scroll steps. ~scroll-2~ still leaves 70%.
+~scroll-3~ jumps roughly halve of the screen size. Each of them enable a recursive
 edit, which can be cancelled with =C-M-c=.
+The default would be like ~scroll-4~, jumping for almost full pages.
 
 Probably to be unified into a single function with argument..
 
 #+BEGIN_SRC emacs-lisp
-(defun scroll-fast ()
-  "When scrolling pagewise, set the context lines to roughly 80% of screen height. This way, you need five steps to scroll one page."
+(defun scroll-2 ()
+  "When scrolling pagewise, set the context lines to roughly 70% of screen height. This way, you need five steps to scroll one page."
   (interactive)
-  (let ((next-screen-context-lines (round (* (frame-height) 0.8))))
+  (let ((next-screen-context-lines (round (* (window-total-height) 0.7))))
     (recursive-edit)))
 
-(defun scroll-slow ()
+(defun scroll-1 ()
   "When scrolling pagewise, set the context lines to roughly 90% of screen height. This way, you need ten steps to scroll one page."
   (interactive)
-  (let ((next-screen-context-lines (round (* (frame-height) 0.9))))
+  (let ((next-screen-context-lines (round (* (window-total-height) 0.9))))
     (recursive-edit)))
 
-(defun scroll-half ()
+(defun scroll-3 ()
   "When scrolling pagewise, set the context lines to roughly 50% of screen height. This way, you need two steps to scroll one page."
   (interactive)
-  (let ((next-screen-context-lines (round (* (frame-height) 0.5))))
+  (let ((next-screen-context-lines (round (* (window-total-height) 0.5))))
     (recursive-edit)))
 #+END_SRC
 
@@ -886,7 +923,7 @@ Probably to be unified into a single function with argument..
 
 *** Window size
 
-And another temporary pseudo mode, this time interactively resizing windows.
+And another temporary pseudo mode, here for interactively resizing windows.
 
 #+BEGIN_SRC emacs-lisp
 (defun resize-window ()
@@ -1411,7 +1448,7 @@ using =h= or =SPC=.
 
 #+BEGIN_SRC emacs-lisp
 (require 'expand-region)
-(global-set-key "\C-ch" 'er/expand-region)
+;; (global-set-key "\C-ch" 'er/expand-region) ::free this key for hide-lines
 (global-set-key " " 'er/expand-region)
 #+END_SRC
 
@@ -1459,9 +1496,11 @@ words. When combined with /Shift/, navigates to the end/beginning of words.
 (global-set-key "\M-p" #'previous-logical-line)
 (global-set-key "\M-n" #'next-logical-line)
 (global-set-key "\M-P" #'scroll-down-line)
+(global-set-key (kbd "C-M-s-p") #'scroll-down-line-other-window)
 (global-set-key (kbd "M-s-p") #'scroll-down-line)
 (global-set-key "\M-N" #'scroll-up-line)
 (global-set-key (kbd "M-s-n") #'scroll-up-line)
+(global-set-key (kbd "C-M-s-n") #'scroll-up-line-other-window)
 (global-set-key "\M-F" #'forward-to-word)
 (global-set-key (kbd "M-s-f") #'forward-to-word)
 (global-set-key "\M-B" #'backward-to-word)
@@ -1615,6 +1654,19 @@ used as /AltGr/.
    '(ns-right-command-modifier 'meta)))
 #+END_SRC
 
+Now, on a Linux notebook keyboard, again we want /Meta/ to be positioned left
+of space and /Super/ to be left of that.
+As a side note, in gnome different /Super/ shortcuts are defined; you may want
+to undefine them. The key for =s-p= is not found in settings so use =gsettings
+set org.gnome.mutter.keybindings switch-monitor "[]"= to unset it.
+
+#+BEGIN_SRC emacs-lisp
+(defun on-notebook-keyboard ()
+  (custom-set-variables
+   '(x-meta-keysym 'super)
+   '(x-super-keysym 'meta)))
+#+END_SRC
+
 *** experimental handling of super modifier
 
 The idea is to use /super/ instead of =C-x=. Especially for combinations
@@ -1683,8 +1735,8 @@ easily reachable.
     (define-key kmap (kbd "C-s-v") #'navigate-window)
     ;; (define-key kmap (kbd "s-w") (keymap-global-lookup "C-x w"))
     (define-key kmap (kbd "C-s-w") #'write-file)
-    ;; (define-key kmap (kbd "s-x") (keymap-global-lookup "C-x x"))
-    (define-key kmap (kbd "C-s-x") #'exchange-point-and-mark)
+    (define-key kmap (kbd "s-x") (keymap-global-lookup "C-x x"))
+    (define-key kmap (kbd "C-s-x") (lambda (&optional arg) (interactive "P") (exchange-point-and-mark (not arg))))
     (define-key kmap (kbd "s-z") #'repeat)
     (define-key kmap (kbd "C-s-z") #'repeat)
     (define-key kmap (kbd "s-;") #'comment-set-column)
@@ -1733,6 +1785,54 @@ easily reachable.
     (define-key kmap (kbd "s-<return>") #'execute-extended-command)
     (my-env-add-map kmap)))
 #+end_src
+
+*** handling of mark, region and transient mark mode
+
+Using marks not only as region delimiters, but also as storage of previous
+locations is an intriguing idea. Supporting this, we use the /super/ key
+bindings introduced above to implement a variation of ~exchange-point-and-mark~,
+which reverses the effect of prefix arg. Now we can use =C-(x x)= as usual
+exchanging point and mark and activating the transient region; and =C-s-x=
+just exchanging point and mark without activating the region. This way it
+feels really simple to jump back and forth between current and previous
+location. Otherwise use =C-(u SPC)= repeatedly to iterate through the ring.
+In addition, using ~visible-mark-mode~ being able to see the mark makes this
+really convenient.
+
+#+begin_src emacs-lisp
+(defface visible-mark-active ;; put this before (require 'visible-mark)
+  '((((type tty) (class mono)) (:inverse-video t))
+    (t (:background "magenta")))
+  "Custom face for the active mark.")
+(setq visible-mark-max 1)
+(setq visible-mark-faces '(visible-mark-face1 visible-mark-face2))
+(require 'visible-mark)
+(global-visible-mark-mode 1)
+#+end_src
+
+Combined with ~delete-selection-mode~, this works nicely and as expected: when region is
+deactivated, we can just type ahead to write text. If the mark is on the same line
+as point, it moves on while typing. When region is activated, instead, it is
+replaced by the text typed, which is just what I want.
+
+In addition, the change below in [[*delete-selection minor mode][delete-selection minor mode]] makes sure the
+replaced region is also put into kill ring, making it very convenient
+to prepend or surround a region: just type the prepending text, then =C-y= and
+the final enclosing text.
+
+The final adaptation, also pushing the replaced region of a yank to kill ring,
+makes it very convenient (and conforming to expectations) to just use =C-(y
+y)=, this way first replacing the region with the head of the kill ring, then
+inserting the new head (the text just replaced). Of course, you can achieve
+exactly this by deactivating the region and then inserting the yank. Also,
+when assigning a register to ~delete-selection-save-to-register~, the
+text replaced by a yank is saved to that register. Now just re-insert it with
+=s-r i y= (for instance, after assigning the =y= register). And again,
+~insert-register~ works as expected when applied to an active region by just
+pushing replaced regions to the kill ring.
+
+But see also [[https://spwhitton.name/blog/entry/transient-mark-mode/][GNU Emacs' Transient Mark mode]] regarding the question of
+(de)activating transient mark mode.
 
 ** Window handling
 
@@ -1939,6 +2039,141 @@ Accept simplified answers.
 ;; (global-set-key "\C-cl" 'goto-line)
 #+END_SRC
 
+** delete-selection minor mode
+This mode, when activated, deletes the active region (and probably also saves
+it into a register) if some kind of text insertion or modification command is
+issued. As a side note, when deactivated, you can just type without deleting
+the region.
+
+But instead, I'd expect this kind of actions to kill (that is, put it into the
+kill ring) the active region. After all, this should change even small single
+character delete actions into larger region-changing kill actions.
+
+So here is an experimental advice function, augmenting ~#'delete-selection-helper~ and
+changing the action type to ~'kill~ for certain types.
+
+Now this way, you can use the pattern of selecting text, then typing on
+(replacing it) and finally using =C-y= to re-insert the original text (like
+select, then type =" C-y "=).
+
+#+begin_src emacs-lisp
+(defun my/selection-advice (oldfun type)
+         (let ((type
+                (if (or (null type)
+                        (functionp type)
+                        (eq type 'yank)
+                        (eq type 'supersede))
+                    type
+                  'kill)))
+           (setq my/selection-type type)
+           (funcall oldfun type)))
+
+(advice-add 'delete-selection-helper :around #'my/selection-advice)
+(setq delete-selection-save-to-register ?y)
+#+end_src
+
+In case of problems while testing this modification, use =(advice-remove 'delete-selection-helper #'my/selection-advice)=
+to deactivate it.
+
+Just for sake of consistency, a yank is handled the same way. That is, yanking
+first saves the replaced region into a temporary register, then yanks in the
+top of the kill ring, and finally puts the temporary register (the previously
+saved original region) on top of the kill ring.
+
+#+begin_src emacs-lisp
+(defun my/selection-post ()
+  (if (and (eq my/selection-type 'yank)
+           delete-selection-save-to-register)
+      (progn
+        (setq my/selection-type nil)
+        (kill-new (get-register delete-selection-save-to-register)))))
+
+(add-hook 'post-command-hook #'my/selection-post)
+#+end_src
+
+In case of problems while testing this modification, use =(remove-hook 'post-command-hook #'my/selection-post)=
+to deactivate it.
+
+** dired
+*** some general remarks
+dired is more than just a simple replacement for ~ls~. 
+When opening two dired buffers, the second one is used as default taget for
+copy/move operations from files of the first one.
+
+Files can be marked interactively or by different kinds of types (see =*=). Marked image
+files can be displayed as thumbs within the dired buffer (=C-t C-t=).
+Commands or pipelines can be applied to all marked files. That's like an
+interactive kind of =xargs=. Use =!= for sync, =&= for async commands. This
+command is applied for each marked file, with its name appended. Otherwise,
+use =&= as placeholder to insert name at arbitrary places within the command,
+or use =*= to insert list of all file names into a single call.
+If no files are marked, the file under point is target. Prefix arg additionally selects the
+next n files after the file under point.
+
+*** some handy keys
+ =C-x C-j= :: open dired of current dir
+
+ =s-4 C-j= :: open dired of current dir in other window
+
+ =C-o= :: open file under point without visiting it
+
+ =v= :: open file under point in view-mode (=q= returns)
+
+ =q= ::  close dired buffer
+
+ =(= ::  toggle visibility of details
+
+ =i= ::  insert directory into view
+
+ =k= ::  hide files. =C-u k=: remove inserted directories
+
+ =* %= :: mark files selected by regexp
+
+ === ::  compare files at mark and point 
+
+ =m= ::  mark files in region (or under point)
+
+*** convenience
+In dired, to select a file or directory, often it is easier to type =C-m=
+than =RET= (because easier within reach of base row than the ret key, being
+two keys away). To get up a directory in the opposite direction via =^= is
+also not within easy reach. So going up also with =;= and =C-,= seems
+reasonable. BTW, selecting a file or directory is also possible with =f= and
+=e=.
+
+*** dired-ediff
+Enable simple access to  ~ediff~ within ~dired~. Select two files with
+mark and point, then press ~=~ to compare.
+
+#+BEGIN_SRC emacs-lisp
+(define-key dired-mode-map "="
+  (lambda ()
+    "ediff file at mark and file at point."
+    (interactive)
+    (let ((file (dired-get-filename))
+          (prev (save-excursion (goto-char (mark t))(dired-get-filename))))
+      (if (and file prev)
+          (ediff-files prev file)))))
+#+END_SRC
+
+*** dired-multi-occur
+As suggested by Nicolas Petton
+(https://nicolas.petton.fr/blog/mutli-occur-on-projects.html), selecting files
+as source for =multi-occur= can be handy. This is done here:
+
+#+BEGIN_SRC emacs-lisp
+(defun dired-occur (regexp &optional nlines)
+  "Perform `multi-occur' with REGEXP in all dired marked files.
+When called with a prefix argument NLINES, display NLINES lines before and after."
+  (interactive (occur-read-primary-args))
+  (multi-occur (mapcar #'find-file (dired-get-marked-files)) regexp nlines))
+
+(define-key dired-mode-map "\C-c\C-o" #'dired-occur)
+#+END_SRC
+
+Besides that, using the =ibuffer= multi-occur feature to search in buffers is
+also handy.
+
 ** deadgrep
 
 deadgrep-mode is missing some typical navigational features like =next-error=,
@@ -1987,58 +2222,180 @@ displaying them in the other window.
             (define-key deadgrep-mode-map "\C-o" #'deadgrep-display-result-other-window)))
 #+END_SRC
 
-** dired
-*** convenience
-In dired, to select a file or directory, often it is easier to type =C-m=
-than =RET= (because easier within reach of base row than the ret key, being
-two keys away). To get up a directory in the opposite direction via =^= is
-also not within easy reach. So going up also with =;= and =C-,= seems
-reasonable. BTW, selecting a file or directory is also possible with =f= and
-=e=.
+** eshell mode
 
-#+BEGIN_SRC emacs-lisp
-(define-key dired-mode-map "," #'dired-up-directory)
-(define-key dired-mode-map ";" #'dired-up-directory)
-(define-key dired-mode-map "ö" #'dired-up-directory)  ;; on german keyboard same key like ;
-(define-key dired-mode-map [67108908] #'dired-up-directory)
-#+END_SRC
+General idea is to use all text filter commands in the usual way: a text
+filter (optionally) takes in some text from stdin, does something and outputs
+the result to stdout. On the opposite, visual commands (or better interactive
+commands) are modifying the terminal somehow (like tmux, top, vi, more). As
+eshell uses comint-mode (instead of term-mode), they don't work here directly.
+So they are run inside of another buffer being in term-mode. The list of
+visual commands is customized in ~eshell-visual-commands~,
+~eshell-visual-options~ and ~eshell-visual-subcommands~. Setting
+~eshell-destroy-buffer-when-process-dies~ to ~nil~ results in the same
+behaviour as usual: when quitting these commands, we are returned directly to
+eshell, which works nicely.
 
-*** dired-ediff
-Enable simple access to  ~ediff~ within ~dired~. Select two files with
-mark and point, then press ~=~ to compare.
+In a more emacs-like way, the idea is to not use terminal, but instead replace
+most of these commands by native functions (like vi - evil, man -
+manual-entry, top - proced). The function of tmux is already inherently
+present in emacs.
+The respective  replacement should open a buffer in current eshell window and generally on =q=
+return to eshell, acting similarly to having the alternate screen in
+terminals.
+Tools that would paginate, like git log, should be configured to just output away,
+as smart scrolling handles that case quite nicely.
 
-#+BEGIN_SRC emacs-lisp
-(define-key dired-mode-map "="
-  (lambda ()
-    "ediff file at mark and file at point."
-    (interactive)
-    (let ((file (dired-get-filename))
-          (prev (if mark-active
-                    (save-excursion (goto-char (mark t))(dired-get-filename))
-                  nil)))
-      (if (and file prev)
-          (ediff-files prev file)))))
-#+END_SRC
+*** howtos
 
-*** dired-multi-occur
-As suggested by Nicolas Petton
-(https://nicolas.petton.fr/blog/mutli-occur-on-projects.html), selecting files
-as source for =multi-occur= can be handy. This is done here:
+- Buffers can be addressed like file redirection: #<buffer name>. This is the
+  same as ~(get-buffer-create "name")~.
+  A third redirection function ~>>>~ appends to current point if target is a
+  buffer.
 
-#+BEGIN_SRC emacs-lisp
-(defun dired-occur (regexp &optional nlines)
-  "Perform `multi-occur' with REGEXP in all dired marked files.
-When called with a prefix argument NLINES, display NLINES lines before and after."
-  (interactive (occur-read-primary-args))
-  (multi-occur (mapcar #'find-file (dired-get-marked-files)) regexp nlines))
+- Use lisp functions as shell commands: ~switch-to-buffer-other-window
+  #<buffer>~.
 
-(define-key dired-mode-map "\C-c\C-o" #'dired-occur)
-#+END_SRC
+- See ~cd~ history: ~cd =~. Address old dirs: ~$-[n]~ or ~$OLDPWD[n]~.
 
-Besides that, using the =ibuffer= multi-occur feature to search in buffers is
-also handy.
+- Start a command sending output into extra buffer: ~compile <command>~.
 
+- ~occur~: search in current eshell buffer.
+
+- There are virtual devices:
+  ~/dev/eshell~ :: output into eshell window
+
+  ~/dev/clip~   :: output to clipboard
+
+  ~/dev/kill~   :: output into kill ring
+
+- copy some selected previous output to command line: =C-0 C-c RET=
+  directly execute it: =C-0 RET=
+  (to copy the respective lines, don't use the prefix command).
+
+This works also with other-window-prefix:
+#+begin_src emacs-lisp
+(global-set-key (kbd "s-!") #'eshell)
+#+end_src
+
+**** smart scrolling
+
+**** prompt extras
+
+#+begin_src emacs-lisp
+(with-eval-after-load "esh-opt"
+  (autoload 'epe-theme-lambda "eshell-prompt-extras")
+  (setq eshell-highlight-prompt nil
+        eshell-prompt-function 'epe-theme-lambda))
+#+end_src
+
+*** Some more usefull commands:
+
+This can be used to output the contents of a buffer: ~buffer "test" | cat~
+Narrow it (=C-x n=) to output only the narrowed part.
+If the lines contain shell commands, each of them can be executed with ~buffer "test" | sh~.
+#+begin_src emacs-lisp
+(defun eshell/buffer (name)
+  (with-current-buffer name (buffer-string)))
+#+end_src
+
+A shortcut for ~dired~.
+#+begin_src emacs-lisp
+(defun eshell/els (&optional arg)
+  (dired
+   (if (null arg) "." arg)))
+#+end_src
+
+#+begin_src emacs-lisp
+(defun eshell/la (&rest args)
+  (apply 'eshell/ls "-al" args))
+
+(defun eshell/moccur (&rest args)
+  (eshell-poor-mans-grep args))
+#+end_src
+
+Reload our defined aliases:
+#+begin_src emacs-lisp
+;;(eshell-read-aliases-list)
+#+end_src
+
+Enable copying of region with =C-u C-c RET=:
+#+begin_src emacs-lisp
+(defun eshell-get-region-or-input (&optional use-current-region)
+  "Return the command input on the current line.
+If USE-CURRENT-REGION is non-nil, return the current region."
+  (if use-current-region
+      (buffer-substring-no-properties (min (point) (mark))
+			              (max (point) (mark)))
+    (eshell-get-old-input)))
+
+(defun eshell-copy-region (&optional arg)
+  "copy line or region to prompt, without executing it.
+With prefix, use region."
+  (interactive "P")
+  (let ((input (eshell-get-region-or-input arg)))
+    (deactivate-mark)
+    (goto-char eshell-last-output-end)
+    (insert-and-inherit input)))
+
+(define-key eshell-mode-map (kbd "C-c RET") #'eshell-copy-region)
+#+end_src
+
+*** paging/viewing in eshell
+
+We want to have an explicit way to paginate output, like ~more~ in traditional
+shells. There seems to be no easy way (currently) to implement eshell commands
+handling input and output in lisp. Instead we implement a virtual device,
+which is registered in ~eshell-virtual-targets~.
+
+Output goes to a buffer called ~*viewer*~ in ~view-mode~. When overwriting, it is erased,
+otherwise we append to the end. The buffer is made visible and finally using
+~q~ in this mode buries it and returns to eshell.
+
+#+begin_src emacs-lisp
+(defun my-eshell-to-view-buffer (mode)
+  (lexical-let ((my-buffer (get-buffer-create "*viewer*")))
+    (with-current-buffer my-buffer
+      (view-mode 0)
+      (end-of-buffer)
+      (when (eq mode 'overwrite)
+        (erase-buffer)))
+    (lambda (string)
+      (with-current-buffer my-buffer
+        (view-mode 0)
+        (save-excursion
+          (end-of-buffer)
+          (insert string))
+        (view-mode t)
+        (switch-to-buffer my-buffer)))))
+#+end_src
+
+Now, an alias of more 'cat $1 > /dev/view' does the trick. We can call ~more
+file~ or pipe to it: ~ls|more~. Both ways it works as expected.
+
+*** todo
+ - use vi alias opening file in emacs in evil mode
+ - find out about the pecularities of smart scrolling
+ - output like git branch/infos on dir change:
+   see eshell customizing options
+    see eshell-directory-change-hook
+    see eshell-prompt-function
+    see epe (eshell prompt extras)
+   
 ** Evil mode
+
+*** Preparations
+
+We want to enter evil only occasionally; we use it with the undo-tree package.
+
+#+begin_src emacs-lisp
+(custom-set-variables
+ '(evil-default-state 'emacs)
+ '(evil-undo-system 'undo-tree)
+ '(evil-want-C-h-delete t)
+ '(evil-want-C-u-delete t)
+ '(evil-want-C-u-scroll t))
+#+end_src
 
 *** Evil defines
 
@@ -2052,18 +2409,17 @@ accessable by =SPC=. Lets see how this works out.
 #+BEGIN_SRC emacs-lisp
 (defun evil-rc ()
   "evil local init/customization"
-  (define-prefix-command 'leader-map)
-
-  (define-key evil-normal-state-map " " leader-map)
-  ;; yes, we really want to scroll up in evil mode
-  (define-key evil-normal-state-map "\C-u" #'evil-scroll-up)
-
-  (define-key leader-map "#" #'list-buffers)
-  (define-key leader-map "l" #'global-linum-mode)
-
-  (define-key leader-map "x" (key-binding "\C-x"))
-  (set-keymap-parent leader-map (key-binding "\C-x"))
-  (define-key leader-map "c" (key-binding "\C-c"))
+  (evil-set-leader 'normal " ")
+  (evil-define-key 'normal 'global (kbd "<leader>#")
+    (lambda ()
+      (interactive)
+      (other-window-prefix)
+      (list-buffers)))
+  (evil-define-key 'normal 'global (kbd "<leader>n") #'evil-next-buffer)
+  (evil-define-key 'normal 'global (kbd "<leader>p") #'evil-prev-buffer)
+  (evil-define-key 'normal 'global (kbd "<leader>l") #'global-display-line-numbers-mode)
+  (evil-define-key 'normal 'global (kbd "<leader>x") (key-binding "\C-x"))
+  (evil-define-key 'normal 'global (kbd "<leader>c") (key-binding "\C-c"))
   (def-evil-scroll-state))
 #+END_SRC
 
@@ -2099,8 +2455,8 @@ to kzz, this allows probably easier scrolling in evil.
                                           (call-interactively #'evil-previous-line)
                                           (evil-scroll-line-to-center nil)))
   (define-key evil-scroll-state-map (kbd "<escape>") 'evil-normal-state)
-  (define-key evil-scroll-state-map "\C-\M-z" 'evil-emacs-state)
-  (define-key leader-map "s" 'evil-scroll-state))
+  (define-key  evil-scroll-state-map "\C-\M-z" 'evil-emacs-state)
+  (evil-define-key 'normal 'global (kbd "<leader>s") 'evil-scroll-state))
 #+END_SRC
 
 *** Evil Emacs config
@@ -2148,24 +2504,197 @@ Now, after Initializing evil, we may probably also activate it in all buffers.
 (evil-rc)
 #+END_SRC
 
-** Etags
+** hide-lines
 
-#+BEGIN_SRC emacs-lisp
-(global-set-key "\C-ct" 'tag-complete-symbol)
-(global-set-key "\C-cs" 'tags-search)
-(global-set-key "\C-cr" 'tags-query-replace)
-(defun my-generate-etags ()
+Lets try to put a hide-lines prefix on =C-c h=:
+(side note, never put C-h into a key, as this shadows the help facility)
+#+begin_src emacs-lisp
+(autoload 'hide-lines "hide-lines"
+  "Hide lines based on a regexp" t)
+(require 'hide-lines)
+(define-prefix-command 'my-hide-lines-map)
+(global-set-key (kbd "C-c h") my-hide-lines-map)
+(define-key my-hide-lines-map (kbd "r") #'hide-lines)
+(define-key my-hide-lines-map (kbd "s") #'hide-lines-show-all)
+#+end_src
+Note with prefix, its function is inversed. With two prefixes (=C-u C-u=) all
+hidden lines are shown again.
+
+Now this works with regexes, which is cool. But more emacs-like would be to
+work on regions and lines.
+
+#+begin_src emacs-lisp
+(defun hide-lines-selection (&optional prefix)
+  "Hide lines. If a region is selected, hide that. Otherwise, hide the current
+line. With a numeric prefix argument, hide that number of lines."
+  (interactive "p")
+  (if (region-active-p)
+      (progn
+        (hide-lines-add-overlay (mark) (point))
+        (deactivate-mark))
+      (beginning-of-line)
+      (let ((start (point)))
+        (forward-line prefix)
+        (hide-lines-add-overlay start (point)))))
+#+end_src
+
+#+begin_src emacs-lisp
+(define-key my-hide-lines-map (kbd "h") #'hide-lines-selection)
+#+end_src
+
+And here a small helper, extracting the current, possibly non-contiguous region:
+#+begin_src emacs-lisp
+(defun region-string ()
+  (cl-labels
+       ((nl-string (str)
+          (if (string-equal (string-chop-newline str) str) (format "%s\n" str)
+            str)))
+     (apply #'concat
+            (mapcar
+             (lambda (region)
+               (nl-string (buffer-substring-no-properties (car region) (cdr region))))
+             (region-bounds)))))
+#+end_src
+
+*** invert visible lines
+
+Using the advice function of next section, it is quite easy to invert the
+whole buffer's visible lines. Marking the whole buffer will give just that
+non-contiguous list of ~region-bounds~ which we will use to hide each of them.
+
+#+begin_src emacs-lisp
+(defun my/hide-lines-inverse ()
+  "invert hidden lines. That is, hide all visible lines, show all others."
   (interactive)
-  (let* ((dir (read-string "project: "))
-	 (cctarget (concat "../" dir "/*.cc"))
-	 (hhtarget (concat "../" dir "/*.hh"))
-	 (ctarget (concat "../" dir "/*.c"))
-	 (htarget (concat "../" dir "/*.h")))
-    (shell-command (concat "etags -a " cctarget " " hhtarget " " ctarget " " htarget " >/dev/null") nil)
-    )
-  )
-(global-set-key "\C-ci" 'my-generate-etags)
-#+END_SRC
+  (save-excursion
+    (mark-whole-buffer)
+    (let ((visible-lines (region-bounds)))
+      (hide-lines-show-all)
+      (mapcar
+       (lambda (region)
+         (hide-lines-add-overlay (car region) (cdr region)))
+       visible-lines)))
+  (deactivate-mark))
+#+end_src
+
+#+begin_src emacs-lisp
+(define-key my-hide-lines-map (kbd "i") #'my/hide-lines-inverse)
+#+end_src
+
+*** non-contiguous region on hide-lines
+
+Here we build an advice function for region-extract-function, setting a
+non-contiguous region containing selected visible lines.
+This way, we finally can hide some lines and then copy (or do whatever with)
+the rest (like pipe it to a shell).
+
+The first function transforms overlays of invisible areas into region
+descriptions. Then we have a function reversing them, effectively describing
+all remaining visible areas within the selected region.
+Finally, an advice function for ~region-extract-function~, using these
+noncontiguous bounds.
+
+#+begin_src emacs-lisp
+(defun my/region-from-overlay (overlay)
+  (let ((beg (overlay-start overlay))
+        (end (overlay-end overlay)))
+    `(,beg . ,end)))
+
+(defun my/visible-regions-helper (overlays beg end regions)
+  (if (null overlays)
+      (remove-if
+       (lambda (elem)
+         (>= (car elem) (cdr elem)))
+       (append regions `((,beg . ,end))))
+    (let ((invs (caar overlays))
+          (inve (cdar overlays)))
+      (let ((start (if (> invs beg) beg
+                     (min (max inve beg) end)))
+            (stop (if (< inve end) end
+                    (max (min invs end) beg))))
+        (let ((inv (min invs stop))
+              (next (max inve start)))
+          (my/visible-regions-helper
+           (cdr overlays)
+           next
+           stop
+           (append regions `((,start . ,inv)))))))))
+
+(defun my/visible-regions (prev-regions)
+  (let ((inv-regions (sort
+                      (mapcar #'my/region-from-overlay
+                              hide-lines-invisible-areas)
+                      :lessp (lambda (a b)
+                               (< (car a) (car b)))
+                      :in-place nil)))
+    (apply #'append
+           (mapcar
+            (lambda (region)
+              (my/visible-regions-helper
+               inv-regions
+               (car region) (cdr region) nil))
+            prev-regions))))
+
+(defun my/region-bounds-advice (orig method)
+  (cl-labels ((nl-string (str)
+                (if (string-equal (string-chop-newline str) str)
+                    (format "%s\n" str)
+                  str))
+              (del-region (bounds)
+                (mapcar
+                 (lambda (region) (delete-region (car region) (cdr region)))
+                 bounds))
+              (get-region (bounds)
+                (apply #'concat
+                       (mapcar
+                        (lambda (region)
+                          (nl-string (filter-buffer-substring (car region) (cdr region) nil)))
+                        bounds))))
+    (if (or
+         (not (region-active-p))
+         (not hide-lines-invisible-areas))
+        (funcall orig method)
+      (let ((my-bounds (my/visible-regions (funcall orig 'bounds))))
+        (cond
+         ((eq method 'bounds)
+          my-bounds)
+         ((eq method 'delete-only)
+          (del-region (reverse my-bounds)))
+         ((eq method 'delete)
+          (let ((region (get-region my-bounds)))
+            (del-region (reverse my-bounds))
+            region))
+         (t
+          (get-region my-bounds)))))))
+
+(add-function :around region-extract-function #'my/region-bounds-advice)
+#+end_src
+
+*** appending to buffers from non-contiguous regions
+
+#+begin_src emacs-lisp
+(defun my/append-to-buffer (buffer)
+  (interactive
+   (list
+    (read-buffer "Append to buffer: " (other-buffer (current-buffer) t))))
+  (let ((regions (region-bounds)))
+    (mapc (lambda (region)
+            (append-to-buffer buffer (car region) (cdr region)))
+          regions)))
+#+end_src
+
+This works in the same way as the original append-to-buffer, as in
+rectangle-mode, the selected line snippets are appended without line breaks.
+But this also happens if you just mark parts of a line and append them without
+editing the target buffer. So ~append-to-buffer~ works in a very rudimentary
+way, as long as you don't select full lines.
+
+This could be mitigated by advising to the original function, using
+~(region-string)~ if ~region-noncontiguous-p~, otherwise using the original
+function.
+
+But many other functions like ~occur~ also only work with simple contiguous
+regions.
 
 ** markdown mode
 
@@ -2177,26 +2706,36 @@ Now, after Initializing evil, we may probably also activate it in all buffers.
 (setq markdown-command "/Users/jko/Programming/node/node_modules/.bin/md2html")
 #+END_SRC
 
-** MIX (GNU MDK)
-
-#+BEGIN_SRC emacs-lisp
-(setq load-path (cons "/opt/local/share/mdk" load-path))
-(autoload 'mixal-mode "mixal-mode" t)
-(add-to-list 'auto-mode-alist '("\\.mixal\\'" . mixal-mode))
-(autoload 'mixvm "mixvm" "mixvm/gud interaction" t)
-#+END_SRC
-
 ** org
-
 The well known template mechanism =<s TAB= has been replaced by a
-mechanism based on the tempo package. This is activated by
+mechanism based on the tempo package (but see also below). This is activated by
 
 #+begin_src emacs-lisp
 (require 'org-tempo)
 #+end_src
 
-Besides that, =C-c C-,= can be used to insert structure templates,
+*** org structures, templates and litterate programming
+=C-c C-,= can be used to insert structure templates,
 which also works with regions.
+Use =M-TAB= for completion. E.g. when inserting a src block, use this to
+complete language and options.
+=C-c '= within a structure opens its contents in a special buffer using the
+corresponding mode to edit. This way, write code or evaluate lisp forms using
+=C-M-x=. When writing interactive notebooks, use =C-c C-c= to execure code
+within a structure. The output will then be included in a result block.
+
+*** org outline editing, markup, lists, tables
+
+Use left, right, up, down with =M= to move nodes around (how to do this on
+keyboards without cursor keys?).
+Use =M-RET= to insert a new node at point, with same level as previous one.
+Use =C-RET= to insert a new node below point, after all subsequent nodes and
+before the next one of same level.
+=C-c= prefix together with =C-n=, =p=, =f=, =b=, =u= navigate through the
+document. =C-c C-j= shows document structure and allows jumping.
+Use =C-c C-x C-f= as helper for marking regions.
+Lists can be unordered (-, +, *), ordered: 1. or 1) or use descriptions
+(separating term :: description).
 
 *** org present
 
@@ -2235,18 +2774,6 @@ with the corresponding =tiny= command.
   (interactive)
   (setq org-present-mode-hook nil)
   (setq org-present-mode-quit-hook nil))
-#+END_SRC
-
-** POV-Ray
-
-#+BEGIN_SRC emacs-lisp
-(setq load-path (cons "~/.emacs.d/lisp" load-path))
-(autoload 'pov-mode "pov-mode.el" "PoVray scene file mode" t)
-(setq auto-mode-alist
-      (append '(("\\.pov$" . pov-mode)
-		("\\.inc$" . pov-mode)
-		) auto-mode-alist))
-(setq pov-indent-level '2)
 #+END_SRC
 
 ** python mode
@@ -2330,7 +2857,8 @@ mode.
 
 #+BEGIN_SRC emacs-lisp
 ;; (w32-register-hot-key (kbd "<M-tab>")) ; example of hot key override, but not practical
-(define-key elpy-mode-map (kbd "<S-tab>") #'elpy-folding-toggle-at-point)
+(add-hook 'python-mode-hook 'hs-minor-mode)
+(define-key python-mode-map (kbd "<M-tab>") #'elpy-folding-toggle-at-point)
 #+END_SRC
 
 Enable autopep8, but don't activate it on save. 
@@ -2376,6 +2904,16 @@ tools mode, which binds =C-c >= as hydra.
 ;;               (add-hook 'write-contents-hooks 'python-mode-untabify)))
 #+END_SRC
 
+** realgud debugging
+
+We want to use middle mouse button on a variable to show the containing value.
+On mac, this works only good in combination with some modifier, so we use
+/super/ here.
+
+#+BEGIN_SRC emacs-lisp
+(global-set-key [(s-mouse-2)] #'realgud:tooltip-eval)
+#+END_SRC
+
 ** React programming
 
 Combine javascript and web-mode, supporting ~jsx~ templates within. This is
@@ -2385,16 +2923,6 @@ react-mode? Otherwise, combine it with more up-to-date html-mode?
 #+BEGIN_SRC emacs-lisp
 (add-to-list 'auto-mode-alist '("\\.jsx\\'" . web-mode))
 (add-hook 'web-mode-hook 'js2-minor-mode)
-#+END_SRC
-
-** realgud debugging
-
-We want to use middle mouse button on a variable to show the containing value.
-On mac, this works only good in combination with some modifier, so we use
-/super/ here.
-
-#+BEGIN_SRC emacs-lisp
-(global-set-key [(s-mouse-2)] #'realgud:tooltip-eval)
 #+END_SRC
 
 ** smartparens mode
@@ -2554,6 +3082,54 @@ Have RET indent like in python mode:
           (lambda ()
             (define-key yaml-mode-map "\C-m" 'newline-and-indent)))
 #+END_SRC
+
+* Best practices
+** customizing compilation buffers
+- M-x customize-option compilation-error-regexp-alist
+- add error spec: ("\\[ERROR\\]\\W*\\[\\([^:]*\\):\\(.*\\)\\]" my-fqpn 2)
+  so the regex string needs every "\" to be quoted
+  - convenience: use helm-regex, test it within log buffer
+  - when finished, RET quotes and copies it to kill ring
+- here match group 1 is file, group 2 is lineno
+  file is modified by a function, receiving no arg, so it fetches last match subgroup 1
+  (defun my-fqpn ()
+    (concat (replace-regexp-in-string "\\." "/" (match-string-no-properties 1)) ".py"))
+- open logfile
+- M-x compilation-minor-mode
+- convenience: (setq default-directory "/path/to/project_root")
+- convenience: use hide-lines to filter down log
+  C-u C-c C-h r \[cs.catalyst
+- convenience: M-x next-error-follow-minor-mode
+
+** Modifying regions
+- use keyboard macro on region: =C-x C-k r=
+- use rectangular region:
+  - =C-x SPC= or =C-M-Mouse1=
+  - interactively replace each line with text: =C-x r t=
+    use this with rectangle of width 0, inserting text into each line at given column
+- use shell command on region: =M-|=
+  each line of region is input (stdin) of single instance of given shell
+  command. Output goes to command buffer (or, with =C-u= prefix, replaces region)
+  example:
+
+  awk '{print $1}' :: replace each line by first word of line
+  
+  sh :: execute each line
+** Replacements
+- use quoted characters to insert control characters into searches or
+  replacements:
+  =M-%= query replace SPC =C-q C-j= :: replace space by RET
+** Use diff-mode on diff-buffers
+- for example, in eshell: emgit diff file|more
+- M-x diff-mode
+- C-x C-q (read-only)
+  - M-n / M-p to step through diffs
+  - C-c C-n to narrow to current diff
+  - C-c C-r to reverse diff direction
+** Send CTRL-chars to attached process
+- for instance, when docker attach called in shell-mode or eshell-mode
+  - M-x term-char-mode
+  - afterwards the detach command seq C-p C-q works
 
 * Disabled commands
 

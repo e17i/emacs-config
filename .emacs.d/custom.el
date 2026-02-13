@@ -3,13 +3,15 @@
  ;; If you edit it by hand, you could mess it up, so be careful.
  ;; Your init file should contain only one such instance.
  ;; If there is more than one, they won't work right.
+ '(Man-notify-method 'pushy)
  '(blink-cursor-mode nil)
  '(buffers-menu-show-directories t)
  '(c-basic-offset 2)
  '(column-number-mode t)
  '(comint-completion-autolist t)
  '(custom-file "~/.emacs.d/custom.el")
- '(default-input-method "german-postfix")
+ '(deadgrep-project-root-function '(lambda nil default-directory))
+ '(default-input-method "german-prefix")
  '(delete-selection-mode t)
  '(dired-dwim-target t)
  '(dired-recursive-deletes 'top)
@@ -28,6 +30,27 @@
  '(elpy-modules
    '(elpy-module-company elpy-module-eldoc elpy-module-folding elpy-module-pyvenv elpy-module-highlight-indentation elpy-module-yasnippet elpy-module-django elpy-module-sane-defaults))
  '(elpy-rpc-virtualenv-path 'default)
+ '(eshell-destroy-buffer-when-process-dies t)
+ '(eshell-modules-list
+   '(eshell-alias eshell-banner eshell-basic eshell-cmpl eshell-dirs
+                  eshell-extpipe eshell-glob eshell-hist eshell-ls eshell-pred
+                  eshell-prompt eshell-script eshell-smart eshell-term
+                  eshell-unix))
+ '(eshell-review-quick-commands 'not-even-short-output)
+ '(eshell-virtual-targets
+   '(("/dev/null" (lambda (_mode) (throw 'eshell-null-device t)) t)
+     ("/dev/eshell" eshell-interactive-print nil)
+     ("/dev/kill"
+      (lambda (mode) (when (eq mode 'overwrite) (kill-new ""))
+        #'eshell-kill-append)
+      t)
+     ("/dev/clip"
+      (lambda (mode)
+        (when (eq mode 'overwrite)
+          (let ((select-enable-clipboard t)) (kill-new "")))
+        #'eshell-clipboard-append)
+      t)
+     ("/dev/view" my-eshell-to-view-buffer t)))
  '(evil-default-state 'emacs)
  '(evil-insert-state-modes nil)
  '(evil-motion-state-modes nil)
@@ -77,7 +100,7 @@ emacs org-mode with <a href=\"https://jessekelly881-rethink.surge.sh/\">Rethink<
      ("melpa-stable" . "https://stable.melpa.org/packages/")
      ("melpa" . "https://melpa.org/packages/")))
  '(package-selected-packages
-   '(jedi py-autopep8 elpy flycheck exwm nameless expand-region indent-tools yaml-mode tagedit undo-tree zzz-to-char htmlize smartparens ace-jump-zap helm evil))
+   '(jedi py-autopep8 elpy flycheck exwm nameless expand-region indent-tools yaml-mode tagedit undo-tree zzz-to-char htmlize smartparens ace-jump-zap helm evil auctex cider company-jedi deadgrep hide-lines jedi-direx js2-mode json-mode magit markdown-mode org ox-rst realgud which-key))
  '(paren-match-face 'paren-face-match-light)
  '(paren-sexp-mode t)
  '(python-mode-hook
