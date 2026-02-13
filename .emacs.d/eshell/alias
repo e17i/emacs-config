@@ -1,0 +1,1 @@
+alias emgit git --git-dir=$HOME/emacs-config/.git --work-tree=$HOME $*
