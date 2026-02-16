@@ -1780,10 +1780,10 @@ In addition, using ~visible-mark-mode~ being able to see the mark makes this
 really convenient.
 
 #+begin_src emacs-lisp
-(defface visible-mark-active ;; put this before (require 'visible-mark)
-  '((((type tty) (class mono)) (:inverse-video t))
-    (t (:background "magenta")))
-  "Custom face for the active mark.")
+;; (defface visible-mark-active ;; put this before (require 'visible-mark)
+;;   '((((type tty) (class mono)) (:inverse-video t))
+;;     (t (:background "magenta")))
+;;   "Custom face for the active mark.")
 (setq visible-mark-max 1)
 (setq visible-mark-faces '(visible-mark-face1 visible-mark-face2))
 (require 'visible-mark)
@@ -1813,6 +1813,63 @@ pushing replaced regions to the kill ring.
 
 But see also [[https://spwhitton.name/blog/entry/transient-mark-mode/][GNU Emacs' Transient Mark mode]] regarding the question of
 (de)activating transient mark mode.
+
+**** navigating mark-ring more conveniently
+
+Using =C-(u SPC)= always feels somewhat off. As it shows, the reason is that
+while pushing current mark to the tail of the mark-ring, setting point to it's
+position and popping a new mark off the mark-ring, the initial position of
+point is lost. So you can rotate through all positions of mark and mark-ring,
+but you won't ever reach your starting point.
+Instead, here is a function rotating through point, mark and mark-ring. That
+is, if mark-ring is empty it does just the same as ~exchange-point-and-mark~.
+
+#+begin_src emacs-lisp
+(defun my/mark-navigate-backward ()
+  "save point to tail of mark-ring, then set point to mark and pop new mark off head of mark-ring."
+  (interactive)
+  (if (null (mark t))
+      (user-error "No mark set in this buffer")
+    (exchange-point-and-mark t)
+    (pop-mark)))
+#+end_src
+
+And here is a function rotating forward, in the other direction.
+
+#+begin_src emacs-lisp
+(defun my/mark-navigate-forward ()
+  "push mark to head of mark-ring, set mark to point and point to tail of mark-ring."
+  (interactive)
+  (if (> (length mark-ring) 0)
+      (let ((lastpos (marker-position (nth (1- (length mark-ring)) mark-ring)))
+            (mark-ring-max (length mark-ring)))
+        (push-mark lastpos t nil)))
+  (exchange-point-and-mark t))
+#+end_src
+
+Now, we can combine both into a transient function, enabling convenient
+navigation through all local mark positions. In addition, if
+~visible-mark-mode~ is activated, it displays all positions of mark-ring,
+giving a nice visual feedback.
+
+#+begin_src emacs-lisp
+(defun my/navigate-mark-ring ()
+  "using visible-mark-mode, display all marks and navigate back or forward by means of a
+   repeated transient keymap. Depends on visible-mark-mode being activated."
+  (interactive)
+  (lexical-let ((visible-marks visible-mark-max))
+    (setq visible-mark-max mark-ring-max)
+    (message "navigate mark-ring (n, p)")
+    (set-transient-map
+     (let ((map (make-sparse-keymap)))
+       (define-key map "n" #'my/mark-navigate-forward)
+       (define-key map "p" #'my/mark-navigate-backward)
+       map)
+     t
+     (lambda ()
+       (setq visible-mark-max visible-marks))
+     "navigate mark-ring (%k)")))
+#+end_src
 
 ** Window handling
 
