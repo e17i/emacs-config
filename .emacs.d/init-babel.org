@@ -1853,13 +1853,18 @@ navigation through all local mark positions. In addition, if
 giving a nice visual feedback.
 
 #+begin_src emacs-lisp
+(defun my/set-visible-marks (num)
+  (interactive "p")
+  (visible-mark-mode 0)
+  (setq visible-mark-max num)
+  (visible-mark-mode 1))
+
 (defun my/navigate-mark-ring ()
   "using visible-mark-mode, display all marks and navigate back or forward by means of a
    repeated transient keymap. Depends on visible-mark-mode being activated."
   (interactive)
   (lexical-let ((visible-marks visible-mark-max))
-    (setq visible-mark-max mark-ring-max)
-    (message "navigate mark-ring (n, p)")
+    (my/set-visible-marks mark-ring-max)
     (set-transient-map
      (let ((map (make-sparse-keymap)))
        (define-key map "n" #'my/mark-navigate-forward)
@@ -1867,8 +1872,26 @@ giving a nice visual feedback.
        map)
      t
      (lambda ()
-       (setq visible-mark-max visible-marks))
+       (my/set-visible-marks visible-marks))
      "navigate mark-ring (%k)")))
+
+(global-set-key (kbd "M-g m") #'my/navigate-mark-ring)
+#+end_src
+
+And finally a function activating the last region:
+
+#+begin_src emacs-lisp
+(defun my/activate-last-region ()
+  (interactive)
+  (my/mark-navigate-backward)
+  (activate-mark))
+#+end_src
+
+cleaning the mark-ring:
+#+begin_src emacs-lisp
+;; (dolist (ml mark-ring) (set-marker ml nil))
+;; (setq mark-ring nil)
+;; (set-marker (mark-marker) nil)
 #+end_src
 
 ** Window handling
@@ -3119,6 +3142,213 @@ Have RET indent like in python mode:
 - for instance, when docker attach called in shell-mode or eshell-mode
   - M-x term-char-mode
   - afterwards the detach command seq C-p C-q works
+
+** Skeletons
+
+Skeletons are macros inserting text at point, either as is or with different
+means of requesting text to be filled in. They can use the minibuffer to input
+text (using initial query or calling ~skeleton-read~). Existing text can be
+wrapped. Or, after inserting the template, the point can be moved into
+positions to be filled afterwards.
+
+Skeleton expansions behave differently mid-line or at the beginning or end of
+a line. At the end of a line (or at an empty line), the insertion is just done
+without adding newlines. At the beginning or middle of a non-empty line, the
+rest is moved down before inserting. Here we handle this by actively preparing
+an empty line before inserting. Quoted commands are executed just for
+side-effect while the return value of unquoted functions will be inserted into
+the expansion.
+
+A skeleton inserting text:
+#+begin_src emacs-lisp
+(define-skeleton
+  tmpl/org-name
+  "insert org name"
+  nil
+  '(open-line 1)
+  "#+NAME: ")
+#+end_src
+
+Repeating subskeletons. As long as the query for a header arg is answered with
+a non-empty string, the sub-skeleton is repeated. Also, the =-= marks the
+position the point is moved to after finishing. Finally, each =@= marks
+additional positions. Using ~my/navigate-skeleton~, they can be reached
+afterwards.
+#+begin_src emacs-lisp
+(define-skeleton
+  tmpl/org-header
+  "insert org header"
+  nil
+  -
+  (
+   "header arg: "
+   "#+HEADER: " @ str \n)
+  '(delete-indentation))
+#+end_src
+
+Simple example for wrapping existing text. Here, one region is expected
+(marked =_=). The indentation command =>= indents literal or wrapped text.
+#+begin_src emacs-lisp
+(define-skeleton
+  tmpl/indent
+  "indent text in region"
+  nil
+  > _)
+#+end_src
+
+More than one placeholder of wrapped text can be given. A couple of previous
+marks can then be used by giving a negative prefix arg (if a region is active
+and no prefix arg given, then -1 is assumed, using the region between point
+and the single mark set as last). A positive arg wraps the N next words.
+If no prefix arg and region is given, the point is placed at the first =_=
+afterwards. When =_= and =-= are given, then the last =-= overrides for
+placing point.
+
+This is also an example for conditional insertion. If fewer than three regions
+are given, only the first replacement markers are wrapped. For each
+replacement not given, a newline is inserted instead, the point being moved to
+the first one not given.
+#+begin_src emacs-lisp
+(define-skeleton
+  tmpl/if
+  "conditional lisp execution"
+  nil
+  > "(if " _ | \n
+  > @ _ | \n
+  > @ _ ")")
+#+end_src
+
+Active queries can be used if no replacements are given. The query is only
+executed when ~str~ is inserted.
+#+begin_src emacs-lisp
+(define-skeleton
+  tmpl/if2
+  "conditional lisp execution"
+  "condition: "
+  > "(if " _ | str
+  > @ _ | (skeleton-read "expression if true: ")
+  > @ _ ")")
+#+end_src
+
+Best practice is using just one =_ | str=, wrapping region if given and
+querying if not.
+
+A simple in-line expansion without line breaking:
+#+begin_src emacs-lisp
+(define-skeleton
+  tmpl/call_inline
+  "insert an inline org babel block call."
+  "block: "
+  '(cycle-spacing)
+  "call_" _ | str "("-")"
+  '(cycle-spacing)
+  '(delete-indentation))
+#+end_src
+
+Dynamically execute subskeletons as long as inter-regions can be consumed. The
+query is a function or form instead of a string. This form must evaluate to a
+string for the subskeleton to be expanded or =nil= to finish. Also, =str= must
+be addressed to execute the query. Here, that's done just in form of a
+side-effekt. The query form must be guaranteed to terminate, that is, at some
+point evaluate to =nil=. Here it is achieved by consuming each skeleton-region
+using =_=.
+#+begin_src emacs-lisp
+(define-skeleton
+  tmpl/skel-recursive
+  "put each region into a block."
+  nil
+  -
+  (
+   (let ((v1 (first skeleton-regions)))
+     (if (markerp v1)
+         (buffer-substring-no-properties (point) (marker-position v1))
+       nil))
+   '(skeleton-read str)
+   "#+BEGIN_example\n"
+   @ _
+   "#+END_example\n")
+  @)
+#+end_src
+
+*** Navigating skeletons
+
+Just like navigate-mark-ring:
+#+begin_src emacs-lisp
+(defun my/pop-skel-pos ()
+  (interactive)
+  (setq skeleton-positions (nconc skeleton-positions (list (point))))
+  (goto-char (pop skeleton-positions)))
+
+(defun my/push-skel-pos ()
+  (interactive)
+  (push (point) skeleton-positions)
+  (goto-char (first (last skeleton-positions)))
+  (setq skeleton-positions (nbutlast skeleton-positions)))
+
+(defun my/navigate-skeleton ()
+  "Given marked positions of an inserted skeleton, navigate back or forward
+by means of a repeated transient keymap."
+  (interactive)
+  (set-transient-map
+   (let ((map (make-sparse-keymap)))
+     (define-key map "n" #'my/push-skel-pos)
+     (define-key map "p" #'my/pop-skel-pos)
+     map)
+   t
+   nil
+   "navigate skeleton (%k)"))
+
+(global-set-key (kbd "M-g s") #'my/navigate-skeleton)
+#+end_src
+
+** example for automating org block content modification
+
+The hook needs to find it's surrounding. ~narrow-to-block~ not always is a
+good idea as it also narrows to the previous block even if point is behind it.
+
+#+begin_src emacs-lisp
+(defun my-org-example-test ()
+  (save-mark-and-excursion
+    (org-narrow-to-block)
+    (goto-char 0)
+    (let ((name (buffer-substring-no-properties (point) (+ 15 (point)))))
+      (if (equal (upcase name) "#+BEGIN_EXAMPLE")
+          (progn
+            (mark-whole-buffer)
+            (replace-regexp " " "\n")
+            (deactivate-mark)
+            (goto-char 0)
+            (next-line)
+            (beginning-of-line)
+            (while (not (equal (upcase (buffer-substring (point) (+ 5 (point)))) "#+END"))
+              (insert "  - ")
+              (next-line)
+              (beginning-of-line))
+            (widen)
+            t)
+        (widen)
+        nil))))
+
+;; (push #'my-org-example-test org-ctrl-c-ctrl-c-hook)
+#+end_src
+
+** recursive structured editing using multiline regexps
+
+Each match of ~query-replace-regexp~ can be used as region, using that while
+going into a deeper level of recursive editing. There, for instance, =C-x n n=
+can conveniently narrow to region.
+#+begin_src emacs-lisp
+(defun my/edit-match-region ()
+  (save-mark-and-excursion
+    (set-mark (match-beginning 0))
+    (goto-char (match-end 0))
+    (recursive-edit)))
+#+end_src
+
+Multiline regexps can be built like this:
+"^(defun\\(.*\n\\)*?\n"
+When entering them interactively, use =C-q C-j= instead of "\n".
+Also see ~(helm-regexp)~ and ~(re-builder)~ supporting regexp building.
 
 * Disabled commands
 
