@@ -70,7 +70,7 @@ Note: the order is relevant. When a deadgrep window is initiated from a dired
 window, this is not an action going back to the dired origin. So all of the
 initiating actions come first.
 
-#+BEGIN_SRC emacs-lisp
+#+BEGIN_SRC emacs-lisp :shebang ";; -*- lexical-binding: t -*-"
   (custom-set-variables
    '(display-buffer-alist
      '(;; actions initiating a new selection window (so remember the origin)
@@ -796,7 +796,7 @@ cancelled by using any other key.
 (defun navigate-buffer (&optional window)
   "Enter a temporary buffer navigation mode. WINDOW specifies an optional window pointer,
 allowing to specify a remote window to be controlled."
-  (lexical-let ((arg-acc 0) (arg-neg nil) (consumed nil)
+  (let ((arg-acc 0) (arg-neg nil) (consumed nil)
 		(window (or window (selected-window)))
                 (exit-fnc))
     (labels ((set-consumed () (setq consumed 't))
@@ -858,7 +858,7 @@ allowing to specify a remote window to be controlled."
                                        (with-selected-window window
                                          (quit-window))
                                        (funcall exit-fnc)))
-	         map) 't))))))
+	         map) t))))))
 
 (defun navigate-window ()
   "like `navigate-other-window', but always use current window."
@@ -2058,6 +2058,8 @@ Now this way, you can use the pattern of selecting text, then typing on
 select, then type =" C-y "=).
 
 #+begin_src emacs-lisp
+(setq my/selection-type nil)
+
 (defun my/selection-advice (oldfun type)
          (let ((type
                 (if (or (null type)
@@ -2318,6 +2320,14 @@ A shortcut for ~dired~.
 (defun eshell/la (&rest args)
   (apply 'eshell/ls "-al" args))
 
+(defun eshell/vi (name)
+  (find-file name)
+  (evil-normal-state)
+  (recursive-edit)
+  (evil-emacs-state)
+  (kill-buffer)
+  "")
+
 (defun eshell/moccur (&rest args)
   (eshell-poor-mans-grep args))
 #+end_src
@@ -2362,7 +2372,7 @@ otherwise we append to the end. The buffer is made visible and finally using
 
 #+begin_src emacs-lisp
 (defun my-eshell-to-view-buffer (mode)
-  (lexical-let ((my-buffer (get-buffer-create "*viewer*")))
+  (let ((my-buffer (get-buffer-create "*viewer*")))
     (with-current-buffer my-buffer
       (view-mode 0)
       (end-of-buffer)
@@ -2373,8 +2383,9 @@ otherwise we append to the end. The buffer is made visible and finally using
         (view-mode 0)
         (save-excursion
           (end-of-buffer)
-          (insert string))
-        (view-mode t)
+          (if (char-or-string-p string)
+              (insert string)))
+        (view-mode 1)
         (switch-to-buffer my-buffer)))))
 #+end_src
 
@@ -2382,7 +2393,6 @@ Now, an alias of more 'cat $1 > /dev/view' does the trick. We can call ~more
 file~ or pipe to it: ~ls|more~. Both ways it works as expected.
 
 *** todo
- - use vi alias opening file in emacs in evil mode
  - find out about the pecularities of smart scrolling
  - output like git branch/infos on dir change:
    see eshell customizing options
@@ -3165,7 +3175,10 @@ A skeleton inserting text:
   "#+NAME: ")
 #+end_src
 
-Repeating subskeletons. As long as the query for a header arg is answered with
+Repeating subskeletons. The variable =str= is replaced by the result of an
+interactor given in first position of the (sub-)skeleton. If the interactor is
+a string, it is used as argument to ~skeleton-read~.
+As long as the query for a header arg is answered with
 a non-empty string, the sub-skeleton is repeated. Also, the =-= marks the
 position the point is moved to after finishing. Finally, each =@= marks
 additional positions. Using ~my/navigate-skeleton~, they can be reached
@@ -3226,6 +3239,30 @@ executed when ~str~ is inserted.
   > @ _ ")")
 #+end_src
 
+Elements can be grouped in sub-skeletons having a nil interactor in first
+position and not accessing =str=. The conditional elements =&= and =|= execute
+the next element if the previous one did move respectively did not move point.
+By grouping elements, you can have the last one as non-moving element (like
+=@= or =-=) and still have a following =&= executed if former elements of the
+group did move point. In the same way, you can group elements following a =&=
+or =|=.
+
+#+begin_src emacs-lisp
+(define-skeleton
+  tmpl/if3
+  "Wrap form into conditional lisp expression.
+Ask for test condition. If none is given, place point to insert condition afterwards.
+If two regions are given, wrap them as true and false expressions.
+If one region is given, wrap it as true expression and set point to insert false condition,
+if condition is given. Otherwise, point is placed at condition.
+If no region is given, also ask for true expression.
+"
+  nil
+  > "(if " (nil (skeleton-read "condition: ") | -) & @ \n
+  > _ | (skeleton-read "expression if true: ")
+  > @ _ & (nil ")" '(my/pop-skel-pos)) | ")")
+#+end_src
+  
 Best practice is using just one =_ | str=, wrapping region if given and
 querying if not.
 
