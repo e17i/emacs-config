@@ -2733,6 +2733,30 @@ regions.
 (setq markdown-command "/Users/jko/Programming/node/node_modules/.bin/md2html")
 #+END_SRC
 
+** nameless
+
+TODO: how to export nameless?
+
+#+begin_src emacs-lisp
+(custom-set-variables
+ '(nameless-global-aliases
+   '(("fl" . "font-lock")
+     ("" . "cl")
+     ("" . "my")
+     ("" . "nameless")))
+ '(nameless-private-prefix t))
+#+end_src
+
+We want =nameless-mode= to support ":" and "/" as namespace separators.
+
+#+begin_src emacs-lisp
+(setq nameless-private-separator "/")
+
+(defun nameless--name-regexp (name)
+  "Return a regexp of the current name, supporting private separator."
+  (concat "\\_<@?\\(" (regexp-quote name)
+          "[" (or nameless-separator "") (or nameless-private-separator "")  "]\\)\\(\\s_\\|\\sw\\)"))
+#+end_src
 ** org
 The well known template mechanism =<s TAB= has been replaced by a
 mechanism based on the tempo package (but see also below). This is activated by
