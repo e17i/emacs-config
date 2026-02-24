@@ -70,7 +70,7 @@ Note: the order is relevant. When a deadgrep window is initiated from a dired
 window, this is not an action going back to the dired origin. So all of the
 initiating actions come first.
 
-#+BEGIN_SRC emacs-lisp
+#+BEGIN_SRC emacs-lisp :shebang ";; -*- lexical-binding: t -*-"
   (custom-set-variables
    '(display-buffer-alist
      '(;; actions initiating a new selection window (so remember the origin)
@@ -796,7 +796,7 @@ cancelled by using any other key.
 (defun navigate-buffer (&optional window)
   "Enter a temporary buffer navigation mode. WINDOW specifies an optional window pointer,
 allowing to specify a remote window to be controlled."
-  (lexical-let ((arg-acc 0) (arg-neg nil) (consumed nil)
+  (let ((arg-acc 0) (arg-neg nil) (consumed nil)
 		(window (or window (selected-window)))
                 (exit-fnc))
     (labels ((set-consumed () (setq consumed 't))
@@ -858,7 +858,7 @@ allowing to specify a remote window to be controlled."
                                        (with-selected-window window
                                          (quit-window))
                                        (funcall exit-fnc)))
-	         map) 't))))))
+	         map) t))))))
 
 (defun navigate-window ()
   "like `navigate-other-window', but always use current window."
@@ -1800,10 +1800,10 @@ In addition, using ~visible-mark-mode~ being able to see the mark makes this
 really convenient.
 
 #+begin_src emacs-lisp
-(defface visible-mark-active ;; put this before (require 'visible-mark)
-  '((((type tty) (class mono)) (:inverse-video t))
-    (t (:background "magenta")))
-  "Custom face for the active mark.")
+;; (defface visible-mark-active ;; put this before (require 'visible-mark)
+;;   '((((type tty) (class mono)) (:inverse-video t))
+;;     (t (:background "magenta")))
+;;   "Custom face for the active mark.")
 (setq visible-mark-max 1)
 (setq visible-mark-faces '(visible-mark-face1 visible-mark-face2))
 (require 'visible-mark)
@@ -1833,6 +1833,86 @@ pushing replaced regions to the kill ring.
 
 But see also [[https://spwhitton.name/blog/entry/transient-mark-mode/][GNU Emacs' Transient Mark mode]] regarding the question of
 (de)activating transient mark mode.
+
+**** navigating mark-ring more conveniently
+
+Using =C-(u SPC)= always feels somewhat off. As it shows, the reason is that
+while pushing current mark to the tail of the mark-ring, setting point to it's
+position and popping a new mark off the mark-ring, the initial position of
+point is lost. So you can rotate through all positions of mark and mark-ring,
+but you won't ever reach your starting point.
+Instead, here is a function rotating through point, mark and mark-ring. That
+is, if mark-ring is empty it does just the same as ~exchange-point-and-mark~.
+
+#+begin_src emacs-lisp
+(defun my/mark-navigate-backward ()
+  "save point to tail of mark-ring, then set point to mark and pop new mark off head of mark-ring."
+  (interactive)
+  (if (null (mark t))
+      (user-error "No mark set in this buffer")
+    (exchange-point-and-mark t)
+    (pop-mark)))
+#+end_src
+
+And here is a function rotating forward, in the other direction.
+
+#+begin_src emacs-lisp
+(defun my/mark-navigate-forward ()
+  "push mark to head of mark-ring, set mark to point and point to tail of mark-ring."
+  (interactive)
+  (if (> (length mark-ring) 0)
+      (let ((lastpos (marker-position (nth (1- (length mark-ring)) mark-ring)))
+            (mark-ring-max (length mark-ring)))
+        (push-mark lastpos t nil)))
+  (exchange-point-and-mark t))
+#+end_src
+
+Now, we can combine both into a transient function, enabling convenient
+navigation through all local mark positions. In addition, if
+~visible-mark-mode~ is activated, it displays all positions of mark-ring,
+giving a nice visual feedback.
+
+#+begin_src emacs-lisp
+(defun my/set-visible-marks (num)
+  (interactive "p")
+  (visible-mark-mode 0)
+  (setq visible-mark-max num)
+  (visible-mark-mode 1))
+
+(defun my/navigate-mark-ring ()
+  "using visible-mark-mode, display all marks and navigate back or forward by means of a
+   repeated transient keymap. Depends on visible-mark-mode being activated."
+  (interactive)
+  (let ((visible-marks visible-mark-max))
+    (my/set-visible-marks mark-ring-max)
+    (set-transient-map
+     (let ((map (make-sparse-keymap)))
+       (define-key map "n" #'my/mark-navigate-forward)
+       (define-key map "p" #'my/mark-navigate-backward)
+       map)
+     t
+     (lambda ()
+       (my/set-visible-marks visible-marks))
+     "navigate mark-ring (%k)")))
+
+(global-set-key (kbd "M-g m") #'my/navigate-mark-ring)
+#+end_src
+
+And finally a function activating the last region:
+
+#+begin_src emacs-lisp
+(defun my/activate-last-region ()
+  (interactive)
+  (my/mark-navigate-backward)
+  (activate-mark))
+#+end_src
+
+cleaning the mark-ring:
+#+begin_src emacs-lisp
+;; (dolist (ml mark-ring) (set-marker ml nil))
+;; (setq mark-ring nil)
+;; (set-marker (mark-marker) nil)
+#+end_src
 
 ** Window handling
 
@@ -2057,6 +2137,8 @@ Now this way, you can use the pattern of selecting text, then typing on
 select, then type =" C-y "=).
 
 #+begin_src emacs-lisp
+(setq my/selection-type nil)
+
 (defun my/selection-advice (oldfun type)
          (let ((type
                 (if (or (null type)
@@ -2310,6 +2392,14 @@ A shortcut for ~dired~.
 (defun eshell/la (&rest args)
   (apply 'eshell/ls "-al" args))
 
+(defun eshell/vi (name)
+  (find-file name)
+  (evil-normal-state)
+  (recursive-edit)
+  (evil-emacs-state)
+  (kill-buffer)
+  "")
+
 (defun eshell/moccur (&rest args)
   (eshell-poor-mans-grep args))
 #+end_src
@@ -2354,7 +2444,7 @@ otherwise we append to the end. The buffer is made visible and finally using
 
 #+begin_src emacs-lisp
 (defun my-eshell-to-view-buffer (mode)
-  (lexical-let ((my-buffer (get-buffer-create "*viewer*")))
+  (let ((my-buffer (get-buffer-create "*viewer*")))
     (with-current-buffer my-buffer
       (view-mode 0)
       (end-of-buffer)
@@ -2365,8 +2455,9 @@ otherwise we append to the end. The buffer is made visible and finally using
         (view-mode 0)
         (save-excursion
           (end-of-buffer)
-          (insert string))
-        (view-mode t)
+          (if (char-or-string-p string)
+              (insert string)))
+        (view-mode 1)
         (switch-to-buffer my-buffer)))))
 #+end_src
 
@@ -2374,7 +2465,6 @@ Now, an alias of more 'cat $1 > /dev/view' does the trick. We can call ~more
 file~ or pipe to it: ~ls|more~. Both ways it works as expected.
 
 *** todo
- - use vi alias opening file in emacs in evil mode
  - find out about the pecularities of smart scrolling
  - output like git branch/infos on dir change:
    see eshell customizing options
@@ -2395,6 +2485,11 @@ We want to enter evil only occasionally; we use it with the undo-tree package.
  '(evil-want-C-h-delete t)
  '(evil-want-C-u-delete t)
  '(evil-want-C-u-scroll t))
+#+end_src
+
+Also, we never want evil to quit emacs.
+#+begin_src emacs-lisp
+(setf (symbol-function 'evil-quit) #'exit-recursive-edit)
 #+end_src
 
 *** Evil defines
@@ -3170,6 +3265,240 @@ Have RET indent like in python mode:
 - for instance, when docker attach called in shell-mode or eshell-mode
   - M-x term-char-mode
   - afterwards the detach command seq C-p C-q works
+
+** Skeletons
+
+Skeletons are macros inserting text at point, either as is or with different
+means of requesting text to be filled in. They can use the minibuffer to input
+text (using initial query or calling ~skeleton-read~). Existing text can be
+wrapped. Or, after inserting the template, the point can be moved into
+positions to be filled afterwards.
+
+Skeleton expansions behave differently mid-line or at the beginning or end of
+a line. At the end of a line (or at an empty line), the insertion is just done
+without adding newlines. At the beginning or middle of a non-empty line, the
+rest is moved down before inserting. Here we handle this by actively preparing
+an empty line before inserting. Quoted commands are executed just for
+side-effect while the return value of unquoted functions will be inserted into
+the expansion.
+
+A skeleton inserting text:
+#+begin_src emacs-lisp
+(define-skeleton
+  tmpl/org-name
+  "insert org name"
+  nil
+  '(open-line 1)
+  "#+NAME: ")
+#+end_src
+
+Repeating subskeletons. The variable =str= is replaced by the result of an
+interactor given in first position of the (sub-)skeleton. If the interactor is
+a string, it is used as argument to ~skeleton-read~.
+As long as the query for a header arg is answered with
+a non-empty string, the sub-skeleton is repeated. Also, the =-= marks the
+position the point is moved to after finishing. Finally, each =@= marks
+additional positions. Using ~my/navigate-skeleton~, they can be reached
+afterwards.
+#+begin_src emacs-lisp
+(define-skeleton
+  tmpl/org-header
+  "insert org header"
+  nil
+  -
+  (
+   "header arg: "
+   "#+HEADER: " @ str \n)
+  '(delete-indentation))
+#+end_src
+
+Simple example for wrapping existing text. Here, one region is expected
+(marked =_=). The indentation command =>= indents literal or wrapped text.
+#+begin_src emacs-lisp
+(define-skeleton
+  tmpl/indent
+  "indent text in region"
+  nil
+  > _)
+#+end_src
+
+More than one placeholder of wrapped text can be given. A couple of previous
+marks can then be used by giving a negative prefix arg (if a region is active
+and no prefix arg given, then -1 is assumed, using the region between point
+and the single mark set as last). A positive arg wraps the N next words.
+If no prefix arg and region is given, the point is placed at the first =_=
+afterwards. When =_= and =-= are given, then the last =-= overrides for
+placing point.
+
+This is also an example for conditional insertion. If fewer than three regions
+are given, only the first replacement markers are wrapped. For each
+replacement not given, a newline is inserted instead, the point being moved to
+the first one not given.
+#+begin_src emacs-lisp
+(define-skeleton
+  tmpl/if
+  "conditional lisp execution"
+  nil
+  > "(if " _ | \n
+  > @ _ | \n
+  > @ _ ")")
+#+end_src
+
+Active queries can be used if no replacements are given. The query is only
+executed when ~str~ is inserted.
+#+begin_src emacs-lisp
+(define-skeleton
+  tmpl/if2
+  "conditional lisp execution"
+  "condition: "
+  > "(if " _ | str
+  > @ _ | (skeleton-read "expression if true: ")
+  > @ _ ")")
+#+end_src
+
+Elements can be grouped in sub-skeletons having a nil interactor in first
+position and not accessing =str=. The conditional elements =&= and =|= execute
+the next element if the previous one did move respectively did not move point.
+By grouping elements, you can have the last one as non-moving element (like
+=@= or =-=) and still have a following =&= executed if former elements of the
+group did move point. In the same way, you can group elements following a =&=
+or =|=.
+
+#+begin_src emacs-lisp
+(define-skeleton
+  tmpl/if3
+  "Wrap form into conditional lisp expression.
+Ask for test condition. If none is given, place point to insert condition afterwards.
+If two regions are given, wrap them as true and false expressions.
+If one region is given, wrap it as true expression and set point to insert false condition,
+if condition is given. Otherwise, point is placed at condition.
+If no region is given, also ask for true expression.
+"
+  nil
+  > "(if " (nil (skeleton-read "condition: ") | -) & @ \n
+  > _ | (skeleton-read "expression if true: ")
+  > @ _ & (nil ")" '(my/pop-skel-pos)) | ")")
+#+end_src
+  
+Best practice is using just one =_ | str=, wrapping region if given and
+querying if not.
+
+A simple in-line expansion without line breaking:
+#+begin_src emacs-lisp
+(define-skeleton
+  tmpl/call_inline
+  "insert an inline org babel block call."
+  "block: "
+  '(cycle-spacing)
+  "call_" _ | str "("-")"
+  '(cycle-spacing)
+  '(delete-indentation))
+#+end_src
+
+Dynamically execute subskeletons as long as inter-regions can be consumed. The
+query is a function or form instead of a string. This form must evaluate to a
+string for the subskeleton to be expanded or =nil= to finish. Also, =str= must
+be addressed to execute the query. Here, that's done just in form of a
+side-effekt. The query form must be guaranteed to terminate, that is, at some
+point evaluate to =nil=. Here it is achieved by consuming each skeleton-region
+using =_=.
+#+begin_src emacs-lisp
+(define-skeleton
+  tmpl/skel-recursive
+  "put each region into a block."
+  nil
+  -
+  (
+   (let ((v1 (first skeleton-regions)))
+     (if (markerp v1)
+         (buffer-substring-no-properties (point) (marker-position v1))
+       nil))
+   '(skeleton-read str)
+   "#+BEGIN_example\n"
+   @ _
+   "#+END_example\n")
+  @)
+#+end_src
+
+*** Navigating skeletons
+
+Just like navigate-mark-ring:
+#+begin_src emacs-lisp
+(defun my/pop-skel-pos ()
+  (interactive)
+  (setq skeleton-positions (nconc skeleton-positions (list (point))))
+  (goto-char (pop skeleton-positions)))
+
+(defun my/push-skel-pos ()
+  (interactive)
+  (push (point) skeleton-positions)
+  (goto-char (first (last skeleton-positions)))
+  (setq skeleton-positions (nbutlast skeleton-positions)))
+
+(defun my/navigate-skeleton ()
+  "Given marked positions of an inserted skeleton, navigate back or forward
+by means of a repeated transient keymap."
+  (interactive)
+  (set-transient-map
+   (let ((map (make-sparse-keymap)))
+     (define-key map "n" #'my/push-skel-pos)
+     (define-key map "p" #'my/pop-skel-pos)
+     map)
+   t
+   nil
+   "navigate skeleton (%k)"))
+
+(global-set-key (kbd "M-g s") #'my/navigate-skeleton)
+#+end_src
+
+** example for automating org block content modification
+
+The hook needs to find it's surrounding. ~narrow-to-block~ not always is a
+good idea as it also narrows to the previous block even if point is behind it.
+
+#+begin_src emacs-lisp
+(defun my-org-example-test ()
+  (save-mark-and-excursion
+    (org-narrow-to-block)
+    (goto-char 0)
+    (let ((name (buffer-substring-no-properties (point) (+ 15 (point)))))
+      (if (equal (upcase name) "#+BEGIN_EXAMPLE")
+          (progn
+            (mark-whole-buffer)
+            (replace-regexp " " "\n")
+            (deactivate-mark)
+            (goto-char 0)
+            (next-line)
+            (beginning-of-line)
+            (while (not (equal (upcase (buffer-substring (point) (+ 5 (point)))) "#+END"))
+              (insert "  - ")
+              (next-line)
+              (beginning-of-line))
+            (widen)
+            t)
+        (widen)
+        nil))))
+
+;; (push #'my-org-example-test org-ctrl-c-ctrl-c-hook)
+#+end_src
+
+** recursive structured editing using multiline regexps
+
+Each match of ~query-replace-regexp~ can be used as region, using that while
+going into a deeper level of recursive editing. There, for instance, =C-x n n=
+can conveniently narrow to region.
+#+begin_src emacs-lisp
+(defun my/edit-match-region ()
+  (save-mark-and-excursion
+    (set-mark (match-beginning 0))
+    (goto-char (match-end 0))
+    (recursive-edit)))
+#+end_src
+
+Multiline regexps can be built like this:
+"^(defun\\(.*\n\\)*?\n"
+When entering them interactively, use =C-q C-j= instead of "\n".
+Also see ~(helm-regexp)~ and ~(re-builder)~ supporting regexp building.
 
 * Disabled commands
 
