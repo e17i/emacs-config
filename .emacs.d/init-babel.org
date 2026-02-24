@@ -2062,6 +2062,8 @@ Now this way, you can use the pattern of selecting text, then typing on
 select, then type =" C-y "=).
 
 #+begin_src emacs-lisp
+(setq my/selection-type nil)
+
 (defun my/selection-advice (oldfun type)
          (let ((type
                 (if (or (null type)
@@ -3177,7 +3179,10 @@ A skeleton inserting text:
   "#+NAME: ")
 #+end_src
 
-Repeating subskeletons. As long as the query for a header arg is answered with
+Repeating subskeletons. The variable =str= is replaced by the result of an
+interactor given in first position of the (sub-)skeleton. If the interactor is
+a string, it is used as argument to ~skeleton-read~.
+As long as the query for a header arg is answered with
 a non-empty string, the sub-skeleton is repeated. Also, the =-= marks the
 position the point is moved to after finishing. Finally, each =@= marks
 additional positions. Using ~my/navigate-skeleton~, they can be reached
@@ -3238,6 +3243,30 @@ executed when ~str~ is inserted.
   > @ _ ")")
 #+end_src
 
+Elements can be grouped in sub-skeletons having a nil interactor in first
+position and not accessing =str=. The conditional elements =&= and =|= execute
+the next element if the previous one did move respectively did not move point.
+By grouping elements, you can have the last one as non-moving element (like
+=@= or =-=) and still have a following =&= executed if former elements of the
+group did move point. In the same way, you can group elements following a =&=
+or =|=.
+
+#+begin_src emacs-lisp
+(define-skeleton
+  tmpl/if3
+  "Wrap form into conditional lisp expression.
+Ask for test condition. If none is given, place point to insert condition afterwards.
+If two regions are given, wrap them as true and false expressions.
+If one region is given, wrap it as true expression and set point to insert false condition,
+if condition is given. Otherwise, point is placed at condition.
+If no region is given, also ask for true expression.
+"
+  nil
+  > "(if " (nil (skeleton-read "condition: ") | -) & @ \n
+  > _ | (skeleton-read "expression if true: ")
+  > @ _ & (nil ")" '(my/pop-skel-pos)) | ")")
+#+end_src
+  
 Best practice is using just one =_ | str=, wrapping region if given and
 querying if not.
 
