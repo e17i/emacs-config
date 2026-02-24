@@ -70,7 +70,7 @@ Note: the order is relevant. When a deadgrep window is initiated from a dired
 window, this is not an action going back to the dired origin. So all of the
 initiating actions come first.
 
-#+BEGIN_SRC emacs-lisp
+#+BEGIN_SRC emacs-lisp :shebang ";; -*- lexical-binding: t -*-"
   (custom-set-variables
    '(display-buffer-alist
      '(;; actions initiating a new selection window (so remember the origin)
@@ -796,7 +796,7 @@ cancelled by using any other key.
 (defun navigate-buffer (&optional window)
   "Enter a temporary buffer navigation mode. WINDOW specifies an optional window pointer,
 allowing to specify a remote window to be controlled."
-  (lexical-let ((arg-acc 0) (arg-neg nil) (consumed nil)
+  (let ((arg-acc 0) (arg-neg nil) (consumed nil)
 		(window (or window (selected-window)))
                 (exit-fnc))
     (labels ((set-consumed () (setq consumed 't))
@@ -858,7 +858,7 @@ allowing to specify a remote window to be controlled."
                                        (with-selected-window window
                                          (quit-window))
                                        (funcall exit-fnc)))
-	         map) 't))))))
+	         map) t))))))
 
 (defun navigate-window ()
   "like `navigate-other-window', but always use current window."
@@ -2366,7 +2366,7 @@ otherwise we append to the end. The buffer is made visible and finally using
 
 #+begin_src emacs-lisp
 (defun my-eshell-to-view-buffer (mode)
-  (lexical-let ((my-buffer (get-buffer-create "*viewer*")))
+  (let ((my-buffer (get-buffer-create "*viewer*")))
     (with-current-buffer my-buffer
       (view-mode 0)
       (end-of-buffer)
@@ -2377,8 +2377,9 @@ otherwise we append to the end. The buffer is made visible and finally using
         (view-mode 0)
         (save-excursion
           (end-of-buffer)
-          (insert string))
-        (view-mode t)
+          (if (char-or-string-p string)
+              (insert string)))
+        (view-mode 1)
         (switch-to-buffer my-buffer)))))
 #+end_src
 
