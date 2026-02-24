@@ -1863,7 +1863,7 @@ giving a nice visual feedback.
   "using visible-mark-mode, display all marks and navigate back or forward by means of a
    repeated transient keymap. Depends on visible-mark-mode being activated."
   (interactive)
-  (lexical-let ((visible-marks visible-mark-max))
+  (let ((visible-marks visible-mark-max))
     (my/set-visible-marks mark-ring-max)
     (set-transient-map
      (let ((map (make-sparse-keymap)))
@@ -2417,6 +2417,11 @@ We want to enter evil only occasionally; we use it with the undo-tree package.
  '(evil-want-C-h-delete t)
  '(evil-want-C-u-delete t)
  '(evil-want-C-u-scroll t))
+#+end_src
+
+Also, we never want evil to quit emacs.
+#+begin_src emacs-lisp
+(setf (symbol-function 'evil-quit) #'exit-recursive-edit)
 #+end_src
 
 *** Evil defines
