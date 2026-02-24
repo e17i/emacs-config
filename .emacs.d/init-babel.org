@@ -2322,6 +2322,14 @@ A shortcut for ~dired~.
 (defun eshell/la (&rest args)
   (apply 'eshell/ls "-al" args))
 
+(defun eshell/vi (name)
+  (find-file name)
+  (evil-normal-state)
+  (recursive-edit)
+  (evil-emacs-state)
+  (kill-buffer)
+  "")
+
 (defun eshell/moccur (&rest args)
   (eshell-poor-mans-grep args))
 #+end_src
@@ -2387,7 +2395,6 @@ Now, an alias of more 'cat $1 > /dev/view' does the trick. We can call ~more
 file~ or pipe to it: ~ls|more~. Both ways it works as expected.
 
 *** todo
- - use vi alias opening file in emacs in evil mode
  - find out about the pecularities of smart scrolling
  - output like git branch/infos on dir change:
    see eshell customizing options
