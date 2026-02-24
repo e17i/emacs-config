@@ -1872,7 +1872,7 @@ navigation through all local mark positions. In addition, if
 ~visible-mark-mode~ is activated, it displays all positions of mark-ring,
 giving a nice visual feedback.
 
-#+begin_src emacs-lisp
+#+begin_src emacs-lisp :lexical t
 (defun my/set-visible-marks (num)
   (interactive "p")
   (visible-mark-mode 0)
@@ -1892,8 +1892,7 @@ giving a nice visual feedback.
        map)
      t
      (lambda ()
-       (my/set-visible-marks visible-marks))
-     "navigate mark-ring (%k)")))
+       (my/set-visible-marks visible-marks)))))
 
 (global-set-key (kbd "M-g m") #'my/navigate-mark-ring)
 #+end_src
@@ -3423,7 +3422,7 @@ using =_=.
 *** Navigating skeletons
 
 Just like navigate-mark-ring:
-#+begin_src emacs-lisp
+#+begin_src emacs-lisp :lexical t
 (defun my/pop-skel-pos ()
   (interactive)
   (setq skeleton-positions (nconc skeleton-positions (list (point))))
@@ -3445,8 +3444,7 @@ by means of a repeated transient keymap."
      (define-key map "p" #'my/pop-skel-pos)
      map)
    t
-   nil
-   "navigate skeleton (%k)"))
+   nil))
 
 (global-set-key (kbd "M-g s") #'my/navigate-skeleton)
 #+end_src
