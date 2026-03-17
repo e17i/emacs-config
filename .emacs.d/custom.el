@@ -126,7 +126,7 @@
               markdown-mode nameless ob-restclient org org-plus-contrib
               org-present ox-rst py-autopep8 realgud restclient
               smartparens solarized-theme tagedit transient undo-tree
-              use-package web-mode which-key yaml-mode zzz-to-char))
+              use-package visible-mark web-mode which-key yaml-mode zzz-to-char))
  '(paren-match-face 'paren-face-match-light)
  '(paren-sexp-mode t)
  '(python-mode-hook
