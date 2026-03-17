@@ -2138,24 +2138,40 @@ as smart scrolling handles that case quite nicely.
 
 *** howtos
 
-Buffers can be addressed like file redirection: #<buffer name>. This is the
-same as ~(get-buffer-create "name")~.
-A third redirection function ~>>>~ appends to current point if target is a
-buffer.
-Use lisp functions as shell commands: ~switch-to-buffer-other-window
-#<buffer>~.
+- Buffers can be addressed like file redirection: #<buffer name>. This is the
+  same as ~(get-buffer-create "name")~.
+  A third redirection function ~>>>~ appends to current point if target is a
+  buffer.
 
-See ~cd~ history: ~cd =~. Address old dirs: ~$-[n]~ or ~$OLDPWD[n]~.
+- Use lisp functions as shell commands: ~switch-to-buffer-other-window
+  #<buffer>~.
 
-Start a command sending output into extra buffer: ~compile <command>~. Async
-version with ~make <command>~. ~occur~: search in current eshell buffer.
+- See ~cd~ history: ~cd =~. Address old dirs: ~$-[n]~ or ~$OLDPWD[n]~.
 
-There are virtual devices:
- ~/dev/eshell~ :: output into eshell window
- ~/dev/clip~   :: output to clipboard
- ~/dev/kill~   :: output into kill ring
+- Start a command sending output into extra buffer: ~compile <command>~.
 
-Some more usefull commands:
+- ~occur~: search in current eshell buffer.
+
+- There are virtual devices:
+  ~/dev/eshell~ :: output into eshell window
+  ~/dev/clip~   :: output to clipboard
+  ~/dev/kill~   :: output into kill ring
+
+- copy some selected previous output to command line: =C-0 C-c RET=
+  directly execute it: =C-0 RET=
+  (to copy the respective lines, don't use the prefix command).
+
+**** smart scrolling
+
+*** Some more usefull commands:
+
+#+begin_src emacs-lisp
+(defun eshell/buffer (name)
+  (with-current-buffer name (buffer-string)))
+#+end_src
+This can be used to output the contents of a buffer: ~buffer "test" | cat~
+Narrow it (=C-x n=) to output only the narrowed part.
+If the lines contain shell commands, each of them can be executed with ~buffer "test" | sh~.
 
 #+begin_src emacs-lisp
 (defun eshell/la (&rest args)
@@ -2748,6 +2764,26 @@ Have RET indent like in python mode:
           (lambda ()
             (define-key yaml-mode-map "\C-m" 'newline-and-indent)))
 #+END_SRC
+
+* Best practices
+** Modifying regions
+- use keyboard macro on region: =C-x C-k r=
+- use rectangular region:
+  - =C-x SPC= or =C-M-Mouse1=
+  - interactively replace each line with text: =C-x r t=
+    use this with rectangle of width 0, inserting text into each line at given column
+- use shell command on region: =M-|=
+  each line of region is input (stdin) of single instance of given shell
+  command. Output goes to command buffer (or, with =C-u= prefix, replaces region)
+  example:
+
+  awk '{print $1}' :: replace each line by first word of line
+  
+  sh :: execute each line
+** Replacements
+- use quoted characters to insert control characters into searches or
+  replacements:
+  =M-%= query replace SPC =C-q C-j= :: replace space by RET
 
 * Disabled commands
 
