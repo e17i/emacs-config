@@ -119,10 +119,11 @@
  '(package-selected-packages
    '(0blayout ace-jump-mode ace-jump-zap ace-window auctex cider
               company-jedi company-restclient deadgrep docker
-              docker-tramp electric-spacing elpy epresent evil
-              expand-region flycheck helm hide-mode-line htmlize
+              docker-tramp electric-spacing elpy epresent
+              eshell-prompt-extras evil
+              expand-region flycheck helm hide-lines hide-mode-line htmlize
               indent-tools jedi jedi-direx js2-mode json-mode magit
-              markdown-mode ob-restclient org org-plus-contrib
+              markdown-mode nameless ob-restclient org org-plus-contrib
               org-present ox-rst py-autopep8 realgud restclient
               smartparens solarized-theme tagedit transient undo-tree
               use-package web-mode which-key yaml-mode zzz-to-char))
