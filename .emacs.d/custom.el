@@ -10,6 +10,7 @@
  '(column-number-mode t)
  '(comint-completion-autolist t)
  '(custom-file "~/.emacs.d/custom.el")
+ '(deadgrep-project-root-function '(lambda nil default-directory))
  '(default-input-method "german-prefix")
  '(delete-selection-mode t)
  '(dired-dwim-target t)
@@ -108,6 +109,7 @@
  '(nxml-sexp-element-flag t)
  '(org-agenda-files nil)
  '(org-babel-python-command "python2")
+ '(org-babel-load-languages '((shell . t) (emacs-lisp . t)))
  '(org-goto-auto-isearch nil)
  '(org-src-preserve-indentation t)
  '(package-archives
