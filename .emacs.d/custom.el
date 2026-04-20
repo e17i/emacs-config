@@ -184,7 +184,9 @@
  '(which-key-idle-secondary-delay 0.5)
  '(which-key-mode t)
  '(window-min-height 8)
- '(window-min-width 40))
+ '(window-min-width 40)
+ '(x-meta-keysym 'super t)
+ '(x-super-keysym 'meta t))
 (custom-set-faces
  ;; custom-set-faces was added by Custom.
  ;; If you edit it by hand, you could mess it up, so be careful.
