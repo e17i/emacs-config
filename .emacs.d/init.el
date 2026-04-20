@@ -4,6 +4,9 @@
 ;; You may delete these explanatory comments.
 (package-initialize)
 
+(require 'compat-29)
+(require 'compat-30)
+
 (setq custom-file "~/.emacs.d/custom.el")
 
 (setq org-element-use-cache nil)  ;; temporarily disable org element cache
