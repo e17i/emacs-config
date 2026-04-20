@@ -95,14 +95,17 @@
      (77
       (german-kbd apple-kbd battery use-super-as-ctl-x))))
  '(my-environment-mode t)
- '(my-frame-background "White")
- '(my-frame-foreground "Black")
+ '(my-frame-background "Black")
+ '(my-frame-foreground "White")
  '(my-frame-stylings
    '(frame-width-below-threshold frame-height-dec frame-to-right
                                  frame-to-top))
- '(my-frame-transparency 90)
  '(ns-alternate-modifier 'super)
  '(ns-command-modifier 'meta)
+ '(my-frame-transparency 80)
+ '(nameless-global-aliases
+   '(("fl" . "font-lock") ("" . "cl") ("" . "my") ("" . "nameless")))
+ '(nameless-private-prefix t)
  '(ns-control-modifier 'control)
  '(ns-right-alternate-modifier 'alternate)
  '(ns-right-command-modifier 'meta)
