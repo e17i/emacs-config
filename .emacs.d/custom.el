@@ -85,22 +85,33 @@
  '(my-frame-foreground "Black")
  '(my-frame-stylings '(frame-width-half-plus frame-to-left frame-to-top))
  '(my-frame-transparency 85)
+ '(nameless-global-aliases
+   '(("fl" . "font-lock")
+     ("" . "cl")
+     ("" . "my")
+     ("" . "nameless")))
+ '(nameless-private-prefix t)
  '(nxml-sexp-element-flag t)
  '(org-agenda-files nil)
  '(org-babel-python-command "python")
+ '(org-directory "~/public_html/org")
  '(org-goto-auto-isearch nil)
  '(org-html-postamble t)
  '(org-html-postamble-format
    '(("en" "<p class=\"author\">Author: %a
 (Reddit: <a href=\"https://www.reddit.com/user/e17i\">u/e17i</a>)</p> <p>Made on
 emacs org-mode with <a href=\"https://jessekelly881-rethink.surge.sh/\">Rethink</a></p>")))
+ '(org-mobile-directory "/home/joergk/public_html/mobileorg")
+ '(org-mobile-files
+   '(org-agenda-files "/home/joergk/public_html/org/from-mobile.org"))
+ '(org-mobile-inbox-for-pull "~/public_html/org/from-mobile.org")
  '(org-src-preserve-indentation t)
  '(package-archives
    '(("gnu" . "https://elpa.gnu.org/packages/")
      ("melpa-stable" . "https://stable.melpa.org/packages/")
      ("melpa" . "https://melpa.org/packages/")))
  '(package-selected-packages
-   '(jedi py-autopep8 elpy flycheck exwm nameless expand-region indent-tools yaml-mode tagedit undo-tree zzz-to-char htmlize smartparens ace-jump-zap helm evil auctex cider company-jedi deadgrep hide-lines jedi-direx js2-mode json-mode magit markdown-mode org ox-rst realgud which-key))
+   '(eshell-prompt-extras jedi py-autopep8 elpy flycheck exwm nameless expand-region indent-tools yaml-mode tagedit undo-tree zzz-to-char htmlize smartparens ace-jump-zap helm evil auctex cider company-jedi deadgrep hide-lines jedi-direx js2-mode json-mode magit markdown-mode org ox-rst realgud which-key))
  '(paren-match-face 'paren-face-match-light)
  '(paren-sexp-mode t)
  '(python-mode-hook
