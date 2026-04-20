@@ -12,3 +12,4 @@
 
 (load custom-file)  ;; load cust after babel
 (elpy-reenable)  ;; call this after load custom-file
+(exwm-wm-mode)
