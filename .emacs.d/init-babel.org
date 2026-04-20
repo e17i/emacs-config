@@ -1692,7 +1692,7 @@ easily reachable.
     (define-key kmap (kbd "C-s-@") #'rectangle-mark-mode)
     ;; s-@ not (yet) working, see C-x @ for event modifier adding
     (define-key kmap (kbd "C-s-SPC") #'pop-global-mark)
-    ;; (define-key kmap (kbd "s-a") (keymap-global-lookup "C-x a"))
+    (define-key kmap (kbd "s-a") (keymap-global-lookup "C-x a"))
     (define-key kmap (kbd "s-b") #'switch-to-buffer)
     (define-key kmap (kbd "C-s-b") #'bs-show)
     (define-key kmap (kbd "C-s-c") #'save-buffers-kill-terminal)
@@ -1713,27 +1713,28 @@ easily reachable.
     (define-key kmap (kbd "C-s-k k") #'kmacro-end-or-call-macro)
     (define-key kmap (kbd "s-l") #'count-lines-page)
     (define-key kmap (kbd "C-s-l") #'downcase-region)
-    ;; (define-key kmap (kbd "C-s-m") (keymap-global-lookup "C-x C-m"))
-    ;; (define-key kmap (kbd "s-n") (keymap-global-lookup "C-x n"))
+    (define-key kmap (kbd "C-s-m") (keymap-global-lookup "C-x C-m"))
+    (define-key kmap (kbd "s-n") (keymap-global-lookup "C-x n"))
     (define-key kmap (kbd "C-s-n") #'set-goal-column)
     (define-key kmap (kbd "s-o") #'other-window)
     (define-key kmap (kbd "C-s-o") #'delete-blank-lines)
-    ;; (define-key kmap (kbd "s-p") (keymap-global-lookup "C-x p"))
+    (define-key kmap (kbd "s-p") (keymap-global-lookup "C-x p"))
     (define-key kmap (kbd "C-s-p") #'mark-page)
     (define-key kmap (kbd "s-q") #'kbd-macro-query)
     (define-key kmap (kbd "C-s-q") #'read-only-mode)  ; on mac this is lock screen, but this works with shift-q
     (define-key kmap (kbd "C-M-s-q") #'quit-restore-other-window)
-    ;; (define-key kmap (kbd "s-r") (keymap-global-lookup "C-x r"))
+    (define-key kmap (kbd "s-r") (keymap-global-lookup "C-x r"))
     (define-key kmap (kbd "C-s-r") #'find-file-read-only)
     (define-key kmap (kbd "s-s") #'save-some-buffers)
     (define-key kmap (kbd "C-s-s") #'save-buffer)
-    ;; (define-key kmap (kbd "s-t") (keymap-global-lookup "C-x t"))
+    (define-key kmap (kbd "s-t") (keymap-global-lookup "C-x t"))
     (define-key kmap (kbd "C-s-t") #'transpose-lines)
     ; (define-key kmap "s-u" #'undo)  ; here is revert-buffer
+    (define-key kmap (kbd "s-u") #'revert-buffer)
     (define-key kmap (kbd "C-s-u") #'upcase-region)
-    ;; (define-key kmap (kbd "s-v") (keymap-global-lookup "C-x v"))
+    (define-key kmap (kbd "s-v") (keymap-global-lookup "C-x v"))
     (define-key kmap (kbd "C-s-v") #'navigate-window)
-    ;; (define-key kmap (kbd "s-w") (keymap-global-lookup "C-x w"))
+    (define-key kmap (kbd "s-w") (keymap-global-lookup "C-x w"))
     (define-key kmap (kbd "C-s-w") #'write-file)
     (define-key kmap (kbd "s-x") (keymap-global-lookup "C-x x"))
     (define-key kmap (kbd "C-s-x") (lambda (&optional arg) (interactive "P") (exchange-point-and-mark (not arg))))
@@ -1750,7 +1751,7 @@ easily reachable.
     (define-key kmap (kbd "s-5") #'ctl-x-5-prefix)
     (define-key kmap (kbd "s-6") #'2C-command)
     (define-key kmap (kbd "s-8 RET") #'insert-char)
-    ;; (define-key kmap (kbd "s-8 e") (keymap-global-lookup "C-x 8 e"))
+    (define-key kmap (kbd "s-8 e") (keymap-global-lookup "C-x 8 e"))
     (define-key kmap (kbd "C-s-0") #'text-scale-adjust)
     (define-key kmap (kbd "C-s-+") #'text-scale-adjust)
     (define-key kmap (kbd "C-s--") #'text-scale-adjust)
@@ -1885,14 +1886,15 @@ giving a nice visual feedback.
   (interactive)
   (let ((visible-marks visible-mark-max))
     (my/set-visible-marks mark-ring-max)
-    (set-transient-map
+    (compat-call set-transient-map
      (let ((map (make-sparse-keymap)))
        (define-key map "n" #'my/mark-navigate-forward)
        (define-key map "p" #'my/mark-navigate-backward)
        map)
      t
      (lambda ()
-       (my/set-visible-marks visible-marks)))))
+       (my/set-visible-marks visible-marks))
+     "navigate mark-ring (%k)")))
 
 (global-set-key (kbd "M-g m") #'my/navigate-mark-ring)
 #+end_src
@@ -2018,6 +2020,7 @@ Load and enable different additional packages
 (setq org-element-use-cache nil)  ;; temporarily disable org element cache
 (load-library "realgud")
 (load-library "evil")
+(require 'evil)
 (require 'wdired)  ;; edit dired buffers with C-x C-q
 (load "dired-x.el") ;; also enable dired-jump with C-x C-j
 ;; (require 'ox-rst) ; not yet installed
@@ -2221,6 +2224,13 @@ two keys away). To get up a directory in the opposite direction via =^= is
 also not within easy reach. So going up also with =;= and =C-,= seems
 reasonable. BTW, selecting a file or directory is also possible with =f= and
 =e=.
+
+#+BEGIN_SRC emacs-lisp
+(define-key dired-mode-map "," #'dired-up-directory)
+(define-key dired-mode-map ";" #'dired-up-directory)
+(define-key dired-mode-map "ö" #'dired-up-directory)  ;; on german keyboard same key like ;
+(define-key dired-mode-map [67108908] #'dired-up-directory)
+#+END_SRC
 
 *** dired-ediff
 Enable simple access to  ~ediff~ within ~dired~. Select two files with
@@ -3462,13 +3472,14 @@ Just like navigate-mark-ring:
   "Given marked positions of an inserted skeleton, navigate back or forward
 by means of a repeated transient keymap."
   (interactive)
-  (set-transient-map
+  (compat-call set-transient-map
    (let ((map (make-sparse-keymap)))
      (define-key map "n" #'my/push-skel-pos)
      (define-key map "p" #'my/pop-skel-pos)
      map)
    t
-   nil))
+   nil
+   "navigate skeleton (%k)"))
 
 (global-set-key (kbd "M-g s") #'my/navigate-skeleton)
 #+end_src
