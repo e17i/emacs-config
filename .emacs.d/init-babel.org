@@ -3539,7 +3539,7 @@ Also see ~(helm-regexp)~ and ~(re-builder)~ supporting regexp building.
 (put 'narrow-to-region 'disabled nil)
 (put 'narrow-to-page 'disabled nil)
 (put 'set-goal-column 'disabled nil)
-;; (put 'eval-expression 'disabled nil)  ;; not longer needed
+(put 'scroll-left 'disabled nil)
 #+END_SRC
 
 * Todo
