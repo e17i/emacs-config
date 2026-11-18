@@ -4,8 +4,8 @@
 ;; You may delete these explanatory comments.
 (package-initialize)
 
-(require 'compat-29)
-(require 'compat-30)
+;; (require 'compat-29)
+;; (require 'compat-30)
 
 (setq custom-file "~/.emacs.d/custom.el")
 
