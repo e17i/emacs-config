@@ -1591,6 +1591,25 @@ in wheel-mode apparently works only with trackpad.
     (my-env-add-map kmap)))
 #+END_SRC
 
+With emacs 31.1 running as an X11 client on XQuartz, it's x-connection
+seems to lose it's ability to receive wheel events after sleep/wakeup.
+As a temporary mitigation, this function resets the x-connection:
+
+#+begin_src emacs-lisp
+(defun xquartz-reset ()
+  (interactive)
+  (mapc
+   (lambda (f)
+     (let ((d (frame-parameter f 'display)))
+       (delete-frame f)
+       (x-close-connection d)
+       (make-frame-on-display d)
+       ))
+   (remove-if-not
+    (lambda (f) (frame-parameter f 'display))
+    (frame-list))))
+#+end_src
+
 ** Keyboard handling
 
 On a us keyboard, we also want to be able to use german umlauts. This is
